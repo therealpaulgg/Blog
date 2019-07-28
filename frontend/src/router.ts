@@ -1,31 +1,37 @@
-import Vue from 'vue';
-import Router from 'vue-router';
-import Home from './views/Home.vue';
-import Post from './components/Post.vue';
-import NewPost from './views/NewPost.vue';
+import Vue from "vue";
+import Router from "vue-router";
+import Home from "./views/Home.vue";
+import Post from "./components/Post.vue";
+import NewPost from "./views/NewPost.vue";
+import Login from "./views/Login.vue";
 
 Vue.use(Router);
 
 export default new Router({
-  mode: 'history',
+  mode: "history",
   base: process.env.BASE_URL,
   routes: [
     {
-      path: '/',
-      name: 'home',
+      path: "/",
+      name: "home",
       component: Home,
     },
     {
-        path: '/posts/:title',
-        name: 'Posts',
+        path: "/posts/:title",
+        name: "Posts",
         component: Post,
         props: true,
     },
     {
-        path: '/newpost',
-        name: 'newpost',
+        path: "/newpost",
+        name: "newpost",
         component: NewPost,
     },
+    {
+        path: "/login",
+        name: "login",
+        component: Login
+    }
     // {
     //   path: '/about',
     //   name: 'about',

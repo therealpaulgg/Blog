@@ -21,7 +21,7 @@ import { Post } from "../models/post";
 import { md } from "../mdparser"
 
 @Component
-export default class Home extends Vue {
+export default class NewPost extends Vue {
   @Watch("content")
   test(val: string, oldVal: string) {
     try {
@@ -44,7 +44,7 @@ export default class Home extends Vue {
   }
 
   post() {
-    axios.post("http://localhost:3000/newpost", {title: this.title, content: this.content})
+    axios.post("http://localhost:3000/newpost", {title: this.title, content: this.content}, {withCredentials: true})
   }
 }
 </script>

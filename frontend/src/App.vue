@@ -8,7 +8,9 @@
                 <div>
                     <b-nav tabs>
                         <b-nav-item class="test" to="/" v-bind:active="$route.path == '/'">Home</b-nav-item>
-                        <b-nav-item to="/newpost" v-bind:active="$route.path == '/newpost'">New Post</b-nav-item>
+                        <b-nav-item v-if="isAuthenticated" to="/newpost" v-bind:active="$route.path == '/newpost'">New Post</b-nav-item>
+                        <b-nav-item v-if="isAuthenticated" @click="logout">Logout</b-nav-item>
+                        <b-nav-item v-else to="/login" v-bind:active="$route.path == '/login'">Login</b-nav-item>
                     </b-nav>
                 </div>
                 <br>
@@ -29,6 +31,8 @@ import { Component, Vue } from "vue-property-decorator";
 export default class App extends Vue {
     @Getter("getTheme") getTheme: string;
     @Action("setTheme") setTheme: any;
+    @Action("logout") logoutAction: any
+    @Getter("isAuthenticated") isAuthenticated: boolean
 
     changeTheme() {
         this.getTheme === "light"
@@ -44,6 +48,12 @@ export default class App extends Vue {
         return this.getTheme === "light"
             ? "https://cdn.jsdelivr.net/gh/PrismJS/prism-themes/themes/prism-base16-ateliersulphurpool.light.css"
             : "https://cdn.jsdelivr.net/gh/dracula/prism/css/dracula-prism.css";
+    }
+
+    logout() {
+        this.logoutAction()
+        this.$cookie.delete("auth", { domain: "localhost"})
+        this.$router.push("/")
     }
 }
 </script>
