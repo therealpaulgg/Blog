@@ -35,5 +35,5 @@ export default class Post extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
-@import url("https://cdn.jsdelivr.net/gh/dracula/prism/css/dracula-prism.css")
+// @import url("https://cdn.jsdelivr.net/gh/dracula/prism/css/dracula-prism.css")
 </style>
