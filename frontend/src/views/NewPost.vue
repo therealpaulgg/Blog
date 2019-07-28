@@ -115,6 +115,6 @@ export default class Home extends Vue {
 </script>
 
 <style lang="sass">
-@import "../assets/css/dracula-prism.css"
+@import url("https://raw.githubusercontent.com/dracula/prism/master/css/dracula-prism.css")
 </style>
 
