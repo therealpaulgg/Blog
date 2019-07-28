@@ -44,7 +44,7 @@ import katex from "katex";
 //   }
 // });
 
-let md = markdownit({
+let md: markdownit = markdownit({
   highlight: (str, lang) => {
    if (lang) {
         let langObject = Prism.languages[lang]
@@ -115,7 +115,6 @@ export default class Home extends Vue {
 </script>
 
 <style lang="sass">
-//@import "../assets/css/dracula-highlightjs.css"
 @import "../assets/css/dracula-prism.css"
 </style>
 
