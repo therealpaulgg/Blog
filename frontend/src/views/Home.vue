@@ -32,7 +32,6 @@ export default class Home extends Vue {
   async mounted() {
     let { data } = await axios.get("http://localhost:3000/posts");
     this.posts = data;
-    console.log(this.posts);
   }
 }
 </script>

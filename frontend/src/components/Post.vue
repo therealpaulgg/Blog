@@ -27,7 +27,6 @@ export default class Post extends Vue {
 
   async mounted() {
     let { data }: any = await axios.get(`http://localhost:3000/post/${this.title}`);
-    console.log(data);
     this.header = data.title;
     this.content = data.content;
   }
@@ -36,5 +35,5 @@ export default class Post extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
-@import url("https://raw.githubusercontent.com/dracula/prism/master/css/dracula-prism.css")
+@import url("https://cdn.jsdelivr.net/gh/dracula/prism/css/dracula-prism.css")
 </style>
