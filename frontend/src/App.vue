@@ -1,14 +1,17 @@
 <template>
     <div id="app">
-        <link rel="stylesheet" :href="cssUrl" data-noprefix="">
+        <link rel="stylesheet" :href="cssUrl" data-noprefix />
         <div class="jumbotron jumbotron-fluid" :class="getTheme">
             <div class="container">
+                <h1>The Blog for Engineers</h1>
+                <hr>
                 <div>
                     <b-nav tabs>
                         <b-nav-item class="test" to="/" v-bind:active="$route.path == '/'">Home</b-nav-item>
                         <b-nav-item to="/newpost" v-bind:active="$route.path == '/newpost'">New Post</b-nav-item>
                     </b-nav>
                 </div>
+                <br>
                 <router-view />
                 <transition name="fade">
                     <font-awesome-icon class="themebtn" @click="changeTheme" :icon="icon"></font-awesome-icon>
@@ -38,7 +41,9 @@ export default class App extends Vue {
     }
 
     get cssUrl() {
-        return this.getTheme === "light" ? "https://cdn.jsdelivr.net/gh/PrismJS/prism-themes/themes/prism-base16-ateliersulphurpool.light.css" : "https://cdn.jsdelivr.net/gh/dracula/prism/css/dracula-prism.css"
+        return this.getTheme === "light"
+            ? "https://cdn.jsdelivr.net/gh/PrismJS/prism-themes/themes/prism-base16-ateliersulphurpool.light.css"
+            : "https://cdn.jsdelivr.net/gh/dracula/prism/css/dracula-prism.css";
     }
 }
 </script>
@@ -46,6 +51,7 @@ export default class App extends Vue {
 
 <style lang="sass">
 @import url("https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css")
+@import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap')
 .themebtn
     position: absolute
     top: 0
@@ -55,6 +61,7 @@ export default class App extends Vue {
 html, body
     overflow: hidden
     height: 100vh
+    font-family: "Open Sans", sans-serif !important
 .jumbotron
     height: 100vh
     position: relative
@@ -70,6 +77,11 @@ html, body
         color: #00ccff !important
         transition: 0.5s
         -webkit-transition: 0.5s
+    
+    hr
+        background-color: gray
+    transition: 0.5s
+    -webkit-transition: 0.5s
 
 .dark
     background-color: #20212B !important
@@ -83,10 +95,17 @@ html, body
         transition: 0.5s
         -webkit-transition: 0.5s
     
+    hr
+        background-color: white
+    
     a:hover
         color: #FF79c6 !important
         transition: 0.5s
         -webkit-transition: 0.5s
+
+    transition: 0.5s
+    -webkit-transition: 0.5s
+    
 .fade-enter-active, .fade-leave-active 
     transition: opacity 0.5s
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */

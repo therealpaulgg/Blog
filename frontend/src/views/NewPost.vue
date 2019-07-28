@@ -50,6 +50,5 @@ export default class Home extends Vue {
 </script>
 
 <style scoped lang="sass">
-//@import url("https://cdn.jsdelivr.net/gh/dracula/prism/css/dracula-prism.css")
 </style>
 

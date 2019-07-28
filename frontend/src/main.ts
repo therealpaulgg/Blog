@@ -5,10 +5,10 @@ import store from "./store/store";
 import BootstrapVue from "bootstrap-vue";
 
 import { library } from "@fortawesome/fontawesome-svg-core";
-import { faMoon, faSun } from "@fortawesome/free-solid-svg-icons";
+import { faMoon, faSun, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
-library.add(faMoon, faSun);
+library.add(faMoon, faSun, faArrowLeft);
 
 Vue.component("font-awesome-icon", FontAwesomeIcon);
 
