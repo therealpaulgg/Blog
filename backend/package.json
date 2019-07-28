@@ -1,25 +1,35 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "tsc": "tsc -p ./",
-    "dev": "ts-node-dev --respawn --transpileOnly ./app.ts",
-    "prod": "tsc -p ./ && node ./build/app.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@types/express": "^4.17.0",
-    "express": "^4.17.1",
-    "katex": "^0.10.2",
-    "markdown-it": "^9.0.1",
-    "markdown-it-emoji": "^1.4.0",
-    "markdown-it-math": "^4.1.1",
-    "markdown-it-prism": "^2.0.2",
-    "ts-node-dev": "^1.0.0-pre.40",
-    "typescript": "^3.5.3"
-  }
+   "name": "new-typeorm-project",
+   "version": "0.0.1",
+   "description": "Awesome project developed with TypeORM.",
+   "devDependencies": {
+      "ts-node": "3.3.0",
+      "@types/node": "^8.0.29",
+      "typescript": "3.3.3333"
+   },
+   "dependencies": {
+      "@types/express": "^4.17.0",
+      "@types/markdown-it": "0.0.8",
+      "body-parser": "^1.18.1",
+      "express": "^4.15.4",
+      "katex": "^0.10.2",
+      "markdown-it": "^9.0.1",
+      "markdown-it-emoji": "^1.4.0",
+      "markdown-it-math": "^4.1.1",
+      "markdown-it-prism": "^2.0.2",
+      "reflect-metadata": "^0.1.10",
+      "sqlite3": "^4.0.3",
+      "ts-node-dev": "^1.0.0-pre.40",
+      "typeorm": "^0.2.18"
+   },
+   "scripts": {
+      "start": "ts-node src/app.ts",
+      "tsc": "tsc -p ./",
+      "dev": "ts-node-dev --respawn --transpileOnly src/app.ts",
+      "prod": "tsc -p ./ && node ./build/app.js",
+      "typeorm": "ts-node ./node_modules/.bin/typeorm",
+      "migration-create": "ts-node ./node_modules/.bin/typeorm migration:create -n newmigration",
+      "migrate": "ts-node ./node_modules/.bin/typeorm migration:generate -n newmigration",
+      "run-migrate": "ts-node ./node_modules/.bin/typeorm migration:run"
+   }
 }

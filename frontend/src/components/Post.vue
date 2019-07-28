@@ -26,7 +26,7 @@ export default class Post extends Vue {
   }
 
   async mounted() {
-    let { data }: any = await axios.get("http://localhost:3000/test");
+    let { data }: any = await axios.get(`http://localhost:3000/post/${this.title}`);
     console.log(data);
     this.header = data.title;
     this.content = data.content;
