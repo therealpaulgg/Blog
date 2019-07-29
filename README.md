@@ -6,22 +6,24 @@ Features are currently:
 - Syntax Highlighting with Prism (or Highlight.JS)
 - Math rendering with KaTeX
 - Backend to serve blog posts
+- Login System (partially complete)
+- Light/dark mode
 
 ## Screenshots
 
-The app is in very early stages aesthetically and I have been focused on getting my core rendering features to work.
+App looks pretty nice but a lot of functionality is missing.
 
 ### Main Screen
 
-![main-screen](https://imgur.com/nYvlQow.png)
+![main-screen](https://imgur.com/OisTbSC.png)
 
 ### Blog Post Preview (featuring PrismJS rendering and KaTeX)
 
-![blog-post](https://imgur.com/BXtT2my.png)
+![blog-post](https://imgur.com/ISnkGaH.png)
 
 ### Editing Markdown with Real-time updates
 
-![making-post](https://imgur.com/XKDOpzr.png)
+![making-post](https://imgur.com/CbgkH49.png)
 
 ## Future Features
 
