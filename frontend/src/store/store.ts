@@ -10,7 +10,8 @@ Vue.use(Vuex);
 
 function defaultState(): State {
     return {
-        theme: "light"
+        theme: "light",
+        authenticated: false
     };
 }
 
