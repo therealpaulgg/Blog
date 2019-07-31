@@ -14,7 +14,9 @@
                     </b-nav>
                 </div>
                 <br>
+                <keep-alive>
                 <router-view />
+                </keep-alive>
                 <transition name="fade">
                     <font-awesome-icon class="themebtn" @click="changeTheme" :icon="icon"></font-awesome-icon>
                 </transition>
@@ -62,6 +64,10 @@ export default class App extends Vue {
 <style lang="sass">
 @import url("https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css")
 @import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap')
+// https://stackoverflow.com/questions/3245141/using-otf-fonts-on-web-browsers#3245187
+@font-face 
+    font-family: "Fira Code"
+    src: url("https://cdn.jsdelivr.net/gh/tonsky/FiraCode@0.2.1/FiraCode-Regular.otf") format("opentype")
 .themebtn
     position: absolute
     top: 0
