@@ -68,6 +68,8 @@ export default class App extends Vue {
 @font-face 
     font-family: "Fira Code"
     src: url("https://cdn.jsdelivr.net/gh/tonsky/FiraCode@0.2.1/FiraCode-Regular.otf") format("opentype")
+code
+    font-family: "Fira Code" !important
 .themebtn
     position: absolute
     top: 0
