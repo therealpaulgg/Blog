@@ -29,14 +29,14 @@ export let md: markdownit = markdownit({
    if (lang) {
         let langObject = Prism.languages[lang];
         try {
-        return (
+          return (
             `<pre class="language-${lang}"><code>` + 
             Prism.highlight(str, langObject, lang) + 
             '</code></pre>'
         ); 
       } catch (__) {}
-    }
-   return `<pre class="language-${lang}><code>` + md.utils.escapeHtml(str) + "</code></pre>";
+    } 
+   return `<pre class="language-"><code>` + md.utils.escapeHtml(str) + "</code></pre>";
   }
 });
 md.use(math, {
