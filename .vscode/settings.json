@@ -3,7 +3,7 @@
         {
             "database": "./backend/database.sqlite",
             "dialect": "SQLite",
-            "name": "foo"
+            "name": "FUCK"
         }
     ]
 }

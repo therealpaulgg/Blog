@@ -5,7 +5,7 @@
                 <font-awesome-icon style="margin-right: 10px" icon="arrow-left"></font-awesome-icon>Back to Home
             </router-link>
             <hr />
-            <h1 class="bigtitle">{{header}}</h1>
+            <h1 class="bigtitle">{{title}}</h1><p>by {{user}}</p>
             <div v-if="isAuthenticated">
                 <a @click="del" class="delete" :class="getTheme">Delete</a>
                 <a @click="edit" class="edit" :class="getTheme">Edit</a>
@@ -30,11 +30,13 @@ export default class Post extends Vue {
 
     header: string | null;
     content: string | null;
+    user: string | null;
 
     constructor() {
         super();
         this.header = null;
         this.content = null;
+        this.user = null;
     }
 
     del() {
@@ -61,6 +63,7 @@ export default class Post extends Vue {
         );
         this.header = data.title;
         this.content = data.content;
+        this.user = data.username;
     }
 }
 </script>
@@ -70,6 +73,10 @@ export default class Post extends Vue {
 .bigtitle
     font-size: 50px
     margin-bottom: 20px
+    margin-right: 10px
+    word-wrap: break-word
+    white-space: normal
+    width: 100%
 .delete
     color: #ff7474 !important
     cursor: pointer

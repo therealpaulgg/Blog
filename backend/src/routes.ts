@@ -39,22 +39,31 @@ router.post("/jwt-verify", (req, res) => {
 })
 
 router.get("/posts", (req, res) => {
-    getConnection().manager.find(Post, {relations: ["user"]}).then(result => {
-        // let posts = []
-        // for (let post of result) {
-        //     let obj = post as any
-        //     obj["username"] = post.user.username
-        //     posts.push(obj)
-        // }
-        res.send(result)
+    getConnection().manager.find(Post, { relations: ["user"] }).then(result => {
+        let posts = []
+        for (let post of result) {
+            let obj = {
+                url_title: post.url_title,
+                title: post.title,
+                content: post.content,
+                username: post.user.username
+            }
+            posts.push(obj)
+        }
+        console.log(posts)
+        res.send(posts)
     })
 })
 
 router.get("/post/:url_title", (req, res) => {
-    getConnection().manager.findOne(Post, { url_title: req.params.url_title }).then(result => {
-        let data = result
-        data.content = md.render(data.content)
-        res.send(data)
+    getConnection().manager.findOne(Post, { url_title: req.params.url_title }, { relations: ["user"] }).then(result => {
+        let formattedData = {
+            url_title: result.url_title,
+            title: result.title,
+            content: md.render(result.content),
+            username: result.user.username
+        }
+        res.send(formattedData)
     }).catch(err => res.send({ title: "Oof!", content: "No post found. :(" }))
 })
 
@@ -65,35 +74,59 @@ router.post("/newpost", checkAuth, async (req, res) => {
     post.title = title
     post.content = req.body.content
     post.url_title = title.replace(/\W+/g, '-').toLowerCase()
-    let user = await connection.manager.findOne(User, {username: res.locals.user})
+    let user = await connection.manager.findOne(User, { username: res.locals.user })
     post.user = user
     await connection.manager.save(user)
     await connection.manager.save(post).then(() => res.send("posted"))
     user.addPost(post)
-    console.log(user)
-    console.log(post)
-    // getConnection().manager.save(Post, {
-    //     title: title,
-    //     content: req.body.content,
-    //     url_title: title.replace(/\W+/g, '-').toLowerCase()
-    // }).then(() => res.send("posted"))
+    res.send("Done")
+})
+
+router.post("/editpost", checkAuth, async (req, res) => {
+    let connection = getConnection()
+    let post = await connection.manager.findOne(Post, { url_title: req.body.url_title })
+    if (post.user.username === res.locals.user) {
+        let title = req.body.new_title
+        post.title = title
+        post.content = md.render(req.body.new_content)
+        post.url_title = title.replace(/\W+/g, '-').toLowerCase()
+        await connection.manager.save(post)
+        res.send("Done")
+    } else {
+        res.status(401).send("You are not the owner of this post.")
+    }
 })
 
 // TODO: password requirements
 router.post("/register", async (req, res) => {
-    getConnection().manager.save(User, {
-        username: req.body.username as string,
-        email: req.body.email as string,
-        password_hash: await argon2.hash(req.body.password) as string
-    }).then(() => res.send("registered"))
+    if (req.body.username.length > 30) {
+        let connection = await getConnection()
+        let user = await connection.manager.findOne(User, {username: req.body.username})
+        if (user) {
+            connection.manager.save(User, {
+                username: req.body.username as string,
+                email: req.body.email as string,
+                password_hash: await argon2.hash(req.body.password) as string
+            }).then(() => res.send("registered"))
+        } else {
+            res.status(400).send("User with this username already exists.")
+        }
+    } else {
+        res.status(400).send("User with this username already exists.")
+    }
+    
 })
 
 router.post("/delete", checkAuth, (req, res) => {
-    getConnection().manager.delete(Post, { url_title: req.body.url_title }).then(() => {
-        res.send("post deleted")
-    }).catch(() => {
-        res.status(404).send("post does not exist")
-    })
+    let connection = getConnection()
+    connection.manager.findOne(Post, { url_title: req.body.url_title }, {relations: ["user"]}).then((post) => {
+        if (post.user.username === res.locals.user) {
+            connection.manager.remove(post)
+            res.send("Done")
+        } else {
+            res.send("You are not the owner of this post.")
+        }
+    }).catch(() => res.status(404).send("Post does not exist."))
 })
 
 router.post("/login", (req, res) => {
