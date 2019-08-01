@@ -32,8 +32,8 @@
       "dev": "ts-node-dev --respawn --transpileOnly src/app.ts",
       "prod": "tsc -p ./ && node ./build/app.js",
       "typeorm": "ts-node ./node_modules/.bin/typeorm",
-      "migration-create": "ts-node ./node_modules/.bin/typeorm migration:create -n newmigration",
-      "migrate": "ts-node ./node_modules/.bin/typeorm migration:generate -n newmigration",
+      "migration-create": "ts-node ./node_modules/.bin/typeorm migration:create -n",
+      "migrate": "ts-node ./node_modules/.bin/typeorm migration:generate -n",
       "run-migrate": "ts-node ./node_modules/.bin/typeorm migration:run"
    }
 }

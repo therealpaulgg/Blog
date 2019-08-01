@@ -11,13 +11,19 @@ Vue.use(Vuex);
 function defaultState(): State {
     return {
         theme: "light",
-        authenticated: false
+        authenticated: false,
+        posts: null
     };
 }
 
 export default new Vuex.Store({
     state: defaultState(),
-    plugins: [createPersistedState()],
+    plugins: [createPersistedState({
+        paths: [
+            "authenticated",
+            "theme"
+        ]
+    })],
     mutations,
     actions,
     getters

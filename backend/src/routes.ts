@@ -27,7 +27,6 @@ router.post("/what", (req, res) => {
 router.get("/jwt", (req, res) => {
     let token = jwt.sign({ username: "test" }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
     res.header("Set-Cookie", `auth=${token}`)
-    console.log("sending jwt")
     res.send(token)
 })
 
@@ -40,7 +39,15 @@ router.post("/jwt-verify", (req, res) => {
 })
 
 router.get("/posts", (req, res) => {
-    getConnection().manager.find(Post).then(result => res.send(result))
+    getConnection().manager.find(Post, {relations: ["user"]}).then(result => {
+        // let posts = []
+        // for (let post of result) {
+        //     let obj = post as any
+        //     obj["username"] = post.user.username
+        //     posts.push(obj)
+        // }
+        res.send(result)
+    })
 })
 
 router.get("/post/:url_title", (req, res) => {
@@ -51,13 +58,25 @@ router.get("/post/:url_title", (req, res) => {
     }).catch(err => res.send({ title: "Oof!", content: "No post found. :(" }))
 })
 
-router.post("/newpost", checkAuth, (req, res) => {
+router.post("/newpost", checkAuth, async (req, res) => {
+    let connection = getConnection()
     let title: string = req.body.title
-    getConnection().manager.save(Post, {
-        title: title,
-        content: req.body.content,
-        url_title: title.replace(/\W+/g, '-').toLowerCase()
-    }).then(() => res.send("posted"))
+    let post = new Post()
+    post.title = title
+    post.content = req.body.content
+    post.url_title = title.replace(/\W+/g, '-').toLowerCase()
+    let user = await connection.manager.findOne(User, {username: res.locals.user})
+    post.user = user
+    await connection.manager.save(user)
+    await connection.manager.save(post).then(() => res.send("posted"))
+    user.addPost(post)
+    console.log(user)
+    console.log(post)
+    // getConnection().manager.save(Post, {
+    //     title: title,
+    //     content: req.body.content,
+    //     url_title: title.replace(/\W+/g, '-').toLowerCase()
+    // }).then(() => res.send("posted"))
 })
 
 // TODO: password requirements
@@ -80,8 +99,7 @@ router.post("/delete", checkAuth, (req, res) => {
 router.post("/login", (req, res) => {
     getConnection().manager.findOne(User, { username: req.body.username }).then(async result => {
         if (await argon2.verify(result.password_hash, req.body.password)) {
-            console.log("blyad")
-            let token = jwt.sign({ username: "test" }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
+            let token = jwt.sign({ username: req.body.username }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
             res.header("Set-Cookie", `auth=${token}`)
             res.send("Success")
         } else {
@@ -92,13 +110,11 @@ router.post("/login", (req, res) => {
 
 function checkAuth(req, res, next) {
     try {
-        console.log(req.cookies)
-        jwt.verify(req.cookies["auth"], "VERYSECRETKEY")
-        console.log("verifying...")
+        let token: any = jwt.verify(req.cookies["auth"], "VERYSECRETKEY")
+        res.locals.user = token.username
         next()
     } catch (__) {
         res.status(401).send("Unauthorized")
-        console.log("failed.")
     }
 }
 

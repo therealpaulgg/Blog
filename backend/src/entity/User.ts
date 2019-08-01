@@ -1,4 +1,5 @@
-import {Entity, PrimaryGeneratedColumn, Column} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, OneToMany} from "typeorm";
+import { Post } from "./Post";
 
 @Entity()
 export class User {
@@ -14,4 +15,12 @@ export class User {
 
     @Column()
     password_hash: string;
+
+    @OneToMany(type => Post, post => post.user)
+    posts: Array<Post>
+
+    addPost(post: Post) {
+        if (!this.posts) this.posts = []
+        this.posts.push(post);
+    }
 }

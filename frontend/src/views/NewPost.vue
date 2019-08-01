@@ -88,6 +88,7 @@ export default class NewPost extends Vue {
             { title: this.title, content: this.content },
             { withCredentials: true }
         );
+        this.$router.push("/")
     }
 }
 </script>

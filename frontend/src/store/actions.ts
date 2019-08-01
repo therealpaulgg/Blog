@@ -7,5 +7,8 @@ export default {
     },
     logout({ commit }: { commit: any }) {
         commit("LOGOUT");
+    },
+    fetchPosts({ commit }: { commit: any}) {
+        commit("FETCH_POSTS")
     }
 }

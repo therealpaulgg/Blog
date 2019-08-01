@@ -46,6 +46,7 @@ export default class Post extends Vue {
                 { withCredentials: true }
             )
             .then(() => {
+                this.$store.dispatch("fetchPosts")
                 this.$router.push("/");
             }).catch(() => {
                 this.$router.push("/");

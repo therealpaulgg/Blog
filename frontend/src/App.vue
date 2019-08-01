@@ -14,7 +14,7 @@
                     </b-nav>
                 </div>
                 <br>
-                <keep-alive>
+                <keep-alive include="NewPost, Home">
                 <router-view />
                 </keep-alive>
                 <transition name="fade">

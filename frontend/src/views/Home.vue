@@ -23,16 +23,17 @@ import { State } from "vuex-class"
     }
 })
 export default class Home extends Vue {
-    posts: Array<Post>;
 
     constructor() {
         super();
-        this.posts = [];
     }
 
-    async mounted() {
-        let { data } = await axios.get("http://localhost:3000/posts");
-        this.posts = data;
+    mounted() {
+        this.$store.dispatch("fetchPosts")
+    }
+
+    get posts() {
+        return this.$store.state.posts
     }
 
     get theme() {
