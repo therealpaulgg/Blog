@@ -5,7 +5,7 @@
             :key="post.id"
             :title="post.title"
             :content="post.content"
-            :url_title="post.url_title"
+            :urlTitle="post.urlTitle"
         ></PostBlock>
     </div>
 </template>

@@ -43,7 +43,7 @@ export default class Post extends Vue {
         axios
             .post(
                 "http://localhost:3000/delete",
-                { url_title: this.title },
+                { urlTitle: this.title },
                 { withCredentials: true }
             )
             .then(() => {

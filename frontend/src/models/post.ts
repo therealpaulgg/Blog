@@ -1,5 +1,5 @@
 export interface Post {
-    url_title: string;
+    urlTitle: string;
     title: string;
     content: string;
     username: string;

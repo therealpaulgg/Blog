@@ -43,7 +43,7 @@ router.get("/posts", (req, res) => {
         let posts = []
         for (let post of result) {
             let obj = {
-                url_title: post.url_title,
+                urlTitle: post.urlTitle,
                 title: post.title,
                 content: post.content,
                 username: post.user.username
@@ -55,10 +55,10 @@ router.get("/posts", (req, res) => {
     })
 })
 
-router.get("/post/:url_title", (req, res) => {
-    getConnection().manager.findOne(Post, { url_title: req.params.url_title }, { relations: ["user"] }).then(result => {
+router.get("/post/:urlTitle", (req, res) => {
+    getConnection().manager.findOne(Post, { urlTitle: req.params.urlTitle }, { relations: ["user"] }).then(result => {
         let formattedData = {
-            url_title: result.url_title,
+            urlTitle: result.urlTitle,
             title: result.title,
             content: md.render(result.content),
             username: result.user.username
@@ -73,7 +73,7 @@ router.post("/newpost", checkAuth, async (req, res) => {
     let post = new Post()
     post.title = title
     post.content = req.body.content
-    post.url_title = title.replace(/\W+/g, '-').toLowerCase()
+    post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
     let user = await connection.manager.findOne(User, { username: res.locals.user })
     post.user = user
     await connection.manager.save(user)
@@ -84,12 +84,12 @@ router.post("/newpost", checkAuth, async (req, res) => {
 
 router.post("/editpost", checkAuth, async (req, res) => {
     let connection = getConnection()
-    let post = await connection.manager.findOne(Post, { url_title: req.body.url_title })
+    let post = await connection.manager.findOne(Post, { urlTitle: req.body.urlTitle })
     if (post.user.username === res.locals.user) {
         let title = req.body.new_title
         post.title = title
         post.content = md.render(req.body.new_content)
-        post.url_title = title.replace(/\W+/g, '-').toLowerCase()
+        post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
         await connection.manager.save(post)
         res.send("Done")
     } else {
@@ -119,7 +119,7 @@ router.post("/register", async (req, res) => {
 
 router.post("/delete", checkAuth, (req, res) => {
     let connection = getConnection()
-    connection.manager.findOne(Post, { url_title: req.body.url_title }, {relations: ["user"]}).then((post) => {
+    connection.manager.findOne(Post, { urlTitle: req.body.urlTitle }, {relations: ["user"]}).then((post) => {
         if (post.user.username === res.locals.user) {
             connection.manager.remove(post)
             res.send("Done")

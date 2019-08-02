@@ -8,7 +8,7 @@ export class Post {
     id: number;
 
     @Column()
-    url_title: string;
+    urlTitle: string;
 
     @Column()
     title: string;
