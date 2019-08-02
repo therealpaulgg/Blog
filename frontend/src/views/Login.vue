@@ -21,30 +21,29 @@ import { Action } from "vuex-class";
 
 @Component
 export default class Home extends Vue {
-    @Action("login") login: any
-    @Action("logout") logout: any
-    
-    username: string;
-    password: string;
-    failed: boolean
+    @Action("login") protected login: any;
+    @Action("logout") protected logout: any;
+    protected username: string;
+    protected password: string;
+    protected failed: boolean;
     constructor() {
         super();
         this.username = "";
         this.password = "";
-        this.failed = false
+        this.failed = false;
     }
 
-    authenticate() {
+    protected authenticate() {
         axios.post(
             "http://localhost:3000/login",
             { username: this.username, password: this.password },
             { withCredentials: true }
         ).then((res) => {
-            this.login()
-            this.$router.push("/")
+            this.login();
+            this.$router.push("/");
         }).catch(() => {
-            this.logout()
-            this.failed = true
+            this.logout();
+            this.failed = true;
         });
     }
 }

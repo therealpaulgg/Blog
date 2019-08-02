@@ -28,15 +28,16 @@
 <script <script lang="ts">
 import { State, Getter, Action } from "vuex-class";
 import { Component, Vue } from "vue-property-decorator";
+import Cookies from "js-cookie";
 
 @Component
 export default class App extends Vue {
-    @Getter("getTheme") getTheme: string;
-    @Action("setTheme") setTheme: any;
-    @Action("logout") logoutAction: any
-    @Getter("isAuthenticated") isAuthenticated: boolean
+    @Action("setTheme") protected setTheme: any;
+    @Action("logout") protected logoutAction: any;
+    @Getter("isAuthenticated") protected isAuthenticated: boolean;
+    @Getter("getTheme") private getTheme: string;
 
-    changeTheme() {
+    protected changeTheme() {
         this.getTheme === "light"
             ? this.setTheme("dark")
             : this.setTheme("light");
@@ -52,10 +53,10 @@ export default class App extends Vue {
             : "https://cdn.jsdelivr.net/gh/dracula/prism/css/dracula-prism.css";
     }
 
-    logout() {
-        this.logoutAction()
-        this.$cookie.delete("auth", { domain: "localhost"})
-        this.$router.push("/")
+    protected logout() {
+        this.logoutAction();
+        Cookies.remove("auth", {domain: "localhost"});
+        this.$router.push("/");
     }
 }
 </script>

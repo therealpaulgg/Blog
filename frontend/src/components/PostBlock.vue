@@ -1,20 +1,20 @@
 <template>
   <div class="postblock" :class="getTheme">
     <h1>{{title}}</h1>
-    <router-link :to="`/posts/${url_title}`">Go to Post!</router-link>
+    <router-link :to="`/posts/${urlTitle}`">Go to Post!</router-link>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import { Getter } from 'vuex-class';
+import { Component, Prop, Vue } from "vue-property-decorator";
+import { Getter } from "vuex-class";
 
 @Component
 export default class PostBlock extends Vue {
-    @Prop(String) readonly title!: string
-    @Prop(String) readonly content!: string
-    @Prop(String) readonly url_title!: string
-    @Getter("getTheme") getTheme: string;
+    @Prop(String) protected readonly title!: string;
+    @Prop(String) protected readonly content!: string;
+    @Prop(String) protected readonly urlTitle!: string;
+    @Getter("getTheme") private getTheme: string;
 }
 </script>
 

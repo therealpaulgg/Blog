@@ -1,6 +1,6 @@
 import { State } from "@/models/state";
-import axios from "axios"
-import { Post } from '@/models/post';
+import axios from "axios";
+import { Post } from "@/models/post";
 
 export default {
     SET_THEME(state: State, theme: string) {
@@ -13,7 +13,7 @@ export default {
         state.authenticated = false;
     },
     async FETCH_POSTS(state: State) {
-        let { data } = await axios.get("http://localhost:3000/posts");
-        state.posts = data as Array<Post>
+        const { data } = await axios.get("http://localhost:3000/posts");
+        state.posts = data as Post[];
     }
-}
+};

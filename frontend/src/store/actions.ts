@@ -9,6 +9,6 @@ export default {
         commit("LOGOUT");
     },
     fetchPosts({ commit }: { commit: any}) {
-        commit("FETCH_POSTS")
+        commit("FETCH_POSTS");
     }
-}
+};

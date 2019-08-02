@@ -15,7 +15,7 @@ import { Component, Vue } from "vue-property-decorator";
 import PostBlock from "@/components/PostBlock.vue"; // @ is an alias to /src
 import axios from "axios";
 import { Post } from "../models/post";
-import { State } from "vuex-class"
+import { State } from "vuex-class";
 
 @Component({
     components: {
@@ -28,16 +28,16 @@ export default class Home extends Vue {
         super();
     }
 
-    mounted() {
-        this.$store.dispatch("fetchPosts")
+    protected mounted() {
+        this.$store.dispatch("fetchPosts");
     }
 
     get posts() {
-        return this.$store.state.posts
+        return this.$store.state.posts;
     }
 
     get theme() {
-        return this.$store.getters.getTheme
+        return this.$store.getters.getTheme;
     }
 }
 </script>

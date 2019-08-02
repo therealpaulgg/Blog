@@ -7,4 +7,4 @@ export default {
     isAuthenticated(state: State) {
         return state.authenticated;
     }
-}
+};

@@ -5,7 +5,8 @@
                 <font-awesome-icon style="margin-right: 10px" icon="arrow-left"></font-awesome-icon>Back to Home
             </router-link>
             <hr />
-            <h1 class="bigtitle">{{title}}</h1><p>by {{user}}</p>
+            <h1 class="bigtitle">{{title}}</h1>
+            <p>by {{user}}</p>
             <div v-if="isAuthenticated">
                 <a @click="del" class="delete" :class="getTheme">Delete</a>
                 <a @click="edit" class="edit" :class="getTheme">Edit</a>
@@ -24,13 +25,12 @@ import { Getter } from "vuex-class";
 
 @Component
 export default class Post extends Vue {
-    @Prop(String) readonly title!: string;
-    @Getter("getTheme") getTheme: string;
-    @Getter("isAuthenticated") isAuthenticated: boolean;
-
-    header: string | null;
-    content: string | null;
-    user: string | null;
+    protected header: string | null;
+    protected content: string | null;
+    protected user: string | null;
+    @Prop(String) protected readonly title!: string;
+    @Getter("getTheme") private getTheme: string;
+    @Getter("isAuthenticated") private isAuthenticated: boolean;
 
     constructor() {
         super();
@@ -39,8 +39,7 @@ export default class Post extends Vue {
         this.user = null;
     }
 
-    del() {
-        console.log(this.title);
+    protected del() {
         axios
             .post(
                 "http://localhost:3000/delete",
@@ -48,17 +47,20 @@ export default class Post extends Vue {
                 { withCredentials: true }
             )
             .then(() => {
-                this.$store.dispatch("fetchPosts")
+                this.$store.dispatch("fetchPosts");
                 this.$router.push("/");
-            }).catch(() => {
+            })
+            .catch(() => {
                 this.$router.push("/");
             });
     }
 
-    edit() {}
+    protected edit() {
+        // TODO
+    }
 
-    async mounted() {
-        let { data }: any = await axios.get(
+    protected async mounted() {
+        const { data }: any = await axios.get(
             `http://localhost:3000/post/${this.title}`
         );
         this.header = data.title;

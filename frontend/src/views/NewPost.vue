@@ -33,7 +33,7 @@ import { Post } from "../models/post";
 import { md } from "../mdparser";
 import MonacoEditor from "vue-monaco";
 import dracula from "../assets/Dracula.json";
-
+import { MonacoWindow } from "../interfaces/window";
 
 @Component({
     components: {
@@ -41,40 +41,15 @@ import dracula from "../assets/Dracula.json";
     }
 })
 export default class NewPost extends Vue {
-    @Watch("content")
-    test(val: string, oldVal: string) {
-        try {
-            let foo = md.render(val);
-            this.renderedContent = foo;
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
-    mounted() {
-        window.monaco.editor.defineTheme("dracula", dracula);
-        window.monaco.editor.setTheme(this.vsTheme);
-    }
-
-    options = {
+    protected title: string;
+    protected renderedContent: string;
+    private content: string;
+    private options = {
         fontLigatures: true,
         fontFamily: "Fira Code",
         wordWrap: true,
         minimap: { enabled: false }
     };
-
-    get theme() {
-        return this.$store.getters.getTheme;
-    }
-
-    get vsTheme() {
-        let theme = this.$store.getters.getTheme;
-        return theme == "dark" ? "dracula" : "vs-light";
-    }
-
-    title: string;
-    content: string;
-    renderedContent: string;
 
     constructor() {
         super();
@@ -83,13 +58,38 @@ export default class NewPost extends Vue {
         this.renderedContent = "";
     }
 
-    post() {
+    @Watch("content")
+    protected test(val: string, oldVal: string) {
+        try {
+            this.renderedContent = md.render(val);
+        } catch (err) {
+            // TODO: error handling
+            // console.error(err);
+        }
+    }
+
+    protected mounted() {
+        const extWindow: MonacoWindow = window;
+        extWindow.monaco.editor.defineTheme("dracula", dracula);
+        extWindow.monaco.editor.setTheme(this.vsTheme);
+    }
+
+    get theme() {
+        return this.$store.getters.getTheme;
+    }
+
+    get vsTheme() {
+        const theme = this.$store.getters.getTheme;
+        return theme === "dark" ? "dracula" : "vs-light";
+    }
+
+    protected post() {
         axios.post(
             "http://localhost:3000/newpost",
             { title: this.title, content: this.content },
             { withCredentials: true }
         );
-        this.$router.push("/")
+        this.$router.push("/");
     }
 }
 </script>

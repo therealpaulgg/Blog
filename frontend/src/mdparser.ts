@@ -1,9 +1,9 @@
-import markdownit from 'markdown-it';
-import Prism from 'prismjs';
+import markdownit from "markdown-it";
+import Prism from "prismjs";
 // import hljs from "highlight.js";
 import emoji from "markdown-it-emoji";
-import math from 'markdown-it-math';
-import katex from 'katex';
+import math from "markdown-it-math";
+import katex from "katex";
 
 // Old code that was used for highlightJS
 
@@ -27,15 +27,17 @@ import katex from 'katex';
 export let md: markdownit = markdownit({
   highlight: (str, lang) => {
    if (lang) {
-        let langObject = Prism.languages[lang];
+        const langObject = Prism.languages[lang];
         try {
           return (
-            `<pre class="language-${lang}"><code>` + 
-            Prism.highlight(str, langObject, lang) + 
-            '</code></pre>'
-        ); 
-      } catch (__) {}
-    } 
+            `<pre class="language-${lang}"><code>` +
+            Prism.highlight(str, langObject, lang) +
+            "</code></pre>"
+        );
+      } catch (__) {
+        // TODO
+      }
+    }
    return `<pre class="language-"><code>` + md.utils.escapeHtml(str) + "</code></pre>";
   }
 });
