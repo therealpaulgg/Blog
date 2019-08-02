@@ -12,7 +12,8 @@ function defaultState(): State {
     return {
         theme: "light",
         authenticated: false,
-        posts: null
+        posts: null,
+        content: ""
     };
 }
 

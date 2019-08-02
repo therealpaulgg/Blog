@@ -71,6 +71,9 @@ export default class App extends Vue {
     src: url("https://cdn.jsdelivr.net/gh/tonsky/FiraCode@0.2.1/FiraCode-Regular.otf") format("opentype")
 code
     font-family: "Fira Code" !important
+.emoji
+    height: 1.2em !important
+    width: 1.2em !important
 .themebtn
     position: absolute
     top: 0
@@ -80,7 +83,6 @@ code
 html, body
     overflow: hidden
     height: 100vh
-    font-family: "Open Sans", sans-serif !important
 .jumbotron
     height: 100vh
     position: relative

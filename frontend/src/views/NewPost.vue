@@ -3,20 +3,25 @@
         <label>Post Title</label>
         <br />
         <input type="text" :class="theme" style="width: 100%" class="title" v-model="title" />
-        <br>
-        <br>
-        <div class="row">
-            <div class="col">
-                <MonacoEditor
-                    class="editor"
-                    language="markdown"
-                    v-model="content"
-                    :theme="vsTheme"
-                    :options="options"
-                />
-            </div>
-            <div class="col preview" :class="theme">
-                <div id="preview" class="break" v-html="`<h1>${title}</h1>` + renderedContent"></div>
+        <br />
+        <br />
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <PostToolbar />
+                    <div id="monacoeditor"></div>
+                    <MonacoEditor
+                        class="editor"
+                        language="markdown"
+                        v-model="content"
+                        :theme="vsTheme"
+                        :options="options"
+                        :width="width"
+                    />
+                </div>
+                <div class="col preview" ref="editcol" :class="theme">
+                    <div id="preview" class="break" v-html="`<h1>${title}</h1>` + renderedContent"></div>
+                </div>
             </div>
         </div>
 
@@ -34,16 +39,19 @@ import { md } from "../mdparser";
 import MonacoEditor from "vue-monaco";
 import dracula from "../assets/Dracula.json";
 import { MonacoWindow } from "../interfaces/window";
+import PostToolbar from "../components/PostToolbar.vue";
 
 @Component({
     components: {
-        MonacoEditor
+        MonacoEditor,
+        PostToolbar
     }
 })
 export default class NewPost extends Vue {
     protected title: string;
     protected renderedContent: string;
-    private content: string;
+    protected ready = false;
+    protected width = 500;
     private options = {
         fontLigatures: true,
         fontFamily: "Fira Code",
@@ -51,10 +59,13 @@ export default class NewPost extends Vue {
         minimap: { enabled: false }
     };
 
+    $refs: {
+        editcol: HTMLDivElement
+    }
+
     constructor() {
         super();
         this.title = "";
-        this.content = "";
         this.renderedContent = "";
     }
 
@@ -68,7 +79,15 @@ export default class NewPost extends Vue {
         }
     }
 
+    updateDimensions() {
+        let height = this.$refs.editcol.clientHeight - 46;
+        let width = this.$refs.editcol.clientWidth;
+        const editor = (this.$children[1] as any).getEditor();
+        editor.layout({height, width});
+    }
+
     protected mounted() {
+        window.addEventListener("resize", this.updateDimensions.bind(this));
         const extWindow: MonacoWindow = window;
         extWindow.monaco.editor.defineTheme("dracula", dracula);
         extWindow.monaco.editor.setTheme(this.vsTheme);
@@ -76,6 +95,14 @@ export default class NewPost extends Vue {
 
     get theme() {
         return this.$store.getters.getTheme;
+    }
+
+    get content() {
+        return this.$store.getters.getContent;
+    }
+    
+    set content(val) {
+        this.$store.dispatch("editContent", val)
     }
 
     get vsTheme() {

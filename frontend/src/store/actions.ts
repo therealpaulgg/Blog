@@ -10,5 +10,8 @@ export default {
     },
     fetchPosts({ commit }: { commit: any}) {
         commit("FETCH_POSTS");
+    },
+    editContent({ commit }: { commit: any}, text: string) {
+        commit("EDIT_CONTENT", text);
     }
 };

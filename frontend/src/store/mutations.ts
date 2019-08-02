@@ -15,5 +15,8 @@ export default {
     async FETCH_POSTS(state: State) {
         const { data } = await axios.get("http://localhost:3000/posts");
         state.posts = data as Post[];
+    },
+    EDIT_CONTENT(state: State, text: string) {
+        state.content = text
     }
 };

@@ -6,5 +6,8 @@ export default {
     },
     isAuthenticated(state: State) {
         return state.authenticated;
+    },
+    getContent(state: State) {
+        return state.content;
     }
 };

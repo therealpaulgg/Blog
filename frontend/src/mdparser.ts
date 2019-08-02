@@ -4,6 +4,7 @@ import Prism from "prismjs";
 import emoji from "markdown-it-emoji";
 import math from "markdown-it-math";
 import katex from "katex";
+import twemoji from "twemoji";
 
 // Old code that was used for highlightJS
 
@@ -25,6 +26,7 @@ import katex from "katex";
 // });
 
 export let md: markdownit = markdownit({
+  html: true,
   highlight: (str, lang) => {
    if (lang) {
         const langObject = Prism.languages[lang];
@@ -66,3 +68,4 @@ md.use(math, {
   }
 });
 md.use(emoji);
+md.renderer.rules.emoji = (token, idx) => twemoji.parse(token[idx].content);
