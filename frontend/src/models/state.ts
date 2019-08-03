@@ -1,8 +1,8 @@
-import { Post } from "./post";
+import { PostModel } from "./post";
 
 export interface State {
     theme: string;
     authenticated: boolean;
-    posts: Post[];
+    posts: PostModel[];
     content: string;
 }

@@ -61,7 +61,9 @@ router.get("/post/:urlTitle", (req, res) => {
             urlTitle: result.urlTitle,
             title: result.title,
             content: md.render(result.content),
-            username: result.user.username
+            username: result.user.username,
+            createdAt: result.createdAt,
+            updatedAt: result.updatedAt
         }
         res.send(formattedData)
     }).catch(err => res.send({ title: "Oof!", content: "No post found. :(" }))
@@ -70,16 +72,21 @@ router.get("/post/:urlTitle", (req, res) => {
 router.post("/newpost", checkAuth, async (req, res) => {
     let connection = getConnection()
     let title: string = req.body.title
-    let post = new Post()
-    post.title = title
-    post.content = req.body.content
-    post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
-    let user = await connection.manager.findOne(User, { username: res.locals.user })
-    post.user = user
-    await connection.manager.save(user)
-    await connection.manager.save(post).then(() => res.send("posted"))
-    user.addPost(post)
-    res.send("Done")
+    let content = req.body.content
+    if ((title != null && title.length > 0) && (content != null && content.length > 0)) {
+        let post = new Post()
+        post.title = title
+        post.content = content
+        post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
+        let user = await connection.manager.findOne(User, { username: res.locals.user })
+        post.user = user
+        await connection.manager.save(post)
+        user.addPost(post)
+        await connection.manager.save(user)
+        res.send("Done")
+    } else {
+        res.status(400).send("Missing title or post content.")
+    }
 })
 
 router.post("/editpost", checkAuth, async (req, res) => {
@@ -114,7 +121,6 @@ router.post("/register", async (req, res) => {
     } else {
         res.status(400).send("User with this username already exists.")
     }
-    
 })
 
 router.post("/delete", checkAuth, (req, res) => {

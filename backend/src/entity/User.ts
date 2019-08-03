@@ -1,5 +1,6 @@
-import {Entity, PrimaryGeneratedColumn, Column, OneToMany} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne} from "typeorm";
 import { Post } from "./Post";
+import { PermissionBlock } from "./PermissionBlock";
 
 @Entity()
 export class User {
@@ -18,6 +19,9 @@ export class User {
 
     @OneToMany(type => Post, post => post.user)
     posts: Array<Post>
+
+    @OneToOne(type => PermissionBlock, permissionBlock => permissionBlock.user)
+    permissionBlock: PermissionBlock
 
     addPost(post: Post) {
         if (!this.posts) this.posts = []

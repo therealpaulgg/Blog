@@ -34,7 +34,7 @@
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
 import axios from "axios";
-import { Post } from "../models/post";
+import { PostModel } from "../models/post";
 import { md } from "../mdparser";
 import MonacoEditor from "vue-monaco";
 import dracula from "../assets/Dracula.json";
@@ -115,8 +115,10 @@ export default class NewPost extends Vue {
             "http://localhost:3000/newpost",
             { title: this.title, content: this.content },
             { withCredentials: true }
-        );
-        this.$router.push("/");
+        ).then(() => {
+            this.$store.dispatch("fetchPosts")
+            this.$router.push("/");
+        }).catch((err) => err);
     }
 }
 </script>
@@ -141,6 +143,7 @@ export default class NewPost extends Vue {
 .preview
     padding: 0px
     border-radius: 5px
+    overflow-y: scroll
 .dark
     .preview
         background-color: #2a2c39 !important

@@ -16,7 +16,6 @@
             <br />
             <button style="margin-top: 10px" @click="addLink">Add</button>
         </div>
-        <!-- <font-awesome-icon class="icon" icon="paperclip" ref="clipbtn"></font-awesome-icon> -->
         <img
             class="icon emoji"
             draggable="false"

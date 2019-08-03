@@ -7,6 +7,8 @@
             <hr />
             <h1 class="bigtitle">{{title}}</h1>
             <p>by {{user}}</p>
+            <p>Created {{createdAt}}</p>
+            <p v-if="createdAt !== updatedAt">Updated {{updatedAt}}</p>
             <div v-if="isAuthenticated">
                 <a @click="del" class="delete" :class="getTheme">Delete</a>
                 <a @click="edit" class="edit" :class="getTheme">Edit</a>
@@ -22,12 +24,16 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import axios from "axios";
 import { Getter } from "vuex-class";
+import moment from "moment";
+import { PostModel } from '../models/post';
 
 @Component
 export default class Post extends Vue {
     protected header: string | null;
     protected content: string | null;
     protected user: string | null;
+    protected createdAt: any;
+    protected updatedAt: any;
     @Prop(String) protected readonly title!: string;
     @Getter("getTheme") private getTheme: string;
     @Getter("isAuthenticated") private isAuthenticated: boolean;
@@ -37,6 +43,8 @@ export default class Post extends Vue {
         this.header = null;
         this.content = null;
         this.user = null;
+        this.createdAt = null;
+        this.updatedAt = null;
     }
 
     protected del() {
@@ -60,12 +68,14 @@ export default class Post extends Vue {
     }
 
     protected async mounted() {
-        const { data }: any = await axios.get(
+        const { data }: {data: PostModel} = await axios.get(
             `http://localhost:3000/post/${this.title}`
         );
         this.header = data.title;
         this.content = data.content;
         this.user = data.username;
+        this.createdAt = moment.utc(data.createdAt).local().format("MM/DD/YYYY, HH:MM")
+        this.updatedAt = moment.utc(data.updatedAt).local().format("MM/DD/YYYY, HH:MM")
     }
 }
 </script>

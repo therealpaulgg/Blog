@@ -14,7 +14,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import PostBlock from "@/components/PostBlock.vue"; // @ is an alias to /src
 import axios from "axios";
-import { Post } from "../models/post";
+import { PostModel } from "../models/post";
 import { State } from "vuex-class";
 
 @Component({
