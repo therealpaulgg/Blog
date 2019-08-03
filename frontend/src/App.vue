@@ -4,18 +4,22 @@
         <div class="jumbotron jumbotron-fluid" :class="getTheme">
             <div class="container">
                 <h1>The Blog for Engineers</h1>
-                <hr>
+                <hr />
                 <div>
                     <b-nav tabs>
                         <b-nav-item class="test" to="/" v-bind:active="$route.path == '/'">Home</b-nav-item>
-                        <b-nav-item v-if="isAuthenticated" to="/newpost" v-bind:active="$route.path == '/newpost'">New Post</b-nav-item>
+                        <b-nav-item
+                            v-if="isAuthenticated"
+                            to="/newpost"
+                            v-bind:active="$route.path == '/newpost'"
+                        >New Post</b-nav-item>
                         <b-nav-item v-if="isAuthenticated" @click="logout">Logout</b-nav-item>
                         <b-nav-item v-else to="/login" v-bind:active="$route.path == '/login'">Login</b-nav-item>
                     </b-nav>
                 </div>
-                <br>
+                <br />
                 <keep-alive include="NewPost, Home">
-                <router-view />
+                    <router-view />
                 </keep-alive>
                 <transition name="fade">
                     <font-awesome-icon class="themebtn" @click="changeTheme" :icon="icon"></font-awesome-icon>
@@ -55,7 +59,7 @@ export default class App extends Vue {
 
     protected logout() {
         this.logoutAction();
-        Cookies.remove("auth", {domain: "localhost"});
+        Cookies.remove("auth", { domain: "localhost" });
         this.$router.push("/");
     }
 }
@@ -71,6 +75,49 @@ export default class App extends Vue {
     src: url("https://cdn.jsdelivr.net/gh/tonsky/FiraCode@0.2.1/FiraCode-Regular.otf") format("opentype")
 code
     font-family: "Fira Code" !important
+blockquote 
+  margin: 0 auto
+  padding: 1em
+  border-left: 5px solid
+
+blockquote:before 
+  display: none
+
+blockquote:not(:first-of-type) 
+  margin-top: .5em
+
+blockquote p 
+  font-size: 12pt
+  line-height: 1.4
+
+blockquote footer:before 
+  content: '— '
+
+blockquote:nth-of-type(even) 
+  text-align: right
+  border-left: none
+  border-right: 5px solid
+
+blockquote:nth-of-type(even) footer 
+  text-align: right
+
+blockquote:nth-of-type(even) footer:before 
+  content: ''
+
+blockquote:nth-of-type(even) footer:after 
+  content: ' —'
+
+@element 'blockquote' and (min-width: 300px) 
+  blockquote 
+    padding: 1em 20% 1em 1em
+  
+  blockquote p 
+    font-size: 14pt
+  
+  blockquote:nth-of-type(even) 
+    padding: 1em 1em 1em 20%
+  
+
 .emoji
     height: 1.2em !important
     width: 1.2em !important
@@ -83,6 +130,7 @@ code
 html, body
     overflow: hidden
     height: 100vh
+    font-family: Open Sans !important
 .jumbotron
     height: 100vh
     position: relative

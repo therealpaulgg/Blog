@@ -8,7 +8,7 @@
         <div class="container">
             <div class="row">
                 <div class="col">
-                    <PostToolbar :editor="this.editor"/>
+                    <PostToolbar :editor="this.editor" />
                     <div id="monacoeditor"></div>
                     <MonacoEditor
                         ref="editor"
@@ -50,8 +50,8 @@ import PostToolbar from "../components/PostToolbar.vue";
 })
 export default class NewPost extends Vue {
     public $refs: {
-        editcol: HTMLDivElement
-        editor: any
+        editcol: HTMLDivElement;
+        editor: any;
     };
     protected title: string;
     protected renderedContent: string;
@@ -75,7 +75,7 @@ export default class NewPost extends Vue {
         const height = this.$refs.editcol.clientHeight - 46;
         const width = this.$refs.editcol.clientWidth;
         const editor = this.$refs.editor.getEditor();
-        editor.layout({height, width});
+        editor.layout({ height, width });
     }
 
     @Watch("content")
@@ -93,8 +93,8 @@ export default class NewPost extends Vue {
         const extWindow: MonacoWindow = window;
         extWindow.monaco.editor.defineTheme("dracula", dracula);
         extWindow.monaco.editor.setTheme(this.vsTheme);
-        this.editor = this.$refs.editor
-        console.log(this.$refs.editor.getEditor())
+        this.editor = this.$refs.editor;
+        console.log(this.$refs.editor.getEditor());
     }
 
     get theme() {
@@ -103,7 +103,8 @@ export default class NewPost extends Vue {
 
     get content() {
         return this.$store.getters.getContent;
-    } set content(val) {
+    }
+    set content(val) {
         this.$store.dispatch("editContent", val);
     }
 
@@ -113,14 +114,17 @@ export default class NewPost extends Vue {
     }
 
     protected post() {
-        axios.post(
-            "http://localhost:3000/newpost",
-            { title: this.title, content: this.content },
-            { withCredentials: true }
-        ).then(() => {
-            this.$store.dispatch("fetchPosts");
-            this.$router.push("/");
-        }).catch((err) => err);
+        axios
+            .post(
+                "http://localhost:3000/newpost",
+                { title: this.title, content: this.content },
+                { withCredentials: true }
+            )
+            .then(() => {
+                this.$store.dispatch("fetchPosts");
+                this.$router.push("/");
+            })
+            .catch(err => err);
     }
 }
 </script>
