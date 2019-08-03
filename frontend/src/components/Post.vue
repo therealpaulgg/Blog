@@ -25,7 +25,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import axios from "axios";
 import { Getter } from "vuex-class";
 import moment from "moment";
-import { PostModel } from '../models/post';
+import { PostModel } from "../models/post";
 
 @Component
 export default class Post extends Vue {
@@ -74,8 +74,8 @@ export default class Post extends Vue {
         this.header = data.title;
         this.content = data.content;
         this.user = data.username;
-        this.createdAt = moment.utc(data.createdAt).local().format("MM/DD/YYYY, HH:MM")
-        this.updatedAt = moment.utc(data.updatedAt).local().format("MM/DD/YYYY, HH:MM")
+        this.createdAt = moment.utc(data.createdAt).local().format("MM/DD/YYYY, HH:MM");
+        this.updatedAt = moment.utc(data.updatedAt).local().format("MM/DD/YYYY, HH:MM");
     }
 }
 </script>

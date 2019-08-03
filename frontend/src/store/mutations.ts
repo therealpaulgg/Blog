@@ -17,6 +17,6 @@ export default {
         state.posts = data as PostModel[];
     },
     EDIT_CONTENT(state: State, text: string) {
-        state.content = text
+        state.content = text;
     }
 };

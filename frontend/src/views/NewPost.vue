@@ -48,6 +48,9 @@ import PostToolbar from "../components/PostToolbar.vue";
     }
 })
 export default class NewPost extends Vue {
+    public $refs: {
+        editcol: HTMLDivElement
+    };
     protected title: string;
     protected renderedContent: string;
     protected ready = false;
@@ -59,14 +62,17 @@ export default class NewPost extends Vue {
         minimap: { enabled: false }
     };
 
-    $refs: {
-        editcol: HTMLDivElement
-    }
-
     constructor() {
         super();
         this.title = "";
         this.renderedContent = "";
+    }
+    // its jank but its the only way.
+    public updateDimensions() {
+        const height = this.$refs.editcol.clientHeight - 46;
+        const width = this.$refs.editcol.clientWidth;
+        const editor = (this.$children[1] as any).getEditor();
+        editor.layout({height, width});
     }
 
     @Watch("content")
@@ -77,13 +83,6 @@ export default class NewPost extends Vue {
             // TODO: error handling
             // console.error(err);
         }
-    }
-
-    updateDimensions() {
-        let height = this.$refs.editcol.clientHeight - 46;
-        let width = this.$refs.editcol.clientWidth;
-        const editor = (this.$children[1] as any).getEditor();
-        editor.layout({height, width});
     }
 
     protected mounted() {
@@ -99,10 +98,8 @@ export default class NewPost extends Vue {
 
     get content() {
         return this.$store.getters.getContent;
-    }
-    
-    set content(val) {
-        this.$store.dispatch("editContent", val)
+    } set content(val) {
+        this.$store.dispatch("editContent", val);
     }
 
     get vsTheme() {
@@ -116,7 +113,7 @@ export default class NewPost extends Vue {
             { title: this.title, content: this.content },
             { withCredentials: true }
         ).then(() => {
-            this.$store.dispatch("fetchPosts")
+            this.$store.dispatch("fetchPosts");
             this.$router.push("/");
         }).catch((err) => err);
     }

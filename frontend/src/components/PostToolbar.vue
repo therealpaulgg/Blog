@@ -38,54 +38,78 @@
             />
         </div>
         <font-awesome-icon class="icon" icon="code" ref="codebtn" @click="toggle(2)"></font-awesome-icon>
-        <div class="popup" v-if="popups[2]"
+        <div
+            class="popup"
+            v-if="popups[2]"
             v-closable="{
                         exclude: refs,
                         handler: 'closeAll'
-                    }">
+                    }"
+        >
             <p>Language</p>
             <input type="text" class="infield" v-model="language" />
-            <br>
+            <br />
             <button style="margin-top: 10px" @click="addCode">Add</button>
         </div>
         <font-awesome-icon class="icon" icon="file-code" ref="htmlbtn" @click="toggle(3)"></font-awesome-icon>
-        <div class="popup" v-if="popups[3]"
+        <div
+            class="popup"
+            v-if="popups[3]"
             v-closable="{
                         exclude: refs,
                         handler: 'closeAll'
-                    }">
+                    }"
+        >
             <p>Hey! Markdown is a superset of HTML! Just paste your HTML (and even inline CSS styles) into the editor!</p>
         </div>
         <font-awesome-icon class="icon" icon="heading" ref="headerbtn" @click="toggle(4)"></font-awesome-icon>
-        <div class="popup" v-if="popups[4]"
+        <div
+            class="popup"
+            v-if="popups[4]"
             v-closable="{
                         exclude: refs,
                         handler: 'closeAll'
-                    }">
+                    }"
+        >
             <p>Type '# My Header' for h1, '## My Header' for h2, up to h6.</p>
         </div>
         <font-awesome-icon class="icon" icon="bold" ref="boldbtn" @click="toggle(5)"></font-awesome-icon>
-        <div class="popup" v-if="popups[5]"
+        <div
+            class="popup"
+            v-if="popups[5]"
             v-closable="{
                         exclude: refs,
                         handler: 'closeAll'
-                    }">
-            <p>Use one of the following to become <b>bold</b>: **mytext**, __mytext__</p>
+                    }"
+        >
+            <p>
+                Use one of the following to become
+                <b>bold</b>: **mytext**, __mytext__
+            </p>
         </div>
         <font-awesome-icon class="icon" icon="italic" ref="italicbtn" @click="toggle(6)"></font-awesome-icon>
-        <div class="popup" v-if="popups[6]"
+        <div
+            class="popup"
+            v-if="popups[6]"
             v-closable="{
                         exclude: refs,
                         handler: 'closeAll'
-                    }">
-            <p>Use *mytext* to become <i>italic</i></p>
+                    }"
+        >
+            <p>
+                Use *mytext* to become
+                <i>italic</i>
+            </p>
         </div>
         <font-awesome-icon class="icon" icon="quote-left" ref="quotebtn" @click="toggle(7)"></font-awesome-icon>
-        <div class="popup" v-if="popups[7]"
+        <div
+            class="popup"
+            v-if="popups[7]"
             v-closable="{
                         exclude: refs,
                         handler: 'closeAll'
-                    }">
+                    }"
+        >
             <p>Use '> my quote here' to create quoted text.</p>
         </div>
     </div>
@@ -103,7 +127,7 @@ import "../assets/css/emoji-mart.css";
 })
 export default class PostToolbar extends Vue {
     protected popups: boolean[];
-    protected POPUP_NUM = 8
+    protected POPUP_NUM = 8;
     protected linkPopup = false;
     protected emojiPopup = false;
     protected boldPopup = false;
@@ -115,22 +139,36 @@ export default class PostToolbar extends Vue {
     protected quotePopup = false;
     protected url: string;
     protected name: string;
-    protected language: string
-    protected refs = ['linkbtn', 'emojibtn', 'codebtn', 'htmlbtn', 'headerbtn', 'boldbtn', 'italicbtn', 'quotebtn']
+    protected language: string;
+    protected refs = [
+        "linkbtn",
+        "emojibtn",
+        "codebtn",
+        "htmlbtn",
+        "headerbtn",
+        "boldbtn",
+        "italicbtn",
+        "quotebtn"
+    ];
 
     constructor() {
         super();
         this.url = "";
         this.name = "";
         this.language = "";
-        this.popups = []
+        this.popups = [];
+        for (let i = 0; i < this.POPUP_NUM; i++) {
+            Vue.set(this.popups, i, false);
+        }
+    }
+
+    public closeAll() {
         for (let i = 0; i < this.POPUP_NUM; i++) {
             Vue.set(this.popups, i, false);
         }
     }
 
     protected toggle(index) {
-        console.log("me here")
         for (let i = 0; i < this.POPUP_NUM; i++) {
             if (i === index) {
                 Vue.set(this.popups, i, !this.popups[i]);
@@ -138,18 +176,11 @@ export default class PostToolbar extends Vue {
                 Vue.set(this.popups, i, false);
             }
         }
-        console.log(this.popups)
-    }
-
-    closeAll() {
-        for (let i = 0; i < this.POPUP_NUM; i++) {
-            Vue.set(this.popups, i, false);            
-        }
     }
 
     protected get getStyle() {
         return this.$store.getters.getTheme === "dark"
-            ? { "background-color": "#20212B", color: "white" }
+            ? { "background-color": "#20212B", "color": "white" }
             : {};
     }
 
@@ -158,7 +189,7 @@ export default class PostToolbar extends Vue {
             "editContent",
             this.$store.getters.getContent + emoji.colons
         );
-        this.closeAll()
+        this.closeAll();
     }
 
     protected addLink() {
@@ -166,19 +197,21 @@ export default class PostToolbar extends Vue {
             "editContent",
             this.$store.getters.getContent + `[${this.name}](${this.url})`
         );
-        this.closeAll()
+        this.closeAll();
     }
 
     protected addCode(code) {
-        let str = ""
-        if (this.$store.getters.getContent != "") {
-            str = "\n"
+        let str = "";
+        if (this.$store.getters.getContent !== "") {
+            str = "\n";
         }
         this.$store.dispatch(
             "editContent",
-            `${this.$store.getters.getContent}${str}\`\`\`${this.language.toLowerCase()}\nCODE HERE\n\`\`\``
+            `${
+                this.$store.getters.getContent
+            }${str}\`\`\`${this.language.toLowerCase()}\nCODE HERE\n\`\`\``
         );
-        this.closeAll()
+        this.closeAll();
     }
 }
 </script>
