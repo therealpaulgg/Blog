@@ -158,7 +158,7 @@ export default class PostToolbar extends Vue {
             "editContent",
             this.$store.getters.getContent + emoji.colons
         );
-        this.emojiPopup = false;
+        this.closeAll()
     }
 
     protected addLink() {
@@ -166,7 +166,7 @@ export default class PostToolbar extends Vue {
             "editContent",
             this.$store.getters.getContent + `[${this.name}](${this.url})`
         );
-        this.linkPopup = false;
+        this.closeAll()
     }
 
     protected addCode(code) {
@@ -178,7 +178,7 @@ export default class PostToolbar extends Vue {
             "editContent",
             `${this.$store.getters.getContent}${str}\`\`\`${this.language.toLowerCase()}\nCODE HERE\n\`\`\``
         );
-        this.emojiPopup = false;
+        this.closeAll()
     }
 }
 </script>
