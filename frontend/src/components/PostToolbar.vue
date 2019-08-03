@@ -1,21 +1,6 @@
 <template>
     <div class="toolbar">
         <font-awesome-icon class="icon" icon="link" @click="toggle(0)" ref="linkbtn"></font-awesome-icon>
-        <div
-            v-if="popups[0]"
-            v-closable="{
-                        exclude: refs,
-                        handler: 'closeAll'
-                    }"
-            class="popup"
-        >
-            <p>Name</p>
-            <input type="text" class="infield" v-model="name" />
-            <p>Link</p>
-            <input type="url" class="infield" v-model="url" />
-            <br />
-            <button style="margin-top: 10px" @click="addLink">Add</button>
-        </div>
         <img
             class="icon emoji"
             draggable="false"
@@ -63,55 +48,32 @@
             <p>Hey! Markdown is a superset of HTML! Just paste your HTML (and even inline CSS styles) into the editor!</p>
         </div>
         <font-awesome-icon class="icon" icon="heading" ref="headerbtn" @click="toggle(4)"></font-awesome-icon>
-        <div
-            class="popup"
-            v-if="popups[4]"
-            v-closable="{
-                        exclude: refs,
-                        handler: 'closeAll'
-                    }"
-        >
-            <p>Type '# My Header' for h1, '## My Header' for h2, up to h6.</p>
-        </div>
-        <font-awesome-icon class="icon" icon="bold" ref="boldbtn" @click="toggle(5)"></font-awesome-icon>
-        <div
-            class="popup"
-            v-if="popups[5]"
-            v-closable="{
-                        exclude: refs,
-                        handler: 'closeAll'
-                    }"
-        >
-            <p>
-                Use one of the following to become
-                <b>bold</b>: **mytext**, __mytext__
-            </p>
-        </div>
-        <font-awesome-icon class="icon" icon="italic" ref="italicbtn" @click="toggle(6)"></font-awesome-icon>
-        <div
-            class="popup"
-            v-if="popups[6]"
-            v-closable="{
-                        exclude: refs,
-                        handler: 'closeAll'
-                    }"
-        >
-            <p>
-                Use *mytext* to become
-                <i>italic</i>
-            </p>
-        </div>
-        <font-awesome-icon class="icon" icon="quote-left" ref="quotebtn" @click="toggle(7)"></font-awesome-icon>
-        <div
-            class="popup"
-            v-if="popups[7]"
-            v-closable="{
-                        exclude: refs,
-                        handler: 'closeAll'
-                    }"
-        >
-            <p>Use '> my quote here' to create quoted text.</p>
-        </div>
+        <font-awesome-icon
+            class="icon"
+            icon="bold"
+            ref="boldbtn"
+            @click="toggle(5)"
+            v-shortkey="['ctrl', 'b']"
+            @shortkey="toggle(5)"
+        ></font-awesome-icon>
+        <font-awesome-icon
+            class="icon"
+            icon="italic"
+            ref="italicbtn"
+            @click="toggle(6)"
+            v-shortkey="['ctrl', 'i']"
+            @shortkey="toggle(6)"
+        ></font-awesome-icon>
+        <font-awesome-icon
+            class="icon"
+            icon="underline"
+            ref="underlinebtn"
+            @click="toggle(7)"
+            v-shortkey="['ctrl', 'u']"
+            @shortkey="toggle(7)"
+        ></font-awesome-icon>
+        <font-awesome-icon class="icon" icon="quote-left" ref="quotebtn" @click="toggle(8)"></font-awesome-icon>
+        <font-awesome-icon class="icon" icon="calculator" ref="mathbtn" @click="toggle(9)"></font-awesome-icon>
     </div>
 </template>
 
@@ -119,6 +81,8 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { Picker } from "emoji-mart-vue-fast";
 import "../assets/css/emoji-mart.css";
+import monaco from "monaco-editor";
+import { MonacoWindow } from "../interfaces/window";
 
 @Component({
     components: {
@@ -126,17 +90,10 @@ import "../assets/css/emoji-mart.css";
     }
 })
 export default class PostToolbar extends Vue {
+    @Prop() editor: any;
     protected popups: boolean[];
-    protected POPUP_NUM = 8;
-    protected linkPopup = false;
-    protected emojiPopup = false;
-    protected boldPopup = false;
-    protected attachmentPopup = false;
-    protected codePopup = false;
-    protected htmlPopup = false;
-    protected headingPopup = false;
-    protected italicPopup = false;
-    protected quotePopup = false;
+    protected functions: { function: Function; args: any[] }[];
+    protected POPUP_NUM = 10;
     protected url: string;
     protected name: string;
     protected language: string;
@@ -148,6 +105,7 @@ export default class PostToolbar extends Vue {
         "headerbtn",
         "boldbtn",
         "italicbtn",
+        "underlinebtn",
         "quotebtn"
     ];
 
@@ -157,6 +115,18 @@ export default class PostToolbar extends Vue {
         this.name = "";
         this.language = "";
         this.popups = [];
+        this.functions = [
+            { function: this.makeLink, args: [] },
+            { function: this.todo, args: [] },
+            { function: this.todo, args: [] },
+            { function: this.todo, args: [] },
+            { function: this.styleText, args: ["## ", ""] },
+            { function: this.styleText, args: ["**", "**"] },
+            { function: this.styleText, args: ["*", "*"] },
+            { function: this.styleText, args: ["<u>", "</u>"] },
+            { function: this.styleText, args: ["> ", ""] },
+            { function: this.styleText, args: ["$", "$"] }
+        ];
         for (let i = 0; i < this.POPUP_NUM; i++) {
             Vue.set(this.popups, i, false);
         }
@@ -168,19 +138,77 @@ export default class PostToolbar extends Vue {
         }
     }
 
+    protected todo() {
+        console.log("TODO");
+    }
+
     protected toggle(index) {
         for (let i = 0; i < this.POPUP_NUM; i++) {
             if (i === index) {
                 Vue.set(this.popups, i, !this.popups[i]);
+                let fn = this.functions[i].function;
+                let args = this.functions[i].args;
+                this.insertMonaco(fn, args);
             } else {
                 Vue.set(this.popups, i, false);
             }
         }
     }
 
+    protected insertMonaco(fn: Function, args: any[]) {
+        let line = this.editor.getEditor().getSelection();
+        let extWindow: MonacoWindow = window;
+        let range = new extWindow.monaco.Range(
+            line.startLineNumber,
+            line.startColumn,
+            line.endLineNumber,
+            line.endColumn
+        );
+        let id = { major: 1, minor: 1 };
+        let text = fn(...args, line);
+        if (text) {
+            let op = {
+                identifier: id,
+                range: range,
+                text: text,
+                forceMoveMarkers: true
+            };
+            this.editor.getEditor().executeEdits("lol", [op]);
+        }
+    }
+
+    protected makeLink(line) {
+        return `[${this.editor
+            .getEditor()
+            .getModel()
+            .getValueInRange(line)}](${this.editor
+            .getEditor()
+            .getModel()
+            .getValueInRange(line)})`;
+    }
+
+    protected styleText(prefix: string, suffix: string, line) {
+        let prefixLen = prefix.length;
+        let suffixLen = suffix.length;
+        let val: string = this.editor
+            .getEditor()
+            .getModel()
+            .getValueInRange(line);
+        // Cool code that makes it so that if the selected text has identical prefixes/suffixes (i.e bolded already), it removes
+        // the selected styling.
+        let preSubstr = val.substring(0, prefixLen)
+        let sufSubstr = val.substring(val.length - suffixLen, val.length)
+        if (preSubstr === prefix && sufSubstr === suffix) {
+            return val.substring(prefixLen, val.length - suffixLen);
+        } else {
+            return `${prefix}${val}${suffix}`;
+        }
+        
+    }
+
     protected get getStyle() {
         return this.$store.getters.getTheme === "dark"
-            ? { "background-color": "#20212B", "color": "white" }
+            ? { "background-color": "#20212B", color: "white" }
             : {};
     }
 
@@ -219,7 +247,7 @@ export default class PostToolbar extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
 .picker
-    z-index: 
+    z-index: 1
     position: absolute
 .infield
     border-radius: 5px

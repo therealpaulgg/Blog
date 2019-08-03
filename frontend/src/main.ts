@@ -3,6 +3,7 @@ import App from "./App.vue";
 import router from "./router";
 import store from "./store/store";
 import BootstrapVue from "bootstrap-vue";
+import VueShortkey from "vue-shortkey";
 
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -16,7 +17,9 @@ import {
     faHeading,
     faBold,
     faItalic,
-    faQuoteLeft
+    faQuoteLeft,
+    faUnderline,
+    faCalculator
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -31,13 +34,17 @@ library.add(
     faHeading,
     faBold,
     faItalic,
-    faQuoteLeft);
+    faQuoteLeft,
+    faUnderline,
+    faCalculator
+);
 
 Vue.component("font-awesome-icon", FontAwesomeIcon);
 
 Vue.config.productionTip = false;
 
 Vue.use(BootstrapVue);
+Vue.use(VueShortkey);
 
 // Thank you very much for this
 // https://medium.com/@Taha_Shashtari/an-easy-way-to-detect-clicks-outside-an-element-in-vue-1b51d43ff634
