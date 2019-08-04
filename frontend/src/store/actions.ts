@@ -4,30 +4,44 @@ export default {
     setTheme({ commit }: { commit: any }, theme: string) {
         commit("SET_THEME", theme);
     },
-    login({ commit, dispatch }: { commit: any, dispatch: any }) {
+    login({ commit, dispatch }: { commit: any, dispatch: any }, registered: boolean) {
         commit("LOGIN");
-        dispatch("addAlert", {alertType: "success", alertText: "You have successfully logged in."});
+        if (registered) {
+            // tslint:disable-next-line: max-line-length
+            dispatch("addAlert", { alertType: "success", alertText: "You have successfully registered and have been logged in." });
+        } else {
+            dispatch("addAlert", { alertType: "success", alertText: "You have successfully logged in." });
+        }
     },
     logout({ commit, dispatch }: { commit: any, dispatch: any }) {
         commit("LOGOUT");
-        dispatch("addAlert", {alertType: "success", alertText: "You have successfully logged out."});
+        dispatch("addAlert", { alertType: "success", alertText: "You have successfully logged out." });
     },
-    fetchPosts({ commit }: { commit: any}) {
+    fetchPosts({ commit }: { commit: any }) {
         commit("FETCH_POSTS");
     },
-    editContent({ commit }: { commit: any}, text: string) {
+    editContent({ commit }: { commit: any }, text: string) {
         commit("EDIT_CONTENT", text);
     },
-    editCommentContent({ commit }: { commit: any}, text: string) {
+    editCommentContent({ commit }: { commit: any }, text: string) {
         commit("EDIT_COMMENT_CONTENT", text);
     },
-    editPostTitle({ commit }: { commit: any}, text: string) {
+    editPostTitle({ commit }: { commit: any }, text: string) {
         commit("EDIT_POST_TITLE", text);
     },
-    addAlert({ commit }: { commit: any}, alert: Alert) {
+    addAlert({ commit }: { commit: any }, alert: Alert) {
         commit("ADD_ALERT", alert);
     },
-    dismissAlert({ commit }: { commit: any}) {
+    dismissAlert({ commit }: { commit: any }) {
         commit("DISMISS_ALERT");
+    },
+    editEditContent({ commit }: { commit: any }, text: string) {
+        commit("EDIT_EDIT_CONTENT", text);
+    },
+    editEditTitle({ commit }: { commit: any }, text: string) {
+        commit("EDIT_EDIT_TITLE", text);
+    },
+    setUsername({ commit }: { commit: any }, username: string) {
+        commit("SET_USERNAME", username);
     }
 };

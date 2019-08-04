@@ -9,46 +9,78 @@
             <p>by {{user}}</p>
             <p>Created {{createdAt}}</p>
             <p v-if="createdAt !== updatedAt">Updated {{updatedAt}}</p>
-            <div v-if="isAuthenticated">
+            <div v-if="isAuthenticated && user === username">
                 <a @click="del" class="delete" :class="getTheme">Delete</a>
                 <a @click="edit" class="edit" :class="getTheme">Edit</a>
             </div>
             <hr />
-            <!-- <p v-if="title == 'foo'">CYKA BLYAD</p> -->
-            <div v-html="content"></div>
-            <hr />
-            <h1>Comments</h1>
-            <a class="button" :class="theme" @click="showCommentPost">Comment</a>
-            <br>
-            <br>
-            <div class="row" style="padding-bottom: 15px;">
-                <div class="col" ref="container">
-                    <Editor
-                        v-if="postingComment"
-                        :height="height"
-                        :width="width"
-                        v-model="commentContent"
-                        :initialContent="commentContent"
-                    />
+            <div v-if="editing">
+                <label>Post Title</label>
+                <br />
+                <input type="text" :class="theme" style="width: 100%" class="title" v-model="editTitle" />
+                <br />
+                <br>
+                <div class="row">
+                    <div class="col" ref="eContainer">
+                        <Editor
+                            :height="height"
+                            :width="width"
+                            v-model="editContent"
+                            :initialContent="editContent"
+                        />
+                    </div>
+                    <div class="col preview" :class="theme">
+                        <Preview :content="editContent" />
+                    </div>
                 </div>
-                <div class="col preview" :class="theme">
-                    <Preview v-if="postingComment" :content="commentContent" />
-                </div>
+                <a 
+                    class="button"
+                    @click="editing = false"
+                >
+                Cancel
+                </a>
+                <a
+                    class="button"
+                    :class="theme"
+                    @click="makeEdits"
+                >Submit Edit</a>
             </div>
-            <a
-                class="button"
-                v-if="postingComment"
-                :class="theme"
-                @click="postComment"
-            >Submit Comment</a>
-            <hr />
-            <Comment v-for="(comment, index) in comments" :key="index" :comment="comment" />
+            <div v-else>
+                <div v-html="renderedContent"></div>
+                <hr />
+                <h1>Comments</h1>
+                <a class="button" :class="theme" @click="showCommentPost">Comment</a>
+                <br />
+                <br />
+                <div class="row" style="padding-bottom: 15px;">
+                    <div class="col" ref="container">
+                        <Editor
+                            v-if="postingComment"
+                            :height="height"
+                            :width="width"
+                            v-model="commentContent"
+                            :initialContent="commentContent"
+                        />
+                    </div>
+                    <div class="col preview" :class="theme">
+                        <Preview v-if="postingComment" :content="commentContent" />
+                    </div>
+                </div>
+                <a
+                    class="button"
+                    v-if="postingComment"
+                    :class="theme"
+                    @click="postComment"
+                >Submit Comment</a>
+                <hr />
+                <Comment v-for="(comment, index) in comments" :key="index" :comment="comment" />
+            </div>
         </div>
     </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import axios from "axios";
 import { Getter } from "vuex-class";
 import moment from "moment";
@@ -57,6 +89,7 @@ import { CommentModel } from "../models/comment";
 import Comment from "./Comment.vue";
 import Editor from "./Editor.vue";
 import Preview from "./Preview.vue";
+import { md } from "../mdparser";
 
 @Component({
     components: {
@@ -68,9 +101,11 @@ import Preview from "./Preview.vue";
 export default class Post extends Vue {
     public $refs: {
         container: HTMLDivElement;
+        eContainer: HTMLDivElement;
     };
     protected header: string | null;
     protected content: string | null;
+    protected renderedContent: string | null;
     protected user: string | null;
     protected createdAt: any;
     protected updatedAt: any;
@@ -78,6 +113,7 @@ export default class Post extends Vue {
     protected width: number | null;
     protected height: number | null;
     protected postingComment: boolean;
+    protected editing = false;
     @Prop(String) protected readonly title!: string;
     @Getter("getTheme") private getTheme: string;
     @Getter("isAuthenticated") private isAuthenticated: boolean;
@@ -86,6 +122,7 @@ export default class Post extends Vue {
         super();
         this.header = null;
         this.content = null;
+        this.renderedContent = null;
         this.user = null;
         this.createdAt = null;
         this.updatedAt = null;
@@ -93,6 +130,11 @@ export default class Post extends Vue {
         this.width = null;
         this.height = null;
         this.postingComment = false;
+    }
+
+    @Watch("content")
+    protected renderContent() {
+        this.renderedContent = md.render(this.content);
     }
 
     protected showCommentPost() {
@@ -119,6 +161,10 @@ export default class Post extends Vue {
         return this.$store.getters.getTheme;
     }
 
+    get username() {
+        return this.$store.state.username;
+    }
+
     get commentContent() {
         return this.$store.getters.getCommentContent;
     }
@@ -126,17 +172,62 @@ export default class Post extends Vue {
         this.$store.dispatch("editCommentContent", val);
     }
 
+    get editContent() {
+        return this.$store.getters.getEditContent;
+    }
+    set editContent(val) {
+        this.$store.dispatch("editEditContent", val);
+    }
+
+    get editTitle() {
+        return this.$store.getters.getEditTitle;
+    }
+    set editTitle(val) {
+        this.$store.dispatch("editEditTitle", val);
+    }
+
     protected edit() {
-        // TODO
+        if (!this.editing) {
+            this.editContent = this.content;
+            this.editTitle = this.header;
+            this.editing = true;
+        } else {
+            this.editing = false;
+        }
     }
 
     protected updateDimensions() {
         if (this.$refs.container) {
             this.width = this.$refs.container.clientWidth;
+        } else if (this.$refs.eContainer) {
+            this.width = this.$refs.eContainer.clientWidth;
         } else {
             this.width = null;
         }
         this.height = 300;
+    }
+
+    protected async makeEdits() {
+        try {
+            await axios.post(
+                "http://localhost:3000/editpost",
+                { urlTitle: this.title, newTitle: this.editTitle, newContent: this.editContent },
+                { withCredentials: true }
+            );
+            this.editContent = "";
+            this.$store.dispatch("addAlert", {
+                alertType: "success",
+                alertText: "Post edited."
+            });
+            this.$router.push("/")
+        } catch (err) {
+            // TODO: Don't do it like this.
+            this.$store.dispatch("addAlert", {
+                alertType: "danger",
+                alertText:
+                    "You are not authenticated. Please log out and log back in."
+            });
+        }
     }
 
     protected async postComment() {
@@ -147,12 +238,18 @@ export default class Post extends Vue {
                 { withCredentials: true }
             );
             this.commentContent = "";
-            this.$store.dispatch("addAlert", {alertType: "success", alertText: "Comment successfully created."});
+            this.$store.dispatch("addAlert", {
+                alertType: "success",
+                alertText: "Comment successfully created."
+            });
             await this.fetchData();
-            
         } catch (err) {
             // TODO: Don't do it like this.
-            this.$store.dispatch("addAlert", {alertType: "danger", alertText: "You are not authenticated. Please log out and log back in."});
+            this.$store.dispatch("addAlert", {
+                alertType: "danger",
+                alertText:
+                    "You are not authenticated. Please log out and log back in."
+            });
         }
     }
 
@@ -195,6 +292,8 @@ export default class Post extends Vue {
     word-wrap: break-word
     white-space: normal
     width: 100%
+.title
+    border-radius: 5px   
 .delete
     color: #ff7474 !important
     cursor: pointer
@@ -228,9 +327,15 @@ export default class Post extends Vue {
         background-color: #2a2c39 !important
     .button
         background-color: #2a2c39 !important
+    .title
+        border-color: #2a2c39 !important
+        background-color: #20212B !important
 .light
     .preview
         background-color: #FFFFFE !important
     .button
+        background-color: white !important
+    .title
+        border-color: white !important
         background-color: white !important
 </style>

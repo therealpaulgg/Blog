@@ -18,6 +18,7 @@
                         >New Post</b-nav-item>
                         <b-nav-item v-if="isAuthenticated" @click="logout">Logout</b-nav-item>
                         <b-nav-item v-else to="/login" v-bind:active="$route.path == '/login'">Login</b-nav-item>
+                        <b-nav-item v-if="!isAuthenticated" to="/register" v-bind:active="$route.path == '/register'">Register</b-nav-item>
                     </b-nav>
                 </div>
                 <br />

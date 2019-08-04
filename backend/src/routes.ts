@@ -42,7 +42,7 @@ router.get("/post/:urlTitle", async (req, res) => {
         let comments = []
         result.comments.forEach(comment => {
             comments.push({
-                content: md.render(comment.content),
+                content: comment.content,
                 user: comment.user.username,
                 createdAt: comment.createdAt,
                 updatedAt: comment.updatedAt
@@ -51,7 +51,7 @@ router.get("/post/:urlTitle", async (req, res) => {
         let formattedData = {
             urlTitle: result.urlTitle,
             title: result.title,
-            content: md.render(result.content),
+            content: result.content,
             username: result.user.username,
             createdAt: result.createdAt,
             updatedAt: result.updatedAt,
@@ -111,25 +111,29 @@ router.post("/newpost", checkAuth, async (req, res) => {
 
 router.post("/editpost", checkAuth, async (req, res) => {
     let connection = getConnection()
-    let post = await connection.manager.findOne(Post, { urlTitle: req.body.urlTitle })
-    if (post.user.username === res.locals.user) {
-        let title = req.body.new_title
-        post.title = title
-        post.content = md.render(req.body.new_content)
-        post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
-        await connection.manager.save(post)
-        res.send("Done")
-    } else {
-        res.status(401).send("You are not the owner of this post.")
+    try {
+        let post = await connection.manager.findOne(Post, { urlTitle: req.body.urlTitle }, { relations: ["user"]})
+        if (post.user.username === res.locals.user) {
+            let title = req.body.newTitle
+            post.title = title
+            post.content = req.body.newContent
+            post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
+            await connection.manager.save(post)
+            res.send("Done")
+        } else {
+            res.status(401).send("You are not the owner of this post.")
+        }
+    } catch (err) {
+        res.status(400).send("Bad request.")
     }
 })
 
 // TODO: password requirements
 router.post("/register", async (req, res) => {
-    if (req.body.username.length > 30) {
+    if (req.body.username.length < 30) {
         let connection = await getConnection()
         let user = await connection.manager.findOne(User, { username: req.body.username })
-        if (user) {
+        if (!user) {
             connection.manager.save(User, {
                 username: req.body.username as string,
                 email: req.body.email as string,
@@ -139,7 +143,7 @@ router.post("/register", async (req, res) => {
             res.status(400).send("User with this username already exists.")
         }
     } else {
-        res.status(400).send("User with this username already exists.")
+        res.status(400).send("Username too long (must be < 30 characters).")
     }
 })
 

@@ -9,4 +9,7 @@ export interface State {
     commentContent: string;
     postTitle: string;
     alerts: Alert[];
+    editContent: string;
+    editPostTitle: string;
+    username: string;
 }

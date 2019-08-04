@@ -7,12 +7,20 @@
                         <b-form-input class="ifield" v-model="username" />
                     </b-input-group>
                     <br />
+                    <b-input-group size="sm" prepend="Email">
+                        <b-form-input class="ifield" v-model="email" type="email" />
+                    </b-input-group>
+                    <br />
                     <b-input-group size="sm" prepend="Password">
                         <b-form-input class="ifield" v-model="password" type="password" />
                     </b-input-group>
                     <br />
+                    <b-input-group size="sm" prepend="Confirm Password">
+                        <b-form-input class="ifield" v-model="confirmPassword" type="password" />
+                    </b-input-group>
+                    <br />
                     <b-input-group size="sm">
-                    <b-button :variant="theme" @click="authenticate">Login</b-button>
+                        <b-button :variant="theme" @click="register">Register</b-button>
                     </b-input-group>
                 </b-col>
             </b-row>
@@ -27,40 +35,45 @@ import axios from "axios";
 import { Action } from "vuex-class";
 
 @Component
-export default class Home extends Vue {
+export default class Register extends Vue {
     @Action("login") protected login: any;
     @Action("logout") protected logout: any;
     protected username: string;
+    protected email: string;
     protected password: string;
+    protected confirmPassword: string;
     constructor() {
         super();
         this.username = "";
+        this.email = "";
         this.password = "";
+        this.confirmPassword = "";
     }
 
     protected get theme() {
         return this.$store.getters.getTheme;
     }
 
-    protected authenticate() {
-        axios
-            .post(
+    protected async register() {
+        try {
+            await axios.post(
+                "http://localhost:3000/register",
+                { username: this.username, email: this.email, password: this.password },
+                { withCredentials: true }
+            );
+            await axios.post(
                 "http://localhost:3000/login",
                 { username: this.username, password: this.password },
                 { withCredentials: true }
             )
-            .then(res => {
-                this.$store.dispatch("setUsername", this.username);
-                this.login();
-                this.$router.push("/");
-            })
-            .catch((err: Error) => {
-                console.log(err.message);
-                this.$store.dispatch("addAlert", {
-                    alertType: "danger",
-                    alertText: "Incorrect username or password."
-                });
+            this.login(true);
+            this.$router.push("/");
+        } catch (err) {
+            this.$store.dispatch("addAlert", {
+                alertType: "danger",
+                alertText: "Incorrect username or password."
             });
+        }
     }
 }
 </script>

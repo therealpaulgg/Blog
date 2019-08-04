@@ -15,5 +15,11 @@ export default {
     },
     getPostTitle(state: State) {
         return state.postTitle;
+    },
+    getEditContent(state: State) {
+        return state.editContent;
+    },
+    getEditTitle(state: State) {
+        return state.editPostTitle;
     }
 };

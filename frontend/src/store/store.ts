@@ -16,7 +16,10 @@ function defaultState(): State {
         postTitle: "",
         content: "",
         commentContent: "",
-        alerts: []
+        alerts: [],
+        editPostTitle: "",
+        editContent: "",
+        username: ""
     };
 }
 
@@ -28,7 +31,10 @@ export default new Vuex.Store({
             "theme",
             "content",
             "commentContent",
-            "postTitle"
+            "postTitle",
+            "editPostTitle",
+            "editContent",
+            "username"
         ]
     })],
     mutations,

@@ -31,5 +31,14 @@ export default {
     },
     DISMISS_ALERT(state: State) {
         state.alerts.shift()
+    },
+    EDIT_EDIT_CONTENT(state: State, text: string) {
+        state.editContent = text;
+    },
+    EDIT_EDIT_TITLE(state: State, text: string) {
+        state.editPostTitle = text;
+    },
+    SET_USERNAME(state: State, username: string) {
+        state.username = username
     }
 };
