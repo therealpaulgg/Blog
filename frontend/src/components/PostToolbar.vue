@@ -267,6 +267,7 @@ export default class PostToolbar extends Vue {
     border-radius: 10px
     margin-bottom: 10px
     padding: 5px
+    overflow-y: auto
 .dark
     .popup
         background-color: #20212B

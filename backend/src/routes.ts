@@ -36,7 +36,8 @@ router.get("/post/:urlTitle", async (req, res) => {
                 content: comment.content,
                 user: comment.user.username,
                 createdAt: comment.createdAt,
-                updatedAt: comment.updatedAt
+                updatedAt: comment.updatedAt,
+                id: comment.id
             })
         })
         let formattedData = {
@@ -59,7 +60,7 @@ router.post("/comment", checkAuth, async (req, res) => {
     let user = await connection.manager.findOne(User, { username: res.locals.user })
     if (post && user) {
         let content: string = req.body.content
-        if (content != null && content.length > 0) {
+        if (content != null && content.length > 0 && content.length <= 2000) {
             let comment = new Comment()
             comment.post = post
             comment.content = content
@@ -67,7 +68,7 @@ router.post("/comment", checkAuth, async (req, res) => {
             await connection.manager.save(comment)
             res.send("done")
         } else {
-            res.status(400).send("Must send comment content body")
+            res.status(400).send("Comment content body format invalid (nonexistent, empty, or longer than 2000 chars)")
         }
     } else {
         res.status(404).send("Post not found or user not found.")
@@ -138,7 +139,7 @@ router.post("/register", async (req, res) => {
     }
 })
 
-router.post("/delete", checkAuth, (req, res) => {
+router.post("/deletepost", checkAuth, (req, res) => {
     let connection = getConnection()
     connection.manager.findOne(Post, { urlTitle: req.body.urlTitle }, { relations: ["user", "comments"] }).then(async (post) => {
         if (post.user.username === res.locals.user) {
@@ -149,6 +150,28 @@ router.post("/delete", checkAuth, (req, res) => {
             res.send("You are not the owner of this post.")
         }
     }).catch(() => res.status(404).send("Post does not exist."))
+})
+
+router.post("/deletecomment", checkAuth, async (req, res) => {
+    let connection = getConnection();
+    let id = req.body.id
+    console.log(id);
+    try {
+        let comment = await connection.manager.findOne(Comment, {id: id}, {relations: ["post", "user", "post.user"]})
+        let user = comment.user;
+        if (res.locals.user === user.username || comment.post.user.username === res.locals.user) {
+            await connection.manager.remove(comment);
+            res.send("deleted")
+        } else {
+            res.status(401).send("Unauthorized")
+        }
+    } catch (err) {
+
+    }
+    
+    // get comment ID, get comment from id
+    // if (the user deleting the comment is the owner or the user deleting the comment owns the post)
+        // delete
 })
 
 router.post("/login", (req, res) => {

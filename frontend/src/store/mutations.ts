@@ -12,6 +12,7 @@ export default {
     },
     LOGOUT(state: State) {
         state.authenticated = false;
+        state.username = "";
     },
     async FETCH_POSTS(state: State) {
         const { data } = await axios.get("http://localhost:3000/posts");
@@ -29,9 +30,6 @@ export default {
     ADD_ALERT(state: State, alert: Alert) {
         state.alerts.push(alert);
     },
-    DISMISS_ALERT(state: State) {
-        state.alerts.shift()
-    },
     EDIT_EDIT_CONTENT(state: State, text: string) {
         state.editContent = text;
     },
@@ -39,6 +37,6 @@ export default {
         state.editPostTitle = text;
     },
     SET_USERNAME(state: State, username: string) {
-        state.username = username
+        state.username = username;
     }
 };

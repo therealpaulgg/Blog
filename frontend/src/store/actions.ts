@@ -38,9 +38,6 @@ export default {
     addAlert({ commit }: { commit: any }, alert: Alert) {
         commit("ADD_ALERT", alert);
     },
-    dismissAlert({ commit }: { commit: any }) {
-        commit("DISMISS_ALERT");
-    },
     editEditContent({ commit }: { commit: any }, text: string) {
         commit("EDIT_EDIT_CONTENT", text);
     },

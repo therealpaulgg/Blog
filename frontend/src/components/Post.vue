@@ -17,11 +17,17 @@
             <div v-if="editing">
                 <label>Post Title</label>
                 <br />
-                <input type="text" :class="theme" style="width: 100%" class="title" v-model="editTitle" />
+                <input
+                    type="text"
+                    :class="theme"
+                    style="width: 100%"
+                    class="title"
+                    v-model="editTitle"
+                />
                 <br />
-                <br>
+                <br />
                 <div class="row">
-                    <div class="col" ref="eContainer">
+                    <div class="col">
                         <Editor
                             :height="height"
                             :width="width"
@@ -29,31 +35,28 @@
                             :initialContent="editContent"
                         />
                     </div>
-                    <div class="col preview" :class="theme">
+                    <div class="col preview" ref="eContainer" :class="theme">
                         <Preview :content="editContent" />
                     </div>
                 </div>
-                <a 
-                    class="button"
-                    @click="editing = false"
-                >
-                Cancel
-                </a>
-                <a
-                    class="button"
-                    :class="theme"
-                    @click="makeEdits"
-                >Submit Edit</a>
+                <a class="button" @click="editing = false">Cancel</a>
+                <a class="button" :class="theme" @click="makeEdits">Submit Edit</a>
             </div>
             <div v-else>
                 <div v-html="renderedContent"></div>
                 <hr />
                 <h1>Comments</h1>
-                <a v-if="isAuthenticated" class="button" :class="theme" @click="showCommentPost">Comment</a>
+                <a
+                    v-if="isAuthenticated"
+                    class="button"
+                    :class="theme"
+                    @click="showCommentPost"
+                >Comment</a>
+                <p v-if="postingComment" style="display: inline-block;" v-bind:class="{danger: commentContent.length > 2000}">Characters used: {{commentContent.length}} / 2000</p>
                 <br />
                 <br />
                 <div class="row" style="padding-bottom: 15px;">
-                    <div class="col" ref="container">
+                    <div class="col">
                         <Editor
                             v-if="postingComment"
                             :height="height"
@@ -62,7 +65,7 @@
                             :initialContent="commentContent"
                         />
                     </div>
-                    <div class="col preview" :class="theme">
+                    <div class="col preview" ref="container" :class="theme">
                         <Preview v-if="postingComment" :content="commentContent" />
                     </div>
                 </div>
@@ -144,7 +147,7 @@ export default class Post extends Vue {
     protected del() {
         axios
             .post(
-                "http://localhost:3000/delete",
+                "http://localhost:3000/deletepost",
                 { urlTitle: this.title },
                 { withCredentials: true }
             )
@@ -211,7 +214,11 @@ export default class Post extends Vue {
         try {
             await axios.post(
                 "http://localhost:3000/editpost",
-                { urlTitle: this.title, newTitle: this.editTitle, newContent: this.editContent },
+                {
+                    urlTitle: this.title,
+                    newTitle: this.editTitle,
+                    newContent: this.editContent
+                },
                 { withCredentials: true }
             );
             this.editContent = "";
@@ -219,7 +226,7 @@ export default class Post extends Vue {
                 alertType: "success",
                 alertText: "Post edited."
             });
-            this.$router.push("/")
+            this.$router.push("/");
         } catch (err) {
             // The user should never actually get to this point in theory,
             // but it is here for safety. (Delete cookies)
@@ -233,26 +240,34 @@ export default class Post extends Vue {
     }
 
     protected async postComment() {
-        try {
-            await axios.post(
-                "http://localhost:3000/comment",
-                { urlTitle: this.title, content: this.commentContent },
-                { withCredentials: true }
-            );
-            this.commentContent = "";
+        if (this.commentContent.length <= 2000) {
+            try {
+                await axios.post(
+                    "http://localhost:3000/comment",
+                    { urlTitle: this.title, content: this.commentContent },
+                    { withCredentials: true }
+                );
+                this.commentContent = "";
+                this.$store.dispatch("addAlert", {
+                    alertType: "success",
+                    alertText: "Comment successfully created."
+                });
+                this.postingComment = false;
+                await this.fetchData();
+            } catch (err) {
+                // The user should never actually get to this point in theory,
+                // but it is here for safety. (Delete cookies)
+                this.$store.dispatch("forceLogout");
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText:
+                        "There was an authentication problem. Please log in again."
+                });
+            }
+        } else {
             this.$store.dispatch("addAlert", {
-                alertType: "success",
-                alertText: "Comment successfully created."
-            });
-            await this.fetchData();
-        } catch (err) {
-            // The user should never actually get to this point in theory,
-            // but it is here for safety. (Delete cookies)
-            this.$store.dispatch("forceLogout");
-            this.$store.dispatch("addAlert", {
-                alertType: "danger",
-                alertText:
-                    "There was an authentication problem. Please log in again."
+                alertType: "warning",
+                alertText: "Your comment cannot be longer than 2000 characters."
             });
         }
     }
@@ -285,6 +300,8 @@ export default class Post extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
+.danger
+    color: #ff7474
 .button
     border-radius: 5px
     padding: 10px

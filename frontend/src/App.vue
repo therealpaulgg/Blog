@@ -12,7 +12,6 @@
                     dismissible
                     fade
                     :variant="alert.alertType"
-                    @dismissed="$store.dispatch('dismissAlert')"
                 >{{alert.alertText}}</b-alert>
                 <div>
                     <b-nav tabs>

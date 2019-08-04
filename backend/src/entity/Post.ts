@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, OneToMany} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, OneToMany, JoinColumn } from "typeorm";
 import { User } from "./User";
 import { Comment } from "./Comment";
 
@@ -24,6 +24,7 @@ export class Post {
     content: string;
 
     @ManyToOne(type => User, user => user.posts)
+    @JoinColumn({ name: "userId"})
     user: User;
 
     @OneToMany(type => Comment, comment => comment.post)

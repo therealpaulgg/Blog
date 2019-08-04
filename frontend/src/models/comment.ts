@@ -3,4 +3,5 @@ export interface CommentModel {
     user: string;
     createdAt: string;
     updatedAt: string;
+    id: number;
 }

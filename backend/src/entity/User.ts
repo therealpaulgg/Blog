@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, Unique} from "typeorm";
 import { Post } from "./Post";
 import { Comment } from "./Comment";
 import { PermissionBlock } from "./PermissionBlock";
