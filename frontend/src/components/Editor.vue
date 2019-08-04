@@ -34,8 +34,8 @@ export default class NewPost extends Vue {
     };
     @Prop(Number) protected height: number;
     @Prop(Number) protected width: number;
+    @Prop(String) protected initialContent: string;
     protected content: string;
-    protected renderedContent: string;
     protected ready = false;
     protected editor = null;
     private options = {
@@ -47,8 +47,11 @@ export default class NewPost extends Vue {
 
     constructor() {
         super();
-        this.renderedContent = "";
-        this.content = "";
+        if (this.initialContent) {
+            this.content = this.initialContent;
+        } else {
+            this.content = ""
+        }
     }
 
     public updateDimensions() {
@@ -70,6 +73,14 @@ export default class NewPost extends Vue {
     @Watch("content")
     protected send() {
         this.$emit("input", this.content);
+    }
+
+    // I don't really care if this is inefficient, I've spend like 2 hours on 
+    // this stupid issue of persisted state, and all I know is that if I use 
+    // this it resets a text box after the properties are cleared properly. 
+    @Watch("initialContent")
+    protected foo() {
+        this.content = this.initialContent;
     }
 
     protected mounted() {

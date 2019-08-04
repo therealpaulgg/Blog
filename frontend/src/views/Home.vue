@@ -6,6 +6,8 @@
             :title="post.title"
             :content="post.content"
             :urlTitle="post.urlTitle"
+            :createdAt="post.createdAt"
+            :updatedAt="post.updatedAt"
         ></PostBlock>
     </div>
 </template>

@@ -12,5 +12,8 @@ export default {
     },
     getCommentContent(state: State) {
         return state.commentContent;
+    },
+    getPostTitle(state: State) {
+        return state.postTitle;
     }
 };

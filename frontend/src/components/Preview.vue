@@ -15,11 +15,18 @@ export default class Preview extends Vue {
     protected renderedTitle: string;
     @Prop(String) private title: string;
     @Prop(String) protected content: string;
+    protected localContent: string;
 
     constructor() {
         super();
         this.renderedContent = "";
         this.renderedTitle = this.title ? this.title : "";
+        if (this.content) {
+            this.localContent = this.content;
+            this.renderedContent = md.render(this.localContent);
+        } else {
+            this.localContent = ""
+        }
     }
 
     @Watch("title")
@@ -52,7 +59,7 @@ export default class Preview extends Vue {
 .preview
     padding: 0px
     border-radius: 5px
-    overflow-y: scroll
+    overflow-y: auto
 .dark
     .preview
         background-color: #2a2c39 !important

@@ -18,9 +18,9 @@
                     </b-nav>
                 </div>
                 <br />
-                <keep-alive include="NewPost, Home, Post">
+                <!-- <keep-alive include="NewPost, Home, Post"> -->
                     <router-view />
-                </keep-alive>
+                <!-- </keep-alive> -->
                 <transition name="fade">
                     <font-awesome-icon class="themebtn" @click="changeTheme" :icon="icon"></font-awesome-icon>
                 </transition>

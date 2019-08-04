@@ -1,20 +1,33 @@
 <template>
-  <div class="postblock" :class="getTheme">
-    <h1>{{title}}</h1>
-    <router-link :to="`/posts/${urlTitle}`">Go to Post!</router-link>
-  </div>
+    <div class="postblock" :class="getTheme">
+        <h1 style="display: inline-block;">{{title}}</h1>
+        <p style="float: right;">{{date}}</p>
+        <div>
+            <router-link :to="`/posts/${urlTitle}`">Go to Post!</router-link>
+        </div>
+    </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { Getter } from "vuex-class";
+import moment from "moment";
 
 @Component
 export default class PostBlock extends Vue {
     @Prop(String) protected readonly title!: string;
     @Prop(String) protected readonly content!: string;
     @Prop(String) protected readonly urlTitle!: string;
+    @Prop(String) protected readonly createdAt: string;
+    @Prop(String) protected readonly updatedAt: string;
     @Getter("getTheme") private getTheme: string;
+
+    get date() {
+        return moment
+            .utc(this.createdAt)
+            .local()
+            .format("MM/DD/YYYY, HH:mm");
+    }
 }
 </script>
 

@@ -1,11 +1,12 @@
 import { CommentModel } from "./comment";
+import moment from "moment";
 
 export interface PostModel {
     urlTitle: string;
     title: string;
     content: string;
     username: string;
-    createdAt: any;
-    updatedAt: any;
+    createdAt: string;
+    updatedAt: string;
     comments: CommentModel[];
 }

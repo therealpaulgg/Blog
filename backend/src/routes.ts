@@ -27,11 +27,13 @@ router.get("/posts", (req, res) => {
                 urlTitle: post.urlTitle,
                 title: post.title,
                 content: post.content,
-                username: post.user.username
+                username: post.user.username,
+                createdAt: post.createdAt,
+                updatedAt: post.updatedAt
             }
             posts.push(obj)
         }
-        res.send(posts)
+        res.send(posts.reverse())
     })
 })
 
@@ -40,7 +42,7 @@ router.get("/post/:urlTitle", async (req, res) => {
         let comments = []
         result.comments.forEach(comment => {
             comments.push({
-                content: comment.content,
+                content: md.render(comment.content),
                 user: comment.user.username,
                 createdAt: comment.createdAt,
                 updatedAt: comment.updatedAt

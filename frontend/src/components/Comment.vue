@@ -1,7 +1,7 @@
 <template>
   <div class="comment" :class="getTheme">
       <p>User: {{comment.user}}, {{date}}</p>
-      <p>{{comment.content}}</p>
+      <div v-html="comment.content"></div>
   </div>
 </template>
 
@@ -17,7 +17,7 @@ export default class Comment extends Vue {
     @Getter("getTheme") private getTheme: string;
 
     get date() {
-        return moment.utc(this.comment.createdAt).local().format("MM/DD/YYYY, HH:MM");
+        return moment.utc(this.comment.createdAt).local().format("MM/DD/YYYY, HH:mm");
     }
 }
 </script>
@@ -30,10 +30,14 @@ export default class Comment extends Vue {
     margin: 20px
     border-radius: 20px
     color: white
+    max-height: 400px
+    overflow-y: auto
 .light
     background-color: white !important
     padding: 20px
     margin: 20px
     border-radius: 20px
     color: black
+    max-height: 400px
+    overflow-y: auto
 </style>

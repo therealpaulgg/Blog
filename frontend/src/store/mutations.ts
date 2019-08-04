@@ -21,5 +21,8 @@ export default {
     },
     EDIT_COMMENT_CONTENT(state: State, text: string) {
         state.commentContent = text;
+    },
+    EDIT_POST_TITLE(state: State, text: string) {
+        state.postTitle = text;
     }
 };

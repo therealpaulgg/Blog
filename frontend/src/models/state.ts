@@ -6,4 +6,5 @@ export interface State {
     posts: PostModel[];
     content: string;
     commentContent: string;
+    postTitle: string;
 }

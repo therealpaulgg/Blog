@@ -13,6 +13,7 @@ function defaultState(): State {
         theme: "light",
         authenticated: false,
         posts: null,
+        postTitle: "",
         content: "",
         commentContent: ""
     };
@@ -23,7 +24,10 @@ export default new Vuex.Store({
     plugins: [createPersistedState({
         paths: [
             "authenticated",
-            "theme"
+            "theme",
+            "content",
+            "commentContent",
+            "postTitle"
         ]
     })],
     mutations,

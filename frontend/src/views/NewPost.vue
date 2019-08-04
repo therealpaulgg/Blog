@@ -8,7 +8,7 @@
         <div class="container">
             <div class="row">
                 <div class="col">
-                    <Editor :height="height" :width="width" v-model="content"/>
+                    <Editor :height="height" :width="width" v-model="content" :initialContent="content"/>
                 </div>
                 <div class="col preview" ref="editcol" :class="theme">
                     <Preview :title="title" :content="content" />
@@ -40,7 +40,6 @@ export default class NewPost extends Vue {
         editcol: HTMLDivElement;
         editor: any;
     };
-    protected title: string;
     protected renderedContent: string;
     protected ready = false;
     protected editor = null;
@@ -55,7 +54,6 @@ export default class NewPost extends Vue {
 
     constructor() {
         super();
-        this.title = "";
         this.renderedContent = "";
         this.width = null;
         this.height = null;
@@ -74,6 +72,13 @@ export default class NewPost extends Vue {
 
     get theme() {
         return this.$store.getters.getTheme;
+    }
+
+    get title() {
+        return this.$store.getters.getPostTitle;
+    }
+    set title(val) {
+        this.$store.dispatch("editPostTitle", val);
     }
 
     get content() {
@@ -96,6 +101,8 @@ export default class NewPost extends Vue {
                 { withCredentials: true }
             )
             .then(() => {
+                this.title = "";
+                this.content = "";
                 this.$store.dispatch("fetchPosts");
                 this.$router.push("/");
             })
@@ -124,7 +131,7 @@ export default class NewPost extends Vue {
 .preview
     padding: 0px
     border-radius: 5px
-    overflow-y: scroll
+    overflow-y: auto
 .dark
     .preview
         background-color: #2a2c39 !important

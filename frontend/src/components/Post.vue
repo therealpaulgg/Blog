@@ -18,16 +18,29 @@
             <div v-html="content"></div>
             <hr />
             <h1>Comments</h1>
-            <h4>Add Comment</h4>
+            <a class="button" :class="theme" @click="showCommentPost">Comment</a>
+            <br>
+            <br>
             <div class="row" style="padding-bottom: 15px;">
                 <div class="col" ref="container">
-                    <Editor :height="height" :width="width" v-model="commentContent" />
+                    <Editor
+                        v-if="postingComment"
+                        :height="height"
+                        :width="width"
+                        v-model="commentContent"
+                        :initialContent="commentContent"
+                    />
                 </div>
                 <div class="col preview" :class="theme">
-                    <Preview :content="commentContent" />
+                    <Preview v-if="postingComment" :content="commentContent" />
                 </div>
             </div>
-            <a class="button" :class="theme" @click="postComment">Submit Comment</a>
+            <a
+                class="button"
+                v-if="postingComment"
+                :class="theme"
+                @click="postComment"
+            >Submit Comment</a>
             <hr />
             <Comment v-for="(comment, index) in comments" :key="index" :comment="comment" />
         </div>
@@ -64,6 +77,7 @@ export default class Post extends Vue {
     protected comments: CommentModel[] | null;
     protected width: number | null;
     protected height: number | null;
+    protected postingComment: boolean;
     @Prop(String) protected readonly title!: string;
     @Getter("getTheme") private getTheme: string;
     @Getter("isAuthenticated") private isAuthenticated: boolean;
@@ -78,6 +92,11 @@ export default class Post extends Vue {
         this.comments = null;
         this.width = null;
         this.height = null;
+        this.postingComment = false;
+    }
+
+    protected showCommentPost() {
+        this.postingComment = !this.postingComment;
     }
 
     protected del() {
@@ -112,7 +131,11 @@ export default class Post extends Vue {
     }
 
     protected updateDimensions() {
-        this.width = this.$refs.container.clientWidth;
+        if (this.$refs.container) {
+            this.width = this.$refs.container.clientWidth;
+        } else {
+            this.width = null;
+        }
         this.height = 300;
     }
 
@@ -123,9 +146,10 @@ export default class Post extends Vue {
                 { urlTitle: this.title, content: this.commentContent },
                 { withCredentials: true }
             );
+            this.commentContent = "";
             await this.fetchData();
         } catch (err) {
-            console.log(err);
+            // TODO
         }
     }
 
@@ -139,7 +163,6 @@ export default class Post extends Vue {
         const { data }: { data: PostModel } = await axios.get(
             `http://localhost:3000/post/${this.title}`
         );
-        console.log("reee");
         this.header = data.title;
         this.content = data.content;
         this.user = data.username;
@@ -147,11 +170,11 @@ export default class Post extends Vue {
         this.createdAt = moment
             .utc(data.createdAt)
             .local()
-            .format("MM/DD/YYYY, HH:MM");
+            .format("MM/DD/YYYY, HH:mm");
         this.updatedAt = moment
             .utc(data.updatedAt)
             .local()
-            .format("MM/DD/YYYY, HH:MM");
+            .format("MM/DD/YYYY, HH:mm");
     }
 }
 </script>
@@ -194,7 +217,7 @@ export default class Post extends Vue {
 .preview
     padding: 0px
     border-radius: 5px
-    overflow-y: scroll
+    overflow-y: auto
 .dark
     .button
         background-color: #2a2c39 !important
