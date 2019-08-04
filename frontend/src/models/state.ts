@@ -5,4 +5,5 @@ export interface State {
     authenticated: boolean;
     posts: PostModel[];
     content: string;
+    commentContent: string;
 }

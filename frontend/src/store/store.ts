@@ -13,7 +13,8 @@ function defaultState(): State {
         theme: "light",
         authenticated: false,
         posts: null,
-        content: ""
+        content: "",
+        commentContent: ""
     };
 }
 

@@ -8,26 +8,15 @@
         <div class="container">
             <div class="row">
                 <div class="col">
-                    <PostToolbar :editor="this.editor" />
-                    <div id="monacoeditor"></div>
-                    <MonacoEditor
-                        ref="editor"
-                        class="editor"
-                        language="markdown"
-                        v-model="content"
-                        :theme="vsTheme"
-                        :options="options"
-                        :width="width"
-                    />
+                    <Editor :height="height" :width="width" v-model="content"/>
                 </div>
                 <div class="col preview" ref="editcol" :class="theme">
-                    <div id="preview" class="break" v-html="`<h1>${title}</h1>` + renderedContent"></div>
+                    <Preview :title="title" :content="content" />
                 </div>
             </div>
         </div>
 
         <br />
-        <!-- <button @click="logText">Log text</button> -->
         <a class="button" :class="theme" @click="post">Post</a>
     </div>
 </template>
@@ -37,15 +26,13 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import axios from "axios";
 import { PostModel } from "../models/post";
 import { md } from "../mdparser";
-import MonacoEditor from "vue-monaco";
-import dracula from "../assets/Dracula.json";
-import { MonacoWindow } from "../interfaces/window";
-import PostToolbar from "../components/PostToolbar.vue";
+import Editor from "../components/Editor.vue";
+import Preview from "../components/Preview.vue";
 
 @Component({
     components: {
-        MonacoEditor,
-        PostToolbar
+        Editor,
+        Preview
     }
 })
 export default class NewPost extends Vue {
@@ -56,8 +43,9 @@ export default class NewPost extends Vue {
     protected title: string;
     protected renderedContent: string;
     protected ready = false;
-    protected width = 500;
     protected editor = null;
+    protected width: number | null;
+    protected height: number | null;
     private options = {
         fontLigatures: true,
         fontFamily: "Fira Code",
@@ -69,32 +57,19 @@ export default class NewPost extends Vue {
         super();
         this.title = "";
         this.renderedContent = "";
-    }
-    // its jank but its the only way.
-    public updateDimensions() {
-        const height = this.$refs.editcol.clientHeight - 46;
-        const width = this.$refs.editcol.clientWidth;
-        const editor = this.$refs.editor.getEditor();
-        editor.layout({ height, width });
+        this.width = null;
+        this.height = null;
     }
 
-    @Watch("content")
-    protected test(val: string, oldVal: string) {
-        try {
-            this.renderedContent = md.render(val);
-        } catch (err) {
-            // TODO: error handling
-            // console.error(err);
-        }
+    protected updateDimensions() {
+        this.width = this.$refs.editcol.clientWidth;
+        this.height = this.$refs.editcol.clientHeight;
     }
 
     protected mounted() {
         window.addEventListener("resize", this.updateDimensions.bind(this));
-        const extWindow: MonacoWindow = window;
-        extWindow.monaco.editor.defineTheme("dracula", dracula);
-        extWindow.monaco.editor.setTheme(this.vsTheme);
-        this.editor = this.$refs.editor;
-        console.log(this.$refs.editor.getEditor());
+        this.width = this.$refs.editcol.clientWidth;
+        this.height = this.$refs.editcol.clientHeight;
     }
 
     get theme() {
@@ -124,7 +99,7 @@ export default class NewPost extends Vue {
                 this.$store.dispatch("fetchPosts");
                 this.$router.push("/");
             })
-            .catch(err => err);
+            .catch((err) => err);
     }
 }
 </script>

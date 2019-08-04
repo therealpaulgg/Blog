@@ -1,6 +1,12 @@
 <template>
     <div class="toolbar">
-        <font-awesome-icon class="icon" icon="link" @click="toggle(0)" ref="linkbtn"></font-awesome-icon>
+        <font-awesome-icon
+            class="icon"
+            style="position: relative"
+            icon="link"
+            @click="toggle(0)"
+            ref="linkbtn"
+        ></font-awesome-icon>
         <img
             class="icon emoji"
             draggable="false"
@@ -23,6 +29,7 @@
             />
         </div>
         <font-awesome-icon class="icon" icon="code" ref="codebtn" @click="toggle(2)"></font-awesome-icon>
+
         <div
             class="popup"
             v-if="popups[2]"
@@ -90,9 +97,9 @@ import { MonacoWindow } from "../interfaces/window";
     }
 })
 export default class PostToolbar extends Vue {
-    @Prop() editor: any;
+    @Prop() protected editor: any;
     protected popups: boolean[];
-    protected functions: { function: Function; args: any[] }[];
+    protected functions: Array<{ function: (...args) => any; args: any[] }>;
     protected POPUP_NUM = 10;
     protected url: string;
     protected name: string;
@@ -117,9 +124,9 @@ export default class PostToolbar extends Vue {
         this.popups = [];
         this.functions = [
             { function: this.makeLink, args: [] },
-            { function: this.todo, args: [] },
-            { function: this.todo, args: [] },
-            { function: this.todo, args: [] },
+            null,
+            null,
+            null,
             { function: this.styleText, args: ["## ", ""] },
             { function: this.styleText, args: ["**", "**"] },
             { function: this.styleText, args: ["*", "*"] },
@@ -138,39 +145,37 @@ export default class PostToolbar extends Vue {
         }
     }
 
-    protected todo() {
-        console.log("TODO");
-    }
-
     protected toggle(index) {
         for (let i = 0; i < this.POPUP_NUM; i++) {
             if (i === index) {
                 Vue.set(this.popups, i, !this.popups[i]);
-                let fn = this.functions[i].function;
-                let args = this.functions[i].args;
-                this.insertMonaco(fn, args);
+                const fn = this.functions[i].function;
+                if (fn !== null) {
+                    const args = this.functions[i].args;
+                    this.insertMonaco(fn, args);
+                }
             } else {
                 Vue.set(this.popups, i, false);
             }
         }
     }
 
-    protected insertMonaco(fn: Function, args: any[]) {
-        let line = this.editor.getEditor().getSelection();
-        let extWindow: MonacoWindow = window;
-        let range = new extWindow.monaco.Range(
+    protected insertMonaco(fn: (...args) => any, args: any[]) {
+        const line = this.editor.getEditor().getSelection();
+        const extWindow: MonacoWindow = window;
+        const range = new extWindow.monaco.Range(
             line.startLineNumber,
             line.startColumn,
             line.endLineNumber,
             line.endColumn
         );
-        let id = { major: 1, minor: 1 };
-        let text = fn(...args, line);
+        const id = { major: 1, minor: 1 };
+        const text = fn(...args, line);
         if (text) {
-            let op = {
+            const op = {
                 identifier: id,
-                range: range,
-                text: text,
+                range,
+                text,
                 forceMoveMarkers: true
             };
             this.editor.getEditor().executeEdits("lol", [op]);
@@ -188,27 +193,26 @@ export default class PostToolbar extends Vue {
     }
 
     protected styleText(prefix: string, suffix: string, line) {
-        let prefixLen = prefix.length;
-        let suffixLen = suffix.length;
-        let val: string = this.editor
+        const prefixLen = prefix.length;
+        const suffixLen = suffix.length;
+        const val: string = this.editor
             .getEditor()
             .getModel()
             .getValueInRange(line);
-        // Cool code that makes it so that if the selected text has identical prefixes/suffixes (i.e bolded already), it removes
-        // the selected styling.
-        let preSubstr = val.substring(0, prefixLen)
-        let sufSubstr = val.substring(val.length - suffixLen, val.length)
+        // Cool code that makes it so that if the selected text has identical prefixes/suffixes
+        // (i.e bolded already), it removes the selected styling.
+        const preSubstr = val.substring(0, prefixLen);
+        const sufSubstr = val.substring(val.length - suffixLen, val.length);
         if (preSubstr === prefix && sufSubstr === suffix) {
             return val.substring(prefixLen, val.length - suffixLen);
         } else {
             return `${prefix}${val}${suffix}`;
         }
-        
     }
 
     protected get getStyle() {
         return this.$store.getters.getTheme === "dark"
-            ? { "background-color": "#20212B", color: "white" }
+            ? { "background-color": "#20212B", "color": "white" }
             : {};
     }
 
@@ -245,7 +249,7 @@ export default class PostToolbar extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="sass">
+<style lang="sass">
 .picker
     z-index: 1
     position: absolute
@@ -277,7 +281,6 @@ export default class PostToolbar extends Vue {
         background-color: #e9ecef
     .toolbar
         background-color: white !important
-
 .icon
     display: inline-block
     margin-left: 10px

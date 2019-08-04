@@ -13,5 +13,8 @@ export default {
     },
     editContent({ commit }: { commit: any}, text: string) {
         commit("EDIT_CONTENT", text);
+    },
+    editCommentContent({ commit }: { commit: any}, text: string) {
+        commit("EDIT_COMMENT_CONTENT", text);
     }
 };

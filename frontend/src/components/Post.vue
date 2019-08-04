@@ -5,7 +5,7 @@
                 <font-awesome-icon style="margin-right: 10px" icon="arrow-left"></font-awesome-icon>Back to Home
             </router-link>
             <hr />
-            <h1 class="bigtitle">{{title}}</h1>
+            <h1 class="bigtitle">{{header}}</h1>
             <p>by {{user}}</p>
             <p>Created {{createdAt}}</p>
             <p v-if="createdAt !== updatedAt">Updated {{updatedAt}}</p>
@@ -16,6 +16,20 @@
             <hr />
             <!-- <p v-if="title == 'foo'">CYKA BLYAD</p> -->
             <div v-html="content"></div>
+            <hr />
+            <h1>Comments</h1>
+            <h4>Add Comment</h4>
+            <div class="row" style="padding-bottom: 15px;">
+                <div class="col" ref="container">
+                    <Editor :height="height" :width="width" v-model="commentContent" />
+                </div>
+                <div class="col preview" :class="theme">
+                    <Preview :content="commentContent" />
+                </div>
+            </div>
+            <a class="button" :class="theme" @click="postComment">Submit Comment</a>
+            <hr />
+            <Comment v-for="(comment, index) in comments" :key="index" :comment="comment" />
         </div>
     </div>
 </template>
@@ -26,14 +40,30 @@ import axios from "axios";
 import { Getter } from "vuex-class";
 import moment from "moment";
 import { PostModel } from "../models/post";
+import { CommentModel } from "../models/comment";
+import Comment from "./Comment.vue";
+import Editor from "./Editor.vue";
+import Preview from "./Preview.vue";
 
-@Component
+@Component({
+    components: {
+        Comment,
+        Editor,
+        Preview
+    }
+})
 export default class Post extends Vue {
+    public $refs: {
+        container: HTMLDivElement;
+    };
     protected header: string | null;
     protected content: string | null;
     protected user: string | null;
     protected createdAt: any;
     protected updatedAt: any;
+    protected comments: CommentModel[] | null;
+    protected width: number | null;
+    protected height: number | null;
     @Prop(String) protected readonly title!: string;
     @Getter("getTheme") private getTheme: string;
     @Getter("isAuthenticated") private isAuthenticated: boolean;
@@ -45,6 +75,9 @@ export default class Post extends Vue {
         this.user = null;
         this.createdAt = null;
         this.updatedAt = null;
+        this.comments = null;
+        this.width = null;
+        this.height = null;
     }
 
     protected del() {
@@ -63,25 +96,72 @@ export default class Post extends Vue {
             });
     }
 
+    get theme() {
+        return this.$store.getters.getTheme;
+    }
+
+    get commentContent() {
+        return this.$store.getters.getCommentContent;
+    }
+    set commentContent(val) {
+        this.$store.dispatch("editCommentContent", val);
+    }
+
     protected edit() {
         // TODO
     }
 
-    protected async mounted() {
-        const { data }: {data: PostModel} = await axios.get(
+    protected updateDimensions() {
+        this.width = this.$refs.container.clientWidth;
+        this.height = 300;
+    }
+
+    protected async postComment() {
+        try {
+            await axios.post(
+                "http://localhost:3000/comment",
+                { urlTitle: this.title, content: this.commentContent },
+                { withCredentials: true }
+            );
+            await this.fetchData();
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    protected mounted() {
+        window.addEventListener("resize", this.updateDimensions.bind(this));
+        this.fetchData();
+        this.updateDimensions();
+    }
+
+    protected async fetchData() {
+        const { data }: { data: PostModel } = await axios.get(
             `http://localhost:3000/post/${this.title}`
         );
+        console.log("reee");
         this.header = data.title;
         this.content = data.content;
         this.user = data.username;
-        this.createdAt = moment.utc(data.createdAt).local().format("MM/DD/YYYY, HH:MM");
-        this.updatedAt = moment.utc(data.updatedAt).local().format("MM/DD/YYYY, HH:MM");
+        this.comments = data.comments;
+        this.createdAt = moment
+            .utc(data.createdAt)
+            .local()
+            .format("MM/DD/YYYY, HH:MM");
+        this.updatedAt = moment
+            .utc(data.updatedAt)
+            .local()
+            .format("MM/DD/YYYY, HH:MM");
     }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
+.button
+    border-radius: 5px
+    padding: 10px
+    cursor: pointer
 .bigtitle
     font-size: 50px
     margin-bottom: 20px
@@ -111,4 +191,20 @@ export default class Post extends Vue {
     background-color: white !important
 .edit.dark
     background-color: #2a2c39 !important
+.preview
+    padding: 0px
+    border-radius: 5px
+    overflow-y: scroll
+.dark
+    .button
+        background-color: #2a2c39 !important
+    .preview
+        background-color: #2a2c39 !important
+    .button
+        background-color: #2a2c39 !important
+.light
+    .preview
+        background-color: #FFFFFE !important
+    .button
+        background-color: white !important
 </style>

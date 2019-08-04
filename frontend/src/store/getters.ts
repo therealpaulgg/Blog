@@ -9,5 +9,8 @@ export default {
     },
     getContent(state: State) {
         return state.content;
+    },
+    getCommentContent(state: State) {
+        return state.commentContent;
     }
 };

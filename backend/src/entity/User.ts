@@ -1,5 +1,6 @@
 import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne} from "typeorm";
 import { Post } from "./Post";
+import { Comment } from "./Comment";
 import { PermissionBlock } from "./PermissionBlock";
 
 @Entity()
@@ -19,6 +20,9 @@ export class User {
 
     @OneToMany(type => Post, post => post.user)
     posts: Array<Post>
+
+    @OneToMany(type => Comment, comment => comment.user)
+    comments: Array<Comment>
 
     @OneToOne(type => PermissionBlock, permissionBlock => permissionBlock.user)
     permissionBlock: PermissionBlock

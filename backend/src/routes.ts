@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import argon2 from "argon2"
 import { Post } from "./entity/Post";
 import { User } from "./entity/User";
+import { Comment } from "./entity/Comment";
 
 // let repo = getRepository(Post)
 
@@ -12,30 +13,10 @@ let router = express.Router()
 
 router.get("/", (req, res) => res.send("Hello world"))
 
-router.get("/test", (req, res) => {
-    res.json({
-        title: "Its a freakin blog post",
-        content: md.render('# hello everyone\n This is my blog post. Here are some sample cool renders below.\n #### Sample Cool Renders\n```python\nprint(\"hello world!\")\n```\n$\\int_0^5{\\frac{x}{y}}=\\infty$')
-    })
-})
-
-router.post("/what", (req, res) => {
-    md.render(req.body.input)
-    res.send("done")
-})
-
 router.get("/jwt", (req, res) => {
     let token = jwt.sign({ username: "test" }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
     res.header("Set-Cookie", `auth=${token}`)
     res.send(token)
-})
-
-router.post("/jwt-verify", (req, res) => {
-    try {
-        res.send(jwt.verify(req.body.token, "VERYSECRETKEY"))
-    } catch (__) {
-        res.status(401).send("Invalid token.")
-    }
 })
 
 router.get("/posts", (req, res) => {
@@ -50,23 +31,62 @@ router.get("/posts", (req, res) => {
             }
             posts.push(obj)
         }
-        console.log(posts)
         res.send(posts)
     })
 })
 
-router.get("/post/:urlTitle", (req, res) => {
-    getConnection().manager.findOne(Post, { urlTitle: req.params.urlTitle }, { relations: ["user"] }).then(result => {
+router.get("/post/:urlTitle", async (req, res) => {
+    getConnection().manager.findOne(Post, { urlTitle: req.params.urlTitle }, { relations: ["user", "comments", "comments.user"] }).then(result => {
+        let comments = []
+        result.comments.forEach(comment => {
+            comments.push({
+                content: comment.content,
+                user: comment.user.username,
+                createdAt: comment.createdAt,
+                updatedAt: comment.updatedAt
+            })
+        })
         let formattedData = {
             urlTitle: result.urlTitle,
             title: result.title,
             content: md.render(result.content),
             username: result.user.username,
             createdAt: result.createdAt,
-            updatedAt: result.updatedAt
+            updatedAt: result.updatedAt,
+            comments: comments.reverse()
         }
         res.send(formattedData)
     }).catch(err => res.send({ title: "Oof!", content: "No post found. :(" }))
+})
+
+router.post("/comment", checkAuth, async (req, res) => {
+    // Data should be sent through body
+    let connection = getConnection()
+    let post = await connection.manager.findOne(Post, { urlTitle: req.body.urlTitle })
+    let user = await connection.manager.findOne(User, { username: res.locals.user })
+    if (post && user) {
+        let content: string = req.body.content
+        if (content != null && content.length > 0) {
+            let comment = new Comment()
+            comment.post = post
+            comment.content = content
+            comment.user = user
+            await connection.manager.save(comment)
+            res.send("done")
+        } else {
+            res.status(400).send("Must send comment content body")
+        }
+    } else {
+        res.status(404).send("Post not found or user not found.")
+    }
+})
+
+router.post("/jwt-verify", (req, res) => {
+    try {
+        res.send(jwt.verify(req.body.token, "VERYSECRETKEY"))
+    } catch (__) {
+        res.status(401).send("Invalid token.")
+    }
 })
 
 router.post("/newpost", checkAuth, async (req, res) => {
@@ -81,8 +101,6 @@ router.post("/newpost", checkAuth, async (req, res) => {
         let user = await connection.manager.findOne(User, { username: res.locals.user })
         post.user = user
         await connection.manager.save(post)
-        user.addPost(post)
-        await connection.manager.save(user)
         res.send("Done")
     } else {
         res.status(400).send("Missing title or post content.")
@@ -108,7 +126,7 @@ router.post("/editpost", checkAuth, async (req, res) => {
 router.post("/register", async (req, res) => {
     if (req.body.username.length > 30) {
         let connection = await getConnection()
-        let user = await connection.manager.findOne(User, {username: req.body.username})
+        let user = await connection.manager.findOne(User, { username: req.body.username })
         if (user) {
             connection.manager.save(User, {
                 username: req.body.username as string,
@@ -125,9 +143,10 @@ router.post("/register", async (req, res) => {
 
 router.post("/delete", checkAuth, (req, res) => {
     let connection = getConnection()
-    connection.manager.findOne(Post, { urlTitle: req.body.urlTitle }, {relations: ["user"]}).then((post) => {
+    connection.manager.findOne(Post, { urlTitle: req.body.urlTitle }, { relations: ["user", "comments"] }).then(async (post) => {
         if (post.user.username === res.locals.user) {
-            connection.manager.remove(post)
+            await connection.manager.remove(post.comments)
+            await connection.manager.remove(post)
             res.send("Done")
         } else {
             res.send("You are not the owner of this post.")

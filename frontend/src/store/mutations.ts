@@ -18,5 +18,8 @@ export default {
     },
     EDIT_CONTENT(state: State, text: string) {
         state.content = text;
+    },
+    EDIT_COMMENT_CONTENT(state: State, text: string) {
+        state.commentContent = text;
     }
 };
