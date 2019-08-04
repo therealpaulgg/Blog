@@ -5,6 +5,9 @@
             <div class="container">
                 <h1>The Blog for Engineers</h1>
                 <hr />
+                <b-alert v-for="(alert, index) in alerts" :key="index" show dismissible fade :variant="alert.alertType" @dismissed="$store.dispatch('dismissAlert')">
+                    {{alert.alertText}}
+                </b-alert>
                 <div>
                     <b-nav tabs>
                         <b-nav-item class="test" to="/" v-bind:active="$route.path == '/'">Home</b-nav-item>
@@ -19,7 +22,7 @@
                 </div>
                 <br />
                 <!-- <keep-alive include="NewPost, Home, Post"> -->
-                    <router-view />
+                <router-view />
                 <!-- </keep-alive> -->
                 <transition name="fade">
                     <font-awesome-icon class="themebtn" @click="changeTheme" :icon="icon"></font-awesome-icon>
@@ -33,6 +36,7 @@
 import { State, Getter, Action } from "vuex-class";
 import { Component, Vue } from "vue-property-decorator";
 import Cookies from "js-cookie";
+import BootstrapVue from "bootstrap-vue";
 
 @Component
 export default class App extends Vue {
@@ -55,6 +59,10 @@ export default class App extends Vue {
         return this.getTheme === "light"
             ? "https://cdn.jsdelivr.net/gh/PrismJS/prism-themes/themes/prism-base16-ateliersulphurpool.light.css"
             : "https://cdn.jsdelivr.net/gh/dracula/prism/css/dracula-prism.css";
+    }
+
+    get alerts() {
+        return this.$store.state.alerts.reverse();
     }
 
     protected logout() {

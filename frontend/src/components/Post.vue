@@ -147,9 +147,12 @@ export default class Post extends Vue {
                 { withCredentials: true }
             );
             this.commentContent = "";
+            this.$store.dispatch("addAlert", {alertType: "success", alertText: "Comment successfully created."});
             await this.fetchData();
+            
         } catch (err) {
-            // TODO
+            // TODO: Don't do it like this.
+            this.$store.dispatch("addAlert", {alertType: "danger", alertText: "You are not authenticated. Please log out and log back in."});
         }
     }
 

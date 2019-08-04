@@ -105,8 +105,13 @@ export default class NewPost extends Vue {
                 this.content = "";
                 this.$store.dispatch("fetchPosts");
                 this.$router.push("/");
+                this.$store.dispatch("addAlert", {alertType: "success", alertText: "Posted successfully created."});
             })
-            .catch((err) => err);
+            .catch((err) => {
+                // TODO: This should NOT be how this works. The user should be prompted to log in again.
+                // Also, this could hypothetically be the result of an internal server error. 
+                this.$store.dispatch("addAlert", {alertType: "danger", alertText: "You are not authenticated. Please log out and log in again.."});
+            });
     }
 }
 </script>
@@ -138,7 +143,6 @@ export default class NewPost extends Vue {
     .button
         background-color: #2a2c39 !important
     .title
-        border-radius: 5px
         border-color: #2a2c39 !important
         background-color: #20212B !important
 .light

@@ -1,6 +1,7 @@
 import { State } from "@/models/state";
 import axios from "axios";
 import { PostModel } from "@/models/post";
+import { Alert } from '@/models/alert';
 
 export default {
     SET_THEME(state: State, theme: string) {
@@ -24,5 +25,11 @@ export default {
     },
     EDIT_POST_TITLE(state: State, text: string) {
         state.postTitle = text;
+    },
+    ADD_ALERT(state: State, alert: Alert) {
+        state.alerts.push(alert);
+    },
+    DISMISS_ALERT(state: State) {
+        state.alerts.shift()
     }
 };

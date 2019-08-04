@@ -15,7 +15,8 @@ function defaultState(): State {
         posts: null,
         postTitle: "",
         content: "",
-        commentContent: ""
+        commentContent: "",
+        alerts: []
     };
 }
 

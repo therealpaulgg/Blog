@@ -1,4 +1,5 @@
 import { PostModel } from "./post";
+import { Alert } from "./alert";
 
 export interface State {
     theme: string;
@@ -7,4 +8,5 @@ export interface State {
     content: string;
     commentContent: string;
     postTitle: string;
+    alerts: Alert[];
 }
