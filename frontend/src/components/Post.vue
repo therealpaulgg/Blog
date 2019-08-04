@@ -49,7 +49,7 @@
                 <div v-html="renderedContent"></div>
                 <hr />
                 <h1>Comments</h1>
-                <a class="button" :class="theme" @click="showCommentPost">Comment</a>
+                <a v-if="isAuthenticated" class="button" :class="theme" @click="showCommentPost">Comment</a>
                 <br />
                 <br />
                 <div class="row" style="padding-bottom: 15px;">
@@ -221,11 +221,13 @@ export default class Post extends Vue {
             });
             this.$router.push("/")
         } catch (err) {
-            // TODO: Don't do it like this.
+            // The user should never actually get to this point in theory,
+            // but it is here for safety. (Delete cookies)
+            this.$store.dispatch("forceLogout");
             this.$store.dispatch("addAlert", {
                 alertType: "danger",
                 alertText:
-                    "You are not authenticated. Please log out and log back in."
+                    "There was an authentication problem. Please log in again."
             });
         }
     }
@@ -244,11 +246,13 @@ export default class Post extends Vue {
             });
             await this.fetchData();
         } catch (err) {
-            // TODO: Don't do it like this.
+            // The user should never actually get to this point in theory,
+            // but it is here for safety. (Delete cookies)
+            this.$store.dispatch("forceLogout");
             this.$store.dispatch("addAlert", {
                 alertType: "danger",
                 alertText:
-                    "You are not authenticated. Please log out and log back in."
+                    "There was an authentication problem. Please log in again."
             });
         }
     }

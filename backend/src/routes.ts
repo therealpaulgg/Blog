@@ -1,5 +1,4 @@
 import express from "express"
-import md from "./mdparser"
 import { getConnection } from "typeorm";
 import jwt from "jsonwebtoken";
 import argon2 from "argon2"
@@ -7,17 +6,9 @@ import { Post } from "./entity/Post";
 import { User } from "./entity/User";
 import { Comment } from "./entity/Comment";
 
-// let repo = getRepository(Post)
-
 let router = express.Router()
 
 router.get("/", (req, res) => res.send("Hello world"))
-
-router.get("/jwt", (req, res) => {
-    let token = jwt.sign({ username: "test" }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
-    res.header("Set-Cookie", `auth=${token}`)
-    res.send(token)
-})
 
 router.get("/posts", (req, res) => {
     getConnection().manager.find(Post, { relations: ["user"] }).then(result => {
@@ -112,7 +103,7 @@ router.post("/newpost", checkAuth, async (req, res) => {
 router.post("/editpost", checkAuth, async (req, res) => {
     let connection = getConnection()
     try {
-        let post = await connection.manager.findOne(Post, { urlTitle: req.body.urlTitle }, { relations: ["user"]})
+        let post = await connection.manager.findOne(Post, { urlTitle: req.body.urlTitle }, { relations: ["user"] })
         if (post.user.username === res.locals.user) {
             let title = req.body.newTitle
             post.title = title
@@ -164,12 +155,25 @@ router.post("/login", (req, res) => {
     getConnection().manager.findOne(User, { username: req.body.username }).then(async result => {
         if (await argon2.verify(result.password_hash, req.body.password)) {
             let token = jwt.sign({ username: req.body.username }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
-            res.header("Set-Cookie", `auth=${token}`)
+            let age = 30 * 60 * 1000
+            res.cookie("auth", token, { maxAge: age })
+            let date = new Date(new Date().getTime() + age).getTime();
+            res.cookie("expiration", date, { maxAge: age })
             res.send("Success")
         } else {
             res.status(401).send("Unauthorized")
         }
     }).catch(() => res.status(401).send("User not found in our system."))
+})
+
+router.post("/renew-jwt", checkAuth, (req, res) => {
+    // shouldn't have to verify the user that is sending, right?
+    let token = jwt.sign({ username: res.locals.user }, "VERYSECRETKEY", { expiresIn: 60 * 30 });
+    let age = 30 * 60 * 1000;
+    res.cookie("auth", token, { maxAge: age });
+    let date = new Date(new Date().getTime() + age).getTime();
+    res.cookie("expiration", date, { maxAge: age });
+    res.send("JWT renewed");
 })
 
 function checkAuth(req, res, next) {

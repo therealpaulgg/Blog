@@ -17,14 +17,9 @@
       "express": "^4.15.4",
       "jsonwebtoken": "^8.5.1",
       "katex": "^0.10.2",
-      "markdown-it": "^9.0.1",
-      "markdown-it-emoji": "^1.4.0",
-      "markdown-it-math": "^4.1.1",
-      "markdown-it-prism": "^2.0.2",
       "reflect-metadata": "^0.1.10",
       "sqlite3": "^4.0.3",
       "ts-node-dev": "^1.0.0-pre.40",
-      "twemoji": "^12.1.2",
       "typeorm": "^0.2.18"
    },
    "scripts": {

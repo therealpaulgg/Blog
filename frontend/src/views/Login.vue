@@ -42,6 +42,16 @@ export default class Home extends Vue {
         return this.$store.getters.getTheme;
     }
 
+    protected get isAuthenticated() {
+        return this.$store.getters.isAuthenticated;
+    }
+
+    protected mounted() {
+        if (this.isAuthenticated) {
+            this.$router.push("/");
+        }
+    }
+
     protected authenticate() {
         axios
             .post(

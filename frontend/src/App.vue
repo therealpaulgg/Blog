@@ -5,9 +5,15 @@
             <div class="container">
                 <h1>The Blog for Engineers</h1>
                 <hr />
-                <b-alert v-for="(alert, index) in alerts" :key="index" show dismissible fade :variant="alert.alertType" @dismissed="$store.dispatch('dismissAlert')">
-                    {{alert.alertText}}
-                </b-alert>
+                <b-alert
+                    v-for="(alert, index) in alerts"
+                    :key="index"
+                    show
+                    dismissible
+                    fade
+                    :variant="alert.alertType"
+                    @dismissed="$store.dispatch('dismissAlert')"
+                >{{alert.alertText}}</b-alert>
                 <div>
                     <b-nav tabs>
                         <b-nav-item class="test" to="/" v-bind:active="$route.path == '/'">Home</b-nav-item>
@@ -18,7 +24,11 @@
                         >New Post</b-nav-item>
                         <b-nav-item v-if="isAuthenticated" @click="logout">Logout</b-nav-item>
                         <b-nav-item v-else to="/login" v-bind:active="$route.path == '/login'">Login</b-nav-item>
-                        <b-nav-item v-if="!isAuthenticated" to="/register" v-bind:active="$route.path == '/register'">Register</b-nav-item>
+                        <b-nav-item
+                            v-if="!isAuthenticated"
+                            to="/register"
+                            v-bind:active="$route.path == '/register'"
+                        >Register</b-nav-item>
                     </b-nav>
                 </div>
                 <br />
@@ -66,9 +76,16 @@ export default class App extends Vue {
         return this.$store.state.alerts.reverse();
     }
 
+    protected mounted() {
+        if (this.isAuthenticated) {
+            this.$store.dispatch("determineTokenRefreshInterval");
+        }
+    }
+
     protected logout() {
         this.logoutAction();
         Cookies.remove("auth", { domain: "localhost" });
+        Cookies.remove("expiration", { domain: "localhost" });
         this.$router.push("/");
     }
 }

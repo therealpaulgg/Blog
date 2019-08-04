@@ -8,7 +8,12 @@
         <div class="container">
             <div class="row">
                 <div class="col">
-                    <Editor :height="height" :width="width" v-model="content" :initialContent="content"/>
+                    <Editor
+                        :height="height"
+                        :width="width"
+                        v-model="content"
+                        :initialContent="content"
+                    />
                 </div>
                 <div class="col preview" ref="editcol" :class="theme">
                     <Preview :title="title" :content="content" />
@@ -65,9 +70,17 @@ export default class NewPost extends Vue {
     }
 
     protected mounted() {
-        window.addEventListener("resize", this.updateDimensions.bind(this));
-        this.width = this.$refs.editcol.clientWidth;
-        this.height = this.$refs.editcol.clientHeight;
+        if (this.isAuthenticated) {
+            window.addEventListener("resize", this.updateDimensions.bind(this));
+            this.width = this.$refs.editcol.clientWidth;
+            this.height = this.$refs.editcol.clientHeight;
+        } else {
+            this.$router.push("/");
+        }
+    }
+
+    get isAuthenticated() {
+        return this.$store.getters.isAuthenticated;
     }
 
     get theme() {
@@ -105,12 +118,20 @@ export default class NewPost extends Vue {
                 this.content = "";
                 this.$store.dispatch("fetchPosts");
                 this.$router.push("/");
-                this.$store.dispatch("addAlert", {alertType: "success", alertText: "Posted successfully created."});
+                this.$store.dispatch("addAlert", {
+                    alertType: "success",
+                    alertText: "Posted successfully created."
+                });
             })
-            .catch((err) => {
-                // TODO: This should NOT be how this works. The user should be prompted to log in again.
-                // Also, this could hypothetically be the result of an internal server error. 
-                this.$store.dispatch("addAlert", {alertType: "danger", alertText: "You are not authenticated. Please log out and log in again.."});
+            .catch(err => {
+                // This will probably happen if the user deletes their cookies
+                this.$store.dispatch("forceLogout");
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText:
+                        "There was an authentication problem. Please log in again."
+                });
+                this.$router.push("/login");
             });
     }
 }
