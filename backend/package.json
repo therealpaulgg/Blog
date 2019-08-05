@@ -27,9 +27,9 @@
       "tsc": "tsc -p ./",
       "dev": "ts-node-dev --respawn --transpileOnly src/app.ts",
       "prod": "tsc -p ./ && node ./build/app.js",
-      "typeorm": "ts-node ./node_modules/.bin/typeorm",
-      "migration-create": "ts-node ./node_modules/.bin/typeorm migration:create -n",
-      "migrate": "ts-node ./node_modules/.bin/typeorm migration:generate -n",
-      "run-migrate": "ts-node ./node_modules/.bin/typeorm migration:run"
+      "typeorm": "ts-node ./node_modules/typeorm/cli.js",
+      "migration-create": "ts-node ./node_modules/typeorm/cli.js migration:create -n",
+      "migrate": "ts-node ./node_modules/typeorm/cli.js migration:generate -n",
+      "run-migrate": "ts-node ./node_modules/typeorm/cli.js migration:run"
    }
 }
