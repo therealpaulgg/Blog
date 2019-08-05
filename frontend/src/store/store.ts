@@ -19,7 +19,8 @@ function defaultState(): State {
         alerts: [],
         editPostTitle: "",
         editContent: "",
-        username: ""
+        username: "",
+        pages: 1
     };
 }
 

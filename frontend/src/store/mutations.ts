@@ -14,9 +14,17 @@ export default {
         state.authenticated = false;
         state.username = "";
     },
-    async FETCH_POSTS(state: State) {
-        const { data } = await axios.get("http://localhost:3000/posts");
-        state.posts = data as PostModel[];
+    async FETCH_POSTS(state: State, page: number) {
+        const { data } = await axios.get(`http://localhost:3000/posts/${page}`);
+        if (page === 1) {
+            state.posts = data.posts as PostModel[];
+            state.pages = data.pages as number;
+        } else {
+            const posts =  data.posts as PostModel[];
+            for (const post of posts) {
+                state.posts.push(post);
+            }
+        }
     },
     EDIT_CONTENT(state: State, text: string) {
         state.content = text;
@@ -29,6 +37,11 @@ export default {
     },
     ADD_ALERT(state: State, alert: Alert) {
         state.alerts.push(alert);
+    },
+    DISMISS_ALERT(state: State, index: number) {
+        console.log(state.alerts)
+        state.alerts.splice(index);
+        console.log(state.alerts)
     },
     EDIT_EDIT_CONTENT(state: State, text: string) {
         state.editContent = text;

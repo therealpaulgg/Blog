@@ -2,13 +2,16 @@
     <div class="home">
         <PostBlock
             v-for="post in posts"
-            :key="post.id"
+            :key="post.postId"
             :title="post.title"
             :content="post.content"
             :urlTitle="post.urlTitle"
             :createdAt="post.createdAt"
             :updatedAt="post.updatedAt"
+            :id="post.postId"
         ></PostBlock>
+        <b-button v-if="show" @click="load" :variant="theme">Load More Posts</b-button>
+        <p v-else>All posts loaded.</p>
     </div>
 </template>
 
@@ -26,12 +29,24 @@ import { State } from "vuex-class";
 })
 export default class Home extends Vue {
 
+    pageNum: number;
+
     constructor() {
         super();
+        this.pageNum = 1;
     }
 
     protected mounted() {
-        this.$store.dispatch("fetchPosts");
+        this.$store.dispatch("fetchPosts", this.pageNum);
+    }
+
+    protected load() {
+        this.pageNum += 1;
+        this.$store.dispatch("fetchPosts", this.pageNum);
+    }
+
+    get show() {
+        return this.$store.state.pages > this.pageNum
     }
 
     get posts() {

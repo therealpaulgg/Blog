@@ -10,28 +10,58 @@ let router = express.Router()
 
 router.get("/", (req, res) => res.send("Hello world"))
 
-router.get("/posts", (req, res) => {
-    getConnection().manager.find(Post, { relations: ["user"] }).then(result => {
-        let posts = []
-        for (let post of result) {
-            let obj = {
-                urlTitle: post.urlTitle,
-                title: post.title,
-                content: post.content,
-                username: post.user.username,
-                createdAt: post.createdAt,
-                updatedAt: post.updatedAt
-            }
-            posts.push(obj)
+// error checking, ensure pagenum is an integer
+router.get("/posts/:page", async (req, res) => {
+    let pageNum = req.params.page
+    const postsPerPage = 10
+    const postRepo = getConnection().getRepository(Post)
+    const qb = postRepo.createQueryBuilder("p")
+        .orderBy("p.createdAt", "DESC")
+        .leftJoinAndSelect("p.user", "user")
+        .skip((pageNum - 1) * postsPerPage)
+        .take(postsPerPage)
+
+    let result = await qb.getMany()
+    let posts = []
+    for (let post of result) {
+        let obj = {
+            postId: post.id,
+            urlTitle: post.urlTitle,
+            title: post.title,
+            content: post.content,
+            username: post.user.username,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt
         }
-        res.send(posts.reverse())
-    })
+        posts.push(obj)
+    }
+
+    // use this to get number of pages 
+    let count = await qb.getCount()
+    const pages = Math.ceil(count / postsPerPage)
+    res.send(
+        {
+            posts,
+            pages
+        }
+    )
 })
 
-router.get("/post/:urlTitle", async (req, res) => {
-    getConnection().manager.findOne(Post, { urlTitle: req.params.urlTitle }, { relations: ["user", "comments", "comments.user"] }).then(result => {
+router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
+    let pageNum = req.params.pageNum;
+    const postsPerPage = 10
+    const postRepo = getConnection().getRepository(Comment)
+    const qb = postRepo.createQueryBuilder("c")
+        .where("c.postId = :postId", { postId: req.params.postId })
+        .leftJoinAndSelect("c.user", "user")
+        .orderBy("c.createdAt", "DESC")
+        .skip((pageNum - 1) * postsPerPage)
+        .take(postsPerPage)
+
+    try {
+        let result = await qb.getMany()
         let comments = []
-        result.comments.forEach(comment => {
+        result.forEach(comment => {
             comments.push({
                 content: comment.content,
                 user: comment.user.username,
@@ -40,17 +70,27 @@ router.get("/post/:urlTitle", async (req, res) => {
                 id: comment.id
             })
         })
-        let formattedData = {
-            urlTitle: result.urlTitle,
-            title: result.title,
-            content: result.content,
-            username: result.user.username,
-            createdAt: result.createdAt,
-            updatedAt: result.updatedAt,
-            comments: comments.reverse()
-        }
-        res.send(formattedData)
-    }).catch(err => res.send({ title: "Oof!", content: "No post found. :(" }))
+        let count = await qb.getCount()
+        const pages = Math.ceil(count / postsPerPage)
+
+        getConnection().manager.findOne(Post, { id: req.params.postId }, { relations: ["user"] }).then(result => {
+            let formattedData = {
+                postId: result.id,
+                urlTitle: result.urlTitle,
+                title: result.title,
+                content: result.content,
+                username: result.user.username,
+                createdAt: result.createdAt,
+                updatedAt: result.updatedAt,
+                comments,
+                pages
+            }
+            res.send(formattedData)
+        }).catch(err => res.send({ title: "Oof!", content: "No post found. :(" }))
+
+    } catch (err) {
+        res.send({ title: "Oof!", content: "No post found. :(" })
+    }
 })
 
 router.post("/comment", checkAuth, async (req, res) => {
@@ -104,7 +144,7 @@ router.post("/newpost", checkAuth, async (req, res) => {
 router.post("/editpost", checkAuth, async (req, res) => {
     let connection = getConnection()
     try {
-        let post = await connection.manager.findOne(Post, { urlTitle: req.body.urlTitle }, { relations: ["user"] })
+        let post = await connection.manager.findOne(Post, { id: req.body.id }, { relations: ["user"] })
         if (post.user.username === res.locals.user) {
             let title = req.body.newTitle
             post.title = title
@@ -141,9 +181,11 @@ router.post("/register", async (req, res) => {
 
 router.post("/deletepost", checkAuth, (req, res) => {
     let connection = getConnection()
-    connection.manager.findOne(Post, { urlTitle: req.body.urlTitle }, { relations: ["user", "comments"] }).then(async (post) => {
+    connection.manager.findOne(Post, { id: req.body.id }, { relations: ["user", "comments"] }).then(async (post) => {
         if (post.user.username === res.locals.user) {
-            await connection.manager.remove(post.comments)
+            if (post.comments) {
+                await connection.manager.remove(post.comments)
+            }
             await connection.manager.remove(post)
             res.send("Done")
         } else {
@@ -157,7 +199,7 @@ router.post("/deletecomment", checkAuth, async (req, res) => {
     let id = req.body.id
     console.log(id);
     try {
-        let comment = await connection.manager.findOne(Comment, {id: id}, {relations: ["post", "user", "post.user"]})
+        let comment = await connection.manager.findOne(Comment, { id: id }, { relations: ["post", "user", "post.user"] })
         let user = comment.user;
         if (res.locals.user === user.username || comment.post.user.username === res.locals.user) {
             await connection.manager.remove(comment);
@@ -166,12 +208,8 @@ router.post("/deletecomment", checkAuth, async (req, res) => {
             res.status(401).send("Unauthorized")
         }
     } catch (err) {
-
+        res.status(404).send("No comment found.")
     }
-    
-    // get comment ID, get comment from id
-    // if (the user deleting the comment is the owner or the user deleting the comment owns the post)
-        // delete
 })
 
 router.post("/login", (req, res) => {

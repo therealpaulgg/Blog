@@ -12,6 +12,7 @@
                     dismissible
                     fade
                     :variant="alert.alertType"
+                    @dismissed="dismissAlert(index)"
                 >{{alert.alertText}}</b-alert>
                 <div>
                     <b-nav tabs>
@@ -31,7 +32,7 @@
                     </b-nav>
                 </div>
                 <br />
-                <!-- <keep-alive include="NewPost, Home, Post"> -->
+                <!-- <keep-alive include="Home"> -->
                 <router-view />
                 <!-- </keep-alive> -->
                 <transition name="fade">
@@ -73,6 +74,10 @@ export default class App extends Vue {
 
     get alerts() {
         return this.$store.state.alerts.reverse();
+    }
+
+    protected dismissAlert(index) {
+        this.$store.dispatch("dismissAlert", index);
     }
 
     protected mounted() {

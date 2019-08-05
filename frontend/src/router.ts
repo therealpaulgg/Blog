@@ -18,7 +18,7 @@ export default new Router({
       component: Home,
     },
     {
-        path: "/posts/:title",
+        path: "/posts/:id/:title",
         name: "Posts",
         component: Post,
         props: true,

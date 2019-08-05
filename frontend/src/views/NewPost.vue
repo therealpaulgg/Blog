@@ -116,7 +116,7 @@ export default class NewPost extends Vue {
             .then(() => {
                 this.title = "";
                 this.content = "";
-                this.$store.dispatch("fetchPosts");
+                this.$store.dispatch("fetchPosts", 1);
                 this.$router.push("/");
                 this.$store.dispatch("addAlert", {
                     alertType: "success",

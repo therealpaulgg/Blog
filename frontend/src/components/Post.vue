@@ -77,6 +77,9 @@
                 >Submit Comment</a>
                 <hr />
                 <Comment v-for="(comment, index) in comments" :key="index" :comment="comment" />
+                <b-button v-if="show" @click="load" :variant="theme">Load More Comments</b-button>
+                <p v-else-if="comments.length === 0">No comments found.</p> 
+                <p v-else>All comments loaded.</p>
             </div>
         </div>
     </div>
@@ -117,7 +120,10 @@ export default class Post extends Vue {
     protected height: number | null;
     protected postingComment: boolean;
     protected editing = false;
+    protected pages: number;
+    protected currentPage: number;
     @Prop(String) protected readonly title!: string;
+    @Prop(String) protected readonly id!: string;
     @Getter("getTheme") private getTheme: string;
     @Getter("isAuthenticated") private isAuthenticated: boolean;
 
@@ -129,10 +135,12 @@ export default class Post extends Vue {
         this.user = null;
         this.createdAt = null;
         this.updatedAt = null;
-        this.comments = null;
+        this.comments = [];
         this.width = null;
         this.height = null;
         this.postingComment = false;
+        this.pages = 1;
+        this.currentPage = 1;
     }
 
     @Watch("content")
@@ -148,16 +156,29 @@ export default class Post extends Vue {
         axios
             .post(
                 "http://localhost:3000/deletepost",
-                { urlTitle: this.title },
+                { id: this.id },
                 { withCredentials: true }
             )
             .then(() => {
-                this.$store.dispatch("fetchPosts");
+                this.$store.dispatch("fetchPosts", 1);
+                this.$store.dispatch("addAlert", {
+                alertType: "success",
+                alertText: "Post deleted."
+            });
                 this.$router.push("/");
             })
             .catch(() => {
                 this.$router.push("/");
             });
+    }
+
+    protected load() {
+        this.currentPage += 1;
+        this.fetchData();
+    }
+
+    get show() {
+        return this.pages > this.currentPage;
     }
 
     get theme() {
@@ -215,6 +236,7 @@ export default class Post extends Vue {
             await axios.post(
                 "http://localhost:3000/editpost",
                 {
+                    id: this.id,
                     urlTitle: this.title,
                     newTitle: this.editTitle,
                     newContent: this.editContent
@@ -280,12 +302,18 @@ export default class Post extends Vue {
 
     protected async fetchData() {
         const { data }: { data: PostModel } = await axios.get(
-            `http://localhost:3000/post/${this.title}`
+            `http://localhost:3000/post/${this.id}/${this.title}/${this.currentPage}`
         );
         this.header = data.title;
         this.content = data.content;
         this.user = data.username;
-        this.comments = data.comments;
+        this.pages = data.pages;
+        if (this.currentPage === 1) {
+            this.comments = [];
+        }
+        for (const comment of data.comments) {
+            this.comments.push(comment);
+        }
         this.createdAt = moment
             .utc(data.createdAt)
             .local()

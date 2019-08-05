@@ -2,6 +2,7 @@ import { CommentModel } from "./comment";
 import moment from "moment";
 
 export interface PostModel {
+    postId: number;
     urlTitle: string;
     title: string;
     content: string;
@@ -9,4 +10,5 @@ export interface PostModel {
     createdAt: string;
     updatedAt: string;
     comments: CommentModel[];
+    pages: number;
 }

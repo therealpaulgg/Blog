@@ -12,4 +12,5 @@ export interface State {
     editContent: string;
     editPostTitle: string;
     username: string;
+    pages: number;
 }

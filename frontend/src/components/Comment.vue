@@ -47,7 +47,12 @@ export default class Comment extends Vue {
                 { id: this.comment.id },
                 { withCredentials: true }
             );
+            this.$store.dispatch("addAlert", {
+                alertType: "success",
+                alertText: "Comment deleted."
+            });
             this.alive = false;
+            
         } catch (err) {
             // do something
         }

@@ -3,7 +3,7 @@
         <h1 style="display: inline-block;">{{title}}</h1>
         <p style="float: right;">{{date}}</p>
         <div>
-            <router-link :to="`/posts/${urlTitle}`">Go to Post!</router-link>
+            <router-link :to="`/posts/${id}/${urlTitle}`">Go to Post!</router-link>
         </div>
     </div>
 </template>
@@ -15,6 +15,7 @@ import moment from "moment";
 
 @Component
 export default class PostBlock extends Vue {
+    @Prop(Number) protected readonly id!: number;
     @Prop(String) protected readonly title!: string;
     @Prop(String) protected readonly content!: string;
     @Prop(String) protected readonly urlTitle!: string;

@@ -23,8 +23,8 @@ export default {
         commit("LOGOUT");
         dispatch("addAlert", { alertType: "success", alertText: "You have successfully logged out." });
     },
-    fetchPosts({ commit }: { commit: any }) {
-        commit("FETCH_POSTS");
+    fetchPosts({ commit }: { commit: any }, page: number) {
+        commit("FETCH_POSTS", page);
     },
     editContent({ commit }: { commit: any }, text: string) {
         commit("EDIT_CONTENT", text);
@@ -37,6 +37,9 @@ export default {
     },
     addAlert({ commit }: { commit: any }, alert: Alert) {
         commit("ADD_ALERT", alert);
+    },
+    dismissAlert({ commit }: { commit: any }, index: number) {
+        commit("DISMISS_ALERT", index);
     },
     editEditContent({ commit }: { commit: any }, text: string) {
         commit("EDIT_EDIT_CONTENT", text);
