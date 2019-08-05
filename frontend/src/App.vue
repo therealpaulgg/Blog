@@ -5,20 +5,18 @@
             <div class="container">
                 <h1>The Blog for Engineers</h1>
                 <hr />
-                <b-alert
-                    v-for="(alert, index) in alerts"
+                <b-alert v-for="(alert, index) in alerts"
                     :key="index"
                     show
                     dismissible
                     fade
                     :variant="alert.alertType"
-                    @dismissed="dismissAlert(index)"
                 >{{alert.alertText}}</b-alert>
                 <div>
                     <b-nav tabs>
                         <b-nav-item class="test" to="/" v-bind:active="$route.path == '/'">Home</b-nav-item>
                         <b-nav-item
-                            v-if="isAuthenticated"
+                            v-if="isAuthenticated && isAdmin"
                             to="/newpost"
                             v-bind:active="$route.path == '/newpost'"
                         >New Post</b-nav-item>
@@ -54,6 +52,7 @@ export default class App extends Vue {
     @Action("setTheme") protected setTheme: any;
     @Action("logout") protected logoutAction: any;
     @Getter("isAuthenticated") protected isAuthenticated: boolean;
+    @Getter("isAdmin") protected isAdmin: boolean;
     @Getter("getTheme") private getTheme: string;
 
     protected changeTheme() {
@@ -73,11 +72,7 @@ export default class App extends Vue {
     }
 
     get alerts() {
-        return this.$store.state.alerts.reverse();
-    }
-
-    protected dismissAlert(index) {
-        this.$store.dispatch("dismissAlert", index);
+        return this.$store.state.alerts;
     }
 
     protected mounted() {

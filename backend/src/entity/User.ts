@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, Unique} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, Unique, JoinColumn} from "typeorm";
 import { Post } from "./Post";
 import { Comment } from "./Comment";
 import { PermissionBlock } from "./PermissionBlock";
@@ -25,6 +25,7 @@ export class User {
     comments: Array<Comment>
 
     @OneToOne(type => PermissionBlock, permissionBlock => permissionBlock.user)
+    @JoinColumn()
     permissionBlock: PermissionBlock
 
     addPost(post: Post) {

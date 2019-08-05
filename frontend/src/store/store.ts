@@ -20,7 +20,8 @@ function defaultState(): State {
         editPostTitle: "",
         editContent: "",
         username: "",
-        pages: 1
+        pages: 1,
+        isAdmin: false
     };
 }
 
@@ -35,7 +36,8 @@ export default new Vuex.Store({
             "postTitle",
             "editPostTitle",
             "editContent",
-            "username"
+            "username",
+            "isAdmin"
         ]
     })],
     mutations,

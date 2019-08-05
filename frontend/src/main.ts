@@ -4,6 +4,7 @@ import router from "./router";
 import store from "./store/store";
 import BootstrapVue from "bootstrap-vue";
 import VueShortkey from "vue-shortkey";
+import axios from "axios";
 
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -96,6 +97,42 @@ Vue.directive("closable", {
 
 import "../node_modules/bootstrap/dist/css/bootstrap.css";
 import "../node_modules/bootstrap-vue/dist/bootstrap-vue.css";
+
+
+router.beforeEach(async (to, from, next) => {
+    if (to.matched.some((record) => record.meta.requiresAuth)) {
+        if (!store.state.authenticated) {
+            next({
+                path: "/login",
+                query: { redirect: to.fullPath }
+            });
+        } else {
+            next();
+        }
+    } else if (to.matched.some((record) => record.meta.initialSetup)) {
+        try {
+            const { data } = await axios.get("http://localhost:3000/cansetup");
+            const canSetup = data.canSetup;
+            if (!canSetup) {
+                next("/");
+            } else {
+                next();
+            }
+        } catch (__) {
+            next("/");
+        }
+    } else if (to.matched.some((record) => record.meta.canPost)) {
+        const { data } = await axios.get("http://localhost:3000/canpost", {withCredentials: true});
+        const canPost = data.canPost;
+        if (!canPost) {
+            next("/");
+        } else {
+            next();
+        }
+    } else {
+        next();
+    }
+})
 
 new Vue({
     router,

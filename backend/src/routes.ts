@@ -5,6 +5,7 @@ import argon2 from "argon2"
 import { Post } from "./entity/Post";
 import { User } from "./entity/User";
 import { Comment } from "./entity/Comment";
+import { PermissionBlock } from "./entity/PermissionBlock";
 
 let router = express.Router()
 
@@ -93,6 +94,55 @@ router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
     }
 })
 
+router.get("/cansetup", async (req, res) => {
+    let connection = getConnection()
+    let admin = await connection.manager.findOne(PermissionBlock, { superAdmin: true })
+    let foo = {
+        canSetup: false
+    }
+    if (!admin) {
+        foo.canSetup = true;
+        res.send(foo);
+    } else {
+        res.send(foo);
+    }
+})
+
+router.get("/canpost", checkAuth, async (req, res) => {
+    let connection = getConnection();
+    let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"]});
+    let foo = {
+        canPost: false
+    }
+    if (user.permissionBlock.superAdmin) {
+        foo.canPost = true;
+    } 
+    res.send(foo)
+})
+
+router.post("/initialsetup", async (req, res) => {
+    let connection = getConnection();
+    let admin = await connection.manager.findOne(PermissionBlock, { superAdmin: true })
+    if (admin) {
+        res.status(401).send("Not allowed.")
+    } else {
+        try {
+            let permissionBlock = new PermissionBlock();
+            permissionBlock.superAdmin = true;
+            await connection.manager.save(permissionBlock);
+            await connection.manager.save(User, {
+                username: req.body.username as string,
+                email: req.body.email as string,
+                password_hash: await argon2.hash(req.body.password) as string,
+                permissionBlock: permissionBlock
+            })
+            res.send("registered");
+        } catch (err) {
+            res.status(500).send("Something went wrong.")
+        }
+    }
+})
+
 router.post("/comment", checkAuth, async (req, res) => {
     // Data should be sent through body
     let connection = getConnection()
@@ -123,7 +173,7 @@ router.post("/jwt-verify", (req, res) => {
     }
 })
 
-router.post("/newpost", checkAuth, async (req, res) => {
+router.post("/newpost", checkAuth, checkAdmin, async (req, res) => {
     let connection = getConnection()
     let title: string = req.body.title
     let content = req.body.content
@@ -166,11 +216,15 @@ router.post("/register", async (req, res) => {
         let connection = await getConnection()
         let user = await connection.manager.findOne(User, { username: req.body.username })
         if (!user) {
-            connection.manager.save(User, {
+            let permissionBlock = new PermissionBlock();
+            await connection.manager.save(permissionBlock);
+            await connection.manager.save(User, {
                 username: req.body.username as string,
                 email: req.body.email as string,
-                password_hash: await argon2.hash(req.body.password) as string
-            }).then(() => res.send("registered"))
+                password_hash: await argon2.hash(req.body.password) as string,
+                permissionBlock
+            })
+            res.send("registered")
         } else {
             res.status(400).send("User with this username already exists.")
         }
@@ -213,14 +267,17 @@ router.post("/deletecomment", checkAuth, async (req, res) => {
 })
 
 router.post("/login", (req, res) => {
-    getConnection().manager.findOne(User, { username: req.body.username }).then(async result => {
+    getConnection().manager.findOne(User, { username: req.body.username }, { relations: ["permissionBlock"] }).then(async result => {
         if (await argon2.verify(result.password_hash, req.body.password)) {
             let token = jwt.sign({ username: req.body.username }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
             let age = 30 * 60 * 1000
             res.cookie("auth", token, { maxAge: age })
             let date = new Date(new Date().getTime() + age).getTime();
             res.cookie("expiration", date, { maxAge: age })
-            res.send("Success")
+            res.send({
+                username: req.body.username, 
+                admin: result.permissionBlock.superAdmin
+            })
         } else {
             res.status(401).send("Unauthorized")
         }
@@ -243,6 +300,24 @@ function checkAuth(req, res, next) {
         res.locals.user = token.username
         next()
     } catch (__) {
+        res.status(401).send("Unauthorized")
+    }
+}
+
+async function checkAdmin(req, res, next) {
+    console.log("am here")
+    try {
+        let connection = getConnection()
+        console.log(res.locals.user)
+        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] });
+        console.log(user);
+        if (user.permissionBlock.superAdmin) {
+            next();
+        } else {
+            res.status(401).send("Unauthorized")
+        }
+    } catch (err) {
+        console.log(err)
         res.status(401).send("Unauthorized")
     }
 }

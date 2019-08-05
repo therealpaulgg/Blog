@@ -5,6 +5,7 @@ import Post from "./components/Post.vue";
 import NewPost from "./views/NewPost.vue";
 import Login from "./views/Login.vue";
 import Register from "./views/Register.vue";
+import InitialSetup from "./views/InitialSetup.vue";
 
 Vue.use(Router);
 
@@ -27,6 +28,7 @@ export default new Router({
         path: "/newpost",
         name: "newpost",
         component: NewPost,
+        meta: { canPost: true}
     },
     {
         path: "/login",
@@ -37,14 +39,12 @@ export default new Router({
         path: "/register",
         name: "register",
         component: Register
+    },
+    {
+        path: "/initialsetup",
+        name: "initialsetup",
+        component: InitialSetup,
+        meta: { initialSetup: true }
     }
-    // {
-    //   path: '/about',
-    //   name: 'about',
-    //   // route level code-splitting
-    //   // this generates a separate chunk (about.[hash].js) for this route
-    //   // which is lazy-loaded when the route is visited.
-    //   component: () => import(/* webpackChunkName: "about" */ './views/About.vue'),
-    // },
   ],
 });

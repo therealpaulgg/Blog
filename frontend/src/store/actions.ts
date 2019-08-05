@@ -38,9 +38,6 @@ export default {
     addAlert({ commit }: { commit: any }, alert: Alert) {
         commit("ADD_ALERT", alert);
     },
-    dismissAlert({ commit }: { commit: any }, index: number) {
-        commit("DISMISS_ALERT", index);
-    },
     editEditContent({ commit }: { commit: any }, text: string) {
         commit("EDIT_EDIT_CONTENT", text);
     },
@@ -49,6 +46,9 @@ export default {
     },
     setUsername({ commit }: { commit: any }, username: string) {
         commit("SET_USERNAME", username);
+    },
+    setAdmin({ commit }: { commit: any }, admin: boolean) {
+        commit("SET_ADMIN", admin);
     },
     async determineTokenRefreshInterval({ commit, dispatch }: { commit: any, dispatch: any }) {
         try {

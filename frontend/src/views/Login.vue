@@ -59,8 +59,9 @@ export default class Home extends Vue {
                 { username: this.username, password: this.password },
                 { withCredentials: true }
             )
-            .then(res => {
-                this.$store.dispatch("setUsername", this.username);
+            .then((res: any) => {
+                this.$store.dispatch("setUsername", res.data.username);
+                this.$store.dispatch("setAdmin", res.data.admin);
                 this.login();
                 this.$router.push("/");
             })

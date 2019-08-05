@@ -11,6 +11,7 @@
             :id="post.postId"
         ></PostBlock>
         <b-button v-if="show" @click="load" :variant="theme">Load More Posts</b-button>
+        <p v-else-if="posts && posts.length === 0">No posts found.</p> 
         <p v-else>All posts loaded.</p>
     </div>
 </template>

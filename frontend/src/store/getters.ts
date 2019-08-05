@@ -21,5 +21,11 @@ export default {
     },
     getEditTitle(state: State) {
         return state.editPostTitle;
+    },
+    isAdmin(state: State) {
+        return state.isAdmin;
+    },
+    getAlert(state: State) {
+        return state.alerts[state.alerts.length - 1];
     }
 };

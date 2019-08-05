@@ -38,11 +38,6 @@ export default {
     ADD_ALERT(state: State, alert: Alert) {
         state.alerts.push(alert);
     },
-    DISMISS_ALERT(state: State, index: number) {
-        console.log(state.alerts)
-        state.alerts.splice(index);
-        console.log(state.alerts)
-    },
     EDIT_EDIT_CONTENT(state: State, text: string) {
         state.editContent = text;
     },
@@ -51,5 +46,8 @@ export default {
     },
     SET_USERNAME(state: State, username: string) {
         state.username = username;
+    },
+    SET_ADMIN(state: State, admin: boolean) {
+        state.isAdmin = admin;
     }
 };

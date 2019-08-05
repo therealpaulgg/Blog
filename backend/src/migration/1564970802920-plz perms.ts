@@ -1,6 +1,6 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class permissions1564788672544 implements MigrationInterface {
+export class plzPerms1564970802920 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<any> {
     }
