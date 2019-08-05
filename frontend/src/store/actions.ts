@@ -54,7 +54,7 @@ export default {
         try {
             const expiry = parseInt(Cookies.get("expiration"), 10);
             if (isNaN(expiry)) {
-                commit("LOGOUT")
+                commit("LOGOUT");
                 dispatch("addAlert", {
                     alertType: "danger",
                     alertText: "There was a problem authenticating. Please ensure cookies are not being tampered with."

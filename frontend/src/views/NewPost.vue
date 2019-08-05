@@ -123,7 +123,7 @@ export default class NewPost extends Vue {
                     alertText: "Posted successfully created."
                 });
             })
-            .catch(err => {
+            .catch((err) => {
                 // This will probably happen if the user deletes their cookies
                 this.$store.dispatch("forceLogout");
                 this.$store.dispatch("addAlert", {

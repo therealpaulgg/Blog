@@ -50,7 +50,7 @@ export default class NewPost extends Vue {
         if (this.initialContent) {
             this.content = this.initialContent;
         } else {
-            this.content = ""
+            this.content = "";
         }
     }
 
@@ -75,9 +75,9 @@ export default class NewPost extends Vue {
         this.$emit("input", this.content);
     }
 
-    // I don't really care if this is inefficient, I've spend like 2 hours on 
-    // this stupid issue of persisted state, and all I know is that if I use 
-    // this it resets a text box after the properties are cleared properly. 
+    // I don't really care if this is inefficient, I've spend like 2 hours on
+    // this stupid issue of persisted state, and all I know is that if I use
+    // this it resets a text box after the properties are cleared properly.
     @Watch("initialContent")
     protected foo() {
         this.content = this.initialContent;

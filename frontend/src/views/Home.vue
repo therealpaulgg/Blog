@@ -30,7 +30,7 @@ import { State } from "vuex-class";
 })
 export default class Home extends Vue {
 
-    pageNum: number;
+    protected pageNum: number;
 
     constructor() {
         super();
@@ -47,7 +47,7 @@ export default class Home extends Vue {
     }
 
     get show() {
-        return this.$store.state.pages > this.pageNum
+        return this.$store.state.pages > this.pageNum;
     }
 
     get posts() {

@@ -24,9 +24,9 @@ import axios from "axios";
 export default class Comment extends Vue {
     @Prop() protected comment: CommentModel;
     @Prop() protected ownsPost: boolean;
+    protected alive: boolean;
+    protected renderedContent: string;
     @Getter("getTheme") private getTheme: string;
-    alive: boolean;
-    renderedContent: string;
 
     constructor() {
         super();
@@ -53,7 +53,6 @@ export default class Comment extends Vue {
                 alertText: "Comment deleted."
             });
             this.alive = false;
-            
         } catch (err) {
             // do something
         }

@@ -13,9 +13,9 @@ import { md } from "../mdparser";
 export default class Preview extends Vue {
     protected renderedContent: string;
     protected renderedTitle: string;
-    @Prop(String) private title: string;
     @Prop(String) protected content: string;
     protected localContent: string;
+    @Prop(String) private title: string;
 
     constructor() {
         super();
@@ -25,7 +25,7 @@ export default class Preview extends Vue {
             this.localContent = this.content;
             this.renderedContent = md.render(this.localContent);
         } else {
-            this.localContent = ""
+            this.localContent = "";
         }
     }
 

@@ -1,7 +1,7 @@
 import { State } from "@/models/state";
 import axios from "axios";
 import { PostModel } from "@/models/post";
-import { Alert } from '@/models/alert';
+import { Alert } from "@/models/alert";
 
 export default {
     SET_THEME(state: State, theme: string) {

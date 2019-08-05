@@ -66,7 +66,6 @@ export default class Home extends Vue {
                 this.$router.push("/");
             })
             .catch((err: Error) => {
-                console.log(err.message);
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: "Incorrect username or password."

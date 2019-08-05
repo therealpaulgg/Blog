@@ -65,7 +65,7 @@ export default class Register extends Vue {
                 "http://localhost:3000/login",
                 { username: this.username, password: this.password },
                 { withCredentials: true }
-            )
+            );
             this.login(true);
             this.$router.push("/");
         } catch (err) {
