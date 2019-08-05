@@ -251,11 +251,11 @@ router.post("/deletepost", checkAuth, (req, res) => {
 router.post("/deletecomment", checkAuth, async (req, res) => {
     let connection = getConnection();
     let id = req.body.id
-    console.log(id);
     try {
+        let user = await connection.manager.findOne(User, {username: res.locals.user}, { relations: ["permissionBlock"]})
         let comment = await connection.manager.findOne(Comment, { id: id }, { relations: ["post", "user", "post.user"] })
-        let user = comment.user;
-        if (res.locals.user === user.username || comment.post.user.username === res.locals.user) {
+        let commentUser = comment.user;
+        if (res.locals.user === commentUser.username || comment.post.user.username === res.locals.user || user.permissionBlock.superAdmin) {
             await connection.manager.remove(comment);
             res.send("deleted")
         } else {

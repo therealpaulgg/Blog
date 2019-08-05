@@ -2,7 +2,7 @@
     <div class="comment" :class="getTheme" v-if="alive">
         <p style="display: inline-block">User: {{comment.user}}, {{date}}</p>
         <a
-            v-if="$store.state.username === comment.user"
+            v-if="$store.state.username === comment.user || $store.getters.isAdmin || ownsPost"
             style="float: right;"
             @click="deleteComment"
             class="delete"
@@ -23,6 +23,7 @@ import axios from "axios";
 @Component
 export default class Comment extends Vue {
     @Prop() protected comment: CommentModel;
+    @Prop() protected ownsPost: boolean;
     @Getter("getTheme") private getTheme: string;
     alive: boolean;
     renderedContent: string;

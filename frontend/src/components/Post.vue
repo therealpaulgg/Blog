@@ -76,7 +76,7 @@
                     @click="postComment"
                 >Submit Comment</a>
                 <hr />
-                <Comment v-for="(comment, index) in comments" :key="index" :comment="comment" />
+                <Comment v-for="(comment, index) in comments" :key="index" :comment="comment" :ownsPost="user === $store.state.username"/>
                 <b-button v-if="show" @click="load" :variant="theme">Load More Comments</b-button>
                 <p v-else-if="comments.length === 0">No comments found.</p> 
                 <p v-else>All comments loaded.</p>
