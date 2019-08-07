@@ -41,7 +41,7 @@ export default class NewPost extends Vue {
     private options = {
         fontLigatures: true,
         fontFamily: "Fira Code",
-        wordWrap: "off",
+        wordWrap: "on",
         minimap: { enabled: false }
     };
 

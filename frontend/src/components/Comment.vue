@@ -52,6 +52,7 @@ export default class Comment extends Vue {
                 alertType: "success",
                 alertText: "Comment deleted."
             });
+            this.$emit("deletedComment");
             this.alive = false;
         } catch (err) {
             // do something

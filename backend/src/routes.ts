@@ -84,7 +84,8 @@ router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
                 createdAt: result.createdAt,
                 updatedAt: result.updatedAt,
                 comments,
-                pages
+                pages,
+                commentCount: count
             }
             res.send(formattedData)
         }).catch(err => res.send({ title: "Oof!", content: "No post found. :(" }))
@@ -110,13 +111,13 @@ router.get("/cansetup", async (req, res) => {
 
 router.get("/canpost", checkAuth, async (req, res) => {
     let connection = getConnection();
-    let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"]});
+    let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] });
     let foo = {
         canPost: false
     }
     if (user.permissionBlock.superAdmin) {
         foo.canPost = true;
-    } 
+    }
     res.send(foo)
 })
 
@@ -254,7 +255,7 @@ router.post("/deletecomment", checkAuth, async (req, res) => {
     let connection = getConnection();
     let id = req.body.id
     try {
-        let user = await connection.manager.findOne(User, {username: res.locals.user}, { relations: ["permissionBlock"]})
+        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
         let comment = await connection.manager.findOne(Comment, { id: id }, { relations: ["post", "user", "post.user"] })
         let commentUser = comment.user;
         if (res.locals.user === commentUser.username || comment.post.user.username === res.locals.user || user.permissionBlock.superAdmin) {
@@ -277,7 +278,7 @@ router.post("/login", (req, res) => {
             let date = new Date(new Date().getTime() + age).getTime();
             res.cookie("expiration", date, { maxAge: age })
             res.send({
-                username: req.body.username, 
+                username: req.body.username,
                 admin: result.permissionBlock.superAdmin
             })
         } else {

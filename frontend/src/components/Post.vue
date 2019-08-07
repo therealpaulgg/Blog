@@ -6,13 +6,29 @@
             </router-link>
             <hr />
             <h1 class="bigtitle">{{header}}</h1>
-            <p>by {{user}}</p>
-            <p>Created {{createdAt}}</p>
-            <p v-if="createdAt !== updatedAt">Updated {{updatedAt}}</p>
-            <div v-if="isAuthenticated && user === username">
+            <div class="metadata">
+                <span class="metaelement">By: <i>{{user}}</i></span>
+                <span class="metaelement">
+                    <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
+                    <span class="metaelement">{{createdAt}}</span>
+                </span>
+                <span class="metaelement" v-if="createdAt !== updatedAt">
+                    <font-awesome-icon icon="sync-alt"></font-awesome-icon>
+                    <span class="metaelement"><i>Updated {{updatedAt}}</i></span>
+                </span>
+                <span class="metaelement" v-if="commentCount">
+                    <font-awesome-icon icon="comments"></font-awesome-icon>
+                    {{commentCount}}
+                </span>
+                <span v-if="isAuthenticated && user === username" style="float: right">
+                    <a @click="del" class="delete metaelement" :class="getTheme">Delete</a>
+                    <a @click="edit" class="edit metaelement" :class="getTheme">Edit</a>
+                </span>
+            </div>
+            <!-- <div v-if="isAuthenticated && user === username">
                 <a @click="del" class="delete" :class="getTheme">Delete</a>
                 <a @click="edit" class="edit" :class="getTheme">Edit</a>
-            </div>
+            </div>-->
             <hr />
             <div v-if="editing">
                 <label>Post Title</label>
@@ -39,8 +55,10 @@
                         <Preview :content="editContent" />
                     </div>
                 </div>
-                <a class="button" @click="editing = false">Cancel</a>
+                <div style="padding-top: 15px">
+                <a class="button" style="margin-right: 10px" @click="editing = false">Cancel</a>
                 <a class="button" :class="theme" @click="makeEdits">Submit Edit</a>
+                </div>
             </div>
             <div v-else>
                 <div v-html="renderedContent"></div>
@@ -54,12 +72,10 @@
                 >Comment</a>
                 <p
                     v-if="postingComment"
-                    style="display: inline-block;"
                     v-bind:class="{danger: commentContent.length > 2000}"
+                    style="padding-top: 15px;"
                 >Characters used: {{commentContent.length}} / 2000</p>
-                <br />
-                <br />
-                <div class="row" style="padding-bottom: 15px;">
+                <div class="row">
                     <div class="col">
                         <Editor
                             v-if="postingComment"
@@ -73,18 +89,20 @@
                         <Preview v-if="postingComment" :content="commentContent" />
                     </div>
                 </div>
+                <div v-if="postingComment" style="position: relative; padding-top: 15px">
                 <a
                     class="button"
-                    v-if="postingComment"
                     :class="theme"
                     @click="postComment"
                 >Submit Comment</a>
+                </div>
                 <hr />
                 <Comment
                     v-for="comment in comments"
                     :key="comment.id"
                     :comment="comment"
                     :ownsPost="user === $store.state.username"
+                    @deletedComment="updateCommentsOnDelete"
                 />
                 <b-button v-if="show" @click="load" :variant="theme">Load More Comments</b-button>
                 <p v-else-if="comments.length === 0">No comments found.</p>
@@ -131,6 +149,7 @@ export default class Post extends Vue {
     protected editing = false;
     protected pages: number;
     protected currentPage: number;
+    protected commentCount: number | null;
     @Prop(String) protected readonly title!: string;
     @Prop(String) protected readonly id!: string;
     @Getter("getTheme") private getTheme: string;
@@ -148,6 +167,7 @@ export default class Post extends Vue {
         this.width = null;
         this.height = null;
         this.postingComment = false;
+        this.commentCount = null;
         this.pages = 1;
         this.currentPage = 1;
     }
@@ -242,7 +262,7 @@ export default class Post extends Vue {
 
     protected async makeEdits() {
         try {
-            let newUrlTitle = (await axios.post(
+            const newUrlTitle = (await axios.post(
                 "http://localhost:3000/editpost",
                 {
                     id: this.id,
@@ -251,7 +271,7 @@ export default class Post extends Vue {
                     newContent: this.editContent
                 },
                 { withCredentials: true }
-            )).data.urlTitle
+            )).data.urlTitle;
             this.editContent = "";
             this.$store.dispatch("addAlert", {
                 alertType: "success",
@@ -287,7 +307,7 @@ export default class Post extends Vue {
                     alertText: "Comment successfully created."
                 });
                 this.postingComment = false;
-                await this.fetchData(true);
+                await this.loadComments();
             } catch (err) {
                 // The user should never actually get to this point in theory,
                 // but it is here for safety. (Delete cookies)
@@ -306,13 +326,33 @@ export default class Post extends Vue {
         }
     }
 
+    protected updateCommentsOnDelete() {
+        this.loadComments();
+    }
+
     protected mounted() {
         window.addEventListener("resize", this.updateDimensions.bind(this));
         this.fetchData();
         this.updateDimensions();
     }
 
-    protected async fetchData(loadAll?: boolean) {
+    protected async loadComments() {
+        const { data }: { data: PostModel } = await axios.get(
+            `http://localhost:3000/post/${this.id}/${this.title}/${this.currentPage}`
+        );
+        this.commentCount = data.commentCount;
+        this.comments = [];
+        for (let i = 1; i <= this.currentPage; i++) {
+            const comments = (await axios.get(
+                `http://localhost:3000/post/${this.id}/${this.title}/${i}`
+            )).data.comments;
+            for (const comment of comments) {
+                this.comments.push(comment);
+            }
+        }
+    }
+
+    protected async fetchData() {
         try {
             const { data }: { data: PostModel } = await axios.get(
                 `http://localhost:3000/post/${this.id}/${this.title}/${this.currentPage}`
@@ -321,23 +361,12 @@ export default class Post extends Vue {
             this.content = data.content;
             this.user = data.username;
             this.pages = data.pages;
-            if (loadAll) {
+            this.commentCount = data.commentCount;
+            if (this.currentPage === 1) {
                 this.comments = [];
-                for (let i = 1; i <= this.currentPage; i++) {
-                    const comments = (await axios.get(
-                        `http://localhost:3000/post/${this.id}/${this.title}/${i}`
-                    )).data.comments;
-                    for (const comment of comments) {
-                        this.comments.push(comment);
-                    }
-                }
-            } else {
-                if (this.currentPage === 1) {
-                    this.comments = [];
-                }
-                for (const comment of data.comments) {
-                    this.comments.push(comment);
-                }
+            }
+            for (const comment of data.comments) {
+                this.comments.push(comment);
             }
             this.createdAt = moment
                 .utc(data.createdAt)
@@ -371,32 +400,38 @@ export default class Post extends Vue {
     width: 100%
 .title
     border-radius: 5px   
+    padding-left: 15px
+    padding-right: 15px
 .delete
     color: #ff7474 !important
     cursor: pointer
     border-radius: 5px
     padding: 10px
-    margin-top: 10px
     width: auto
     height: auto
 .delete.light
-    background-color: white !important
+    background-color: #e9ecef !important
 .delete.dark
-    background-color: #2a2c39 !important
+    background-color: #20212B !important
 .edit
     color: #75ff74 !important
     cursor: pointer
     border-radius: 5px
     padding: 10px
-    margin: 10px
 .edit.light
-    background-color: white !important
+    background-color: #e9ecef !important
 .edit.dark
-    background-color: #2a2c39 !important
+    background-color: #20212B !important
 .preview
     padding: 0px
     border-radius: 5px
     overflow-y: auto
+.metadata
+    border-radius: 5px
+    padding: 10px
+.metaelement
+    margin-left: 10px
+    margin-right: 10px
 .dark
     .button
         background-color: #2a2c39 !important
@@ -405,8 +440,10 @@ export default class Post extends Vue {
     .button
         background-color: #2a2c39 !important
     .title
-        border-color: #2a2c39 !important
-        background-color: #20212B !important
+        border-color: #20212B !important
+        background-color: #2a2c39 !important
+    .metadata
+        background-color: #2a2c39 !important
 .light
     .preview
         background-color: #FFFFFE !important
@@ -415,4 +452,6 @@ export default class Post extends Vue {
     .title
         border-color: white !important
         background-color: white !important
+    .metadata
+        background-color: #FFFFFE !important
 </style>

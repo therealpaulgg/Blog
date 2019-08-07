@@ -20,7 +20,10 @@ import {
     faItalic,
     faQuoteLeft,
     faUnderline,
-    faCalculator
+    faCalculator,
+    faComments,
+    faCalendarAlt,
+    faSyncAlt
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -37,7 +40,10 @@ library.add(
     faItalic,
     faQuoteLeft,
     faUnderline,
-    faCalculator
+    faCalculator,
+    faComments,
+    faCalendarAlt,
+    faSyncAlt
 );
 
 Vue.component("font-awesome-icon", FontAwesomeIcon);

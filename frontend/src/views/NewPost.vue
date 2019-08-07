@@ -143,7 +143,9 @@ export default class NewPost extends Vue {
     padding: 10px
     cursor: pointer
 .title
-    border-radius: 5px    
+    border-radius: 5px   
+    padding-left: 15px
+    padding-right: 15px   
 .editor
     height: 700px
     width: 100%
@@ -164,8 +166,8 @@ export default class NewPost extends Vue {
     .button
         background-color: #2a2c39 !important
     .title
-        border-color: #2a2c39 !important
-        background-color: #20212B !important
+        border-color: #20212B !important
+        background-color: #2a2c39 !important
 .light
     .preview
         background-color: #FFFFFE !important

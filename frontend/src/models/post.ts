@@ -11,4 +11,5 @@ export interface PostModel {
     updatedAt: string;
     comments: CommentModel[];
     pages: number;
+    commentCount: number;
 }
