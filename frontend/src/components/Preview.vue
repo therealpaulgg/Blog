@@ -1,6 +1,6 @@
 <template>
-    <div id="shit">
-        <div id="preview" class="break" v-html="`<h1>${renderedTitle}</h1>` + renderedContent"></div>
+    <div id="preview">
+        <div class="break" v-html="`<h1>${renderedTitle}</h1>` + renderedContent"></div>
         <br />
     </div>
 </template>
@@ -52,24 +52,15 @@ export default class Preview extends Vue {
 .break
     position: absolute
     width: 100%
-    // padding: 20px
     word-wrap: break-word
     margin: 0px
     padding: 20px
-.preview
-    padding: 0px
-    border-radius: 5px
-    overflow-y: auto
 .dark
-    .preview
-        background-color: #2a2c39 !important
     .title
         border-radius: 5px
         border-color: #2a2c39 !important
         background-color: #20212B !important
 .light
-    .preview
-        background-color: #FFFFFE !important
     .title
         border-color: white !important
         background-color: white !important

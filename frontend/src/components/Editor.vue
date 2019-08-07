@@ -41,7 +41,7 @@ export default class NewPost extends Vue {
     private options = {
         fontLigatures: true,
         fontFamily: "Fira Code",
-        wordWrap: true,
+        wordWrap: "off",
         minimap: { enabled: false }
     };
 
@@ -57,7 +57,9 @@ export default class NewPost extends Vue {
     public updateDimensions() {
         const height = this.height - 46;
         const width = this.width;
-        this.editor.getEditor().layout({ height, width });
+        if (this.height && this.width) {
+            this.editor.getEditor().layout({ height, width });
+        }
     }
 
     @Watch("width")

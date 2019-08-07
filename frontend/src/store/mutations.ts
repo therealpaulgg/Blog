@@ -2,6 +2,7 @@ import { State } from "@/models/state";
 import axios from "axios";
 import { PostModel } from "@/models/post";
 import { Alert } from "@/models/alert";
+import Cookies from "js-cookie";
 
 export default {
     SET_THEME(state: State, theme: string) {
@@ -13,6 +14,8 @@ export default {
     LOGOUT(state: State) {
         state.authenticated = false;
         state.username = "";
+        Cookies.remove("auth", { domain: "localhost" });
+        Cookies.remove("expiration", { domain: "localhost" });
     },
     async FETCH_POSTS(state: State, page: number) {
         const { data } = await axios.get(`http://localhost:3000/posts/${page}`);

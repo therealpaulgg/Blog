@@ -122,12 +122,16 @@ router.beforeEach(async (to, from, next) => {
             next("/");
         }
     } else if (to.matched.some((record) => record.meta.canPost)) {
-        const { data } = await axios.get("http://localhost:3000/canpost", {withCredentials: true});
-        const canPost = data.canPost;
-        if (!canPost) {
+        try {
+            const { data } = await axios.get("http://localhost:3000/canpost", {withCredentials: true});
+            const canPost = data.canPost;
+            if (!canPost) {
+                next("/");
+            } else {
+                next();
+            }
+        } catch (__) {
             next("/");
-        } else {
-            next();
         }
     } else {
         next();

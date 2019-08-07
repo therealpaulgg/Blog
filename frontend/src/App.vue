@@ -83,8 +83,6 @@ export default class App extends Vue {
 
     protected logout() {
         this.logoutAction();
-        Cookies.remove("auth", { domain: "localhost" });
-        Cookies.remove("expiration", { domain: "localhost" });
         this.$router.push("/");
     }
 }
@@ -162,6 +160,15 @@ html, body
     transition: 0.5s
     -webkit-transition: 0.5s
     overflow-y: auto
+.preview::-webkit-scrollbar
+    width: 10px
+
+.preview::-webkit-scrollbar-thumb
+    border-radius: 10px
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3)
+
+.preview::-webkit-scrollbar-track
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
 .light
     a
         color: black !important
@@ -171,7 +178,8 @@ html, body
         color: #00ccff !important
         transition: 0.5s
         -webkit-transition: 0.5s
-    
+    .preview::-webkit-scrollbar-thumb
+        background-color: #dddddd
     hr
         background-color: gray
     transition: 0.5s
@@ -180,6 +188,8 @@ html, body
 .dark
     background-color: #20212B !important
     color: white
+    .preview::-webkit-scrollbar-thumb
+        background-color: #3e404c
 
     a.active
         background-color: #2a2c39 !important 
@@ -199,6 +209,7 @@ html, body
 
     transition: 0.5s
     -webkit-transition: 0.5s
+
     
 .fade-enter-active, .fade-leave-active 
     transition: opacity 0.5s

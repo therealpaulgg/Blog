@@ -53,11 +53,12 @@ export default {
     async determineTokenRefreshInterval({ commit, dispatch }: { commit: any, dispatch: any }) {
         try {
             const expiry = parseInt(Cookies.get("expiration"), 10);
-            if (isNaN(expiry)) {
+            const authCookie = Cookies.get("auth");
+            if (isNaN(expiry) || authCookie == null) {
                 commit("LOGOUT");
                 dispatch("addAlert", {
                     alertType: "danger",
-                    alertText: "There was a problem authenticating. Please ensure cookies are not being tampered with."
+                    alertText: "Your session has expired. Please log in again."
                 });
             } else {
                 const timeout = expiry - new Date().getTime();

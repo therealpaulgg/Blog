@@ -149,8 +149,8 @@ export default class PostToolbar extends Vue {
         for (let i = 0; i < this.POPUP_NUM; i++) {
             if (i === index) {
                 Vue.set(this.popups, i, !this.popups[i]);
-                const fn = this.functions[i].function;
-                if (fn !== null) {
+                if (this.functions[i] != null) {
+                    const fn = this.functions[i].function;
                     const args = this.functions[i].args;
                     this.insertMonaco(fn, args);
                 }
@@ -216,19 +216,29 @@ export default class PostToolbar extends Vue {
             : {};
     }
 
-    protected addEmoji(emoji) {
-        this.$store.dispatch(
-            "editContent",
-            this.$store.getters.getContent + emoji.colons
+    protected insertMonacoNoFunc(text) {
+        const line = this.editor.getEditor().getSelection();
+        const extWindow: MonacoWindow = window;
+        const range = new extWindow.monaco.Range(
+            line.startLineNumber,
+            line.startColumn,
+            line.endLineNumber,
+            line.endColumn
         );
-        this.closeAll();
+        const id = { major: 1, minor: 1 };
+        if (text) {
+            const op = {
+                identifier: id,
+                range,
+                text,
+                forceMoveMarkers: true
+            };
+            this.editor.getEditor().executeEdits("lol", [op]);
+        }
     }
 
-    protected addLink() {
-        this.$store.dispatch(
-            "editContent",
-            this.$store.getters.getContent + `[${this.name}](${this.url})`
-        );
+    protected addEmoji(emoji) {
+        this.insertMonacoNoFunc(emoji.colons);
         this.closeAll();
     }
 
@@ -237,11 +247,8 @@ export default class PostToolbar extends Vue {
         if (this.$store.getters.getContent !== "") {
             str = "\n";
         }
-        this.$store.dispatch(
-            "editContent",
-            `${
-                this.$store.getters.getContent
-            }${str}\`\`\`${this.language.toLowerCase()}\nCODE HERE\n\`\`\``
+        this.insertMonacoNoFunc(
+            `${str}\`\`\`${this.language.toLowerCase()}\nCODE HERE\n\`\`\``
         );
         this.closeAll();
     }
@@ -268,6 +275,15 @@ export default class PostToolbar extends Vue {
     margin-bottom: 10px
     padding: 5px
     overflow-y: auto
+.toolbar::-webkit-scrollbar
+    width: 10px
+
+.toolbar::-webkit-scrollbar-thumb
+    border-radius: 10px
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3)
+
+.toolbar::-webkit-scrollbar-track
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
 .dark
     .popup
         background-color: #20212B
@@ -277,11 +293,15 @@ export default class PostToolbar extends Vue {
         border-color: #2a2c39 !important
         background-color: #20212B !important
         color: white
+    .toolbar::-webkit-scrollbar-thumb
+        background-color: #3e404c
 .light
     .popup
         background-color: #e9ecef
     .toolbar
         background-color: white !important
+    .toolbar::-webkit-scrollbar-thumb
+        background-color: #dddddd
 .icon
     display: inline-block
     margin-left: 10px
