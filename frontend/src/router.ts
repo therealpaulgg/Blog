@@ -6,6 +6,7 @@ import NewPost from "./views/NewPost.vue";
 import Login from "./views/Login.vue";
 import Register from "./views/Register.vue";
 import InitialSetup from "./views/InitialSetup.vue";
+import Administration from "./views/Administration.vue";
 
 Vue.use(Router);
 
@@ -45,6 +46,12 @@ export default new Router({
         name: "initialsetup",
         component: InitialSetup,
         meta: { initialSetup: true }
+    },
+    {
+      path: "/administration",
+      name: "administration",
+      component: Administration,
+      meta: { isAdmin: true }
     }
   ],
 });

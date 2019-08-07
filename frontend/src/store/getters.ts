@@ -25,6 +25,9 @@ export default {
     isAdmin(state: State) {
         return state.isAdmin;
     },
+    canPost(state: State) {
+        return state.canPost;
+    },
     getAlert(state: State) {
         return state.alerts[state.alerts.length - 1];
     }

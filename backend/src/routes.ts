@@ -156,6 +156,25 @@ router.get("/canpost", checkAuth, async (req, res) => {
     }
 })
 
+// Explicitly checks if user is admin (if conditions for posting are changed)
+router.get("/isadmin", checkAuth, async (req, res) => {
+    try {
+        let connection = getConnection();
+        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] });
+        let foo = {
+            isAdmin: false
+        }
+        if (user.permissionBlock.superAdmin) {
+            foo.isAdmin = true;
+        }
+        res.send(foo)
+    } catch (__) {
+        res.status(500).send({
+            error: "Something went wrong."
+        })
+    }
+})
+
 // Registers a superadmin as long as initial setup is still possible.
 router.post("/initialsetup", async (req, res) => {
     let connection = getConnection();
@@ -350,6 +369,7 @@ router.post("/login", (req, res) => {
             res.cookie("expiration", date, { maxAge: age })
             res.send({
                 username: req.body.username,
+                canPost: result.permissionBlock.superAdmin,
                 admin: result.permissionBlock.superAdmin
             })
         } else {

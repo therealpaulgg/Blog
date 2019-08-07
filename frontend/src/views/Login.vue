@@ -62,6 +62,7 @@ export default class Home extends Vue {
             .then((res: any) => {
                 this.$store.dispatch("setUsername", res.data.username);
                 this.$store.dispatch("setAdmin", res.data.admin);
+                this.$store.dispatch("setCanPost", res.data.canPost)
                 this.login();
                 this.$router.push("/");
             })

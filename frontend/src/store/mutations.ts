@@ -52,5 +52,8 @@ export default {
     },
     SET_ADMIN(state: State, admin: boolean) {
         state.isAdmin = admin;
+    },
+    SET_CAN_POST(state: State, canPost: boolean) {
+        state.canPost = canPost;
     }
 };

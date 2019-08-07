@@ -16,7 +16,7 @@
                     <b-nav tabs>
                         <b-nav-item class="test" to="/" v-bind:active="$route.path == '/'">Home</b-nav-item>
                         <b-nav-item
-                            v-if="isAuthenticated && isAdmin"
+                            v-if="isAuthenticated && canPost"
                             to="/newpost"
                             v-bind:active="$route.path == '/newpost'"
                         >New Post</b-nav-item>
@@ -27,6 +27,11 @@
                             to="/register"
                             v-bind:active="$route.path == '/register'"
                         >Register</b-nav-item>
+                        <b-nav-item
+                            v-if="isAuthenticated && isAdmin"
+                            to="/administration"
+                            v-bind:active="$route.path == '/administration'"
+                        >Administration</b-nav-item>
                     </b-nav>
                 </div>
                 <br />
@@ -52,6 +57,7 @@ export default class App extends Vue {
     @Action("setTheme") protected setTheme: any;
     @Action("logout") protected logoutAction: any;
     @Getter("isAuthenticated") protected isAuthenticated: boolean;
+    @Getter("canPost") protected canPost: boolean;
     @Getter("isAdmin") protected isAdmin: boolean;
     @Getter("getTheme") private getTheme: string;
 

@@ -21,6 +21,7 @@ function defaultState(): State {
         editContent: "",
         username: "",
         pages: 1,
+        canPost: false,
         isAdmin: false
     };
 }
@@ -37,6 +38,7 @@ export default new Vuex.Store({
             "editPostTitle",
             "editContent",
             "username",
+            "canPost",
             "isAdmin"
         ]
     })],

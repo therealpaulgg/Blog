@@ -13,5 +13,6 @@ export interface State {
     editPostTitle: string;
     username: string;
     pages: number;
+    canPost: boolean;
     isAdmin: boolean;
 }

@@ -129,9 +129,21 @@ router.beforeEach(async (to, from, next) => {
         }
     } else if (to.matched.some((record) => record.meta.canPost)) {
         try {
-            const { data } = await axios.get("http://localhost:3000/canpost", {withCredentials: true});
+            const { data } = await axios.get("http://localhost:3000/canpost", { withCredentials: true });
             const canPost = data.canPost;
             if (!canPost) {
+                next("/");
+            } else {
+                next();
+            }
+        } catch (__) {
+            next("/");
+        }
+    } else if (to.matched.some((record) => record.meta.isAdmin)) {
+        try {
+            const { data } = await axios.get("http://localhost:3000/isadmin", { withCredentials: true });
+            const isAdmin = data.isAdmin;
+            if (!isAdmin) {
                 next("/");
             } else {
                 next();
