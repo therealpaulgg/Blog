@@ -201,7 +201,9 @@ router.post("/editpost", checkAuth, async (req, res) => {
             post.content = req.body.newContent
             post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
             await connection.manager.save(post)
-            res.send("Done")
+            res.send({
+                urlTitle: post.urlTitle
+            })
         } else {
             res.status(401).send("You are not the owner of this post.")
         }

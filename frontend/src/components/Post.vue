@@ -52,7 +52,11 @@
                     :class="theme"
                     @click="showCommentPost"
                 >Comment</a>
-                <p v-if="postingComment" style="display: inline-block;" v-bind:class="{danger: commentContent.length > 2000}">Characters used: {{commentContent.length}} / 2000</p>
+                <p
+                    v-if="postingComment"
+                    style="display: inline-block;"
+                    v-bind:class="{danger: commentContent.length > 2000}"
+                >Characters used: {{commentContent.length}} / 2000</p>
                 <br />
                 <br />
                 <div class="row" style="padding-bottom: 15px;">
@@ -76,9 +80,14 @@
                     @click="postComment"
                 >Submit Comment</a>
                 <hr />
-                <Comment v-for="(comment, index) in comments" :key="index" :comment="comment" :ownsPost="user === $store.state.username"/>
+                <Comment
+                    v-for="comment in comments"
+                    :key="comment.id"
+                    :comment="comment"
+                    :ownsPost="user === $store.state.username"
+                />
                 <b-button v-if="show" @click="load" :variant="theme">Load More Comments</b-button>
-                <p v-else-if="comments.length === 0">No comments found.</p> 
+                <p v-else-if="comments.length === 0">No comments found.</p>
                 <p v-else>All comments loaded.</p>
             </div>
         </div>
@@ -162,9 +171,9 @@ export default class Post extends Vue {
             .then(() => {
                 this.$store.dispatch("fetchPosts", 1);
                 this.$store.dispatch("addAlert", {
-                alertType: "success",
-                alertText: "Post deleted."
-            });
+                    alertType: "success",
+                    alertText: "Post deleted."
+                });
                 this.$router.push("/");
             })
             .catch(() => {
@@ -233,7 +242,7 @@ export default class Post extends Vue {
 
     protected async makeEdits() {
         try {
-            await axios.post(
+            let newUrlTitle = (await axios.post(
                 "http://localhost:3000/editpost",
                 {
                     id: this.id,
@@ -242,13 +251,16 @@ export default class Post extends Vue {
                     newContent: this.editContent
                 },
                 { withCredentials: true }
-            );
+            )).data.urlTitle
             this.editContent = "";
             this.$store.dispatch("addAlert", {
                 alertType: "success",
                 alertText: "Post edited."
             });
-            this.$router.push("/");
+            this.editing = false;
+            // technically this doesn't initialize a new component (wtf vue?)
+            this.$router.push(`/posts/${this.id}/${newUrlTitle}`);
+            this.fetchData();
         } catch (err) {
             // The user should never actually get to this point in theory,
             // but it is here for safety. (Delete cookies)
@@ -275,7 +287,7 @@ export default class Post extends Vue {
                     alertText: "Comment successfully created."
                 });
                 this.postingComment = false;
-                await this.fetchData();
+                await this.fetchData(true);
             } catch (err) {
                 // The user should never actually get to this point in theory,
                 // but it is here for safety. (Delete cookies)
@@ -300,28 +312,44 @@ export default class Post extends Vue {
         this.updateDimensions();
     }
 
-    protected async fetchData() {
-        const { data }: { data: PostModel } = await axios.get(
-            `http://localhost:3000/post/${this.id}/${this.title}/${this.currentPage}`
-        );
-        this.header = data.title;
-        this.content = data.content;
-        this.user = data.username;
-        this.pages = data.pages;
-        if (this.currentPage === 1) {
-            this.comments = [];
+    protected async fetchData(loadAll?: boolean) {
+        try {
+            const { data }: { data: PostModel } = await axios.get(
+                `http://localhost:3000/post/${this.id}/${this.title}/${this.currentPage}`
+            );
+            this.header = data.title;
+            this.content = data.content;
+            this.user = data.username;
+            this.pages = data.pages;
+            if (loadAll) {
+                this.comments = [];
+                for (let i = 1; i <= this.currentPage; i++) {
+                    const comments = (await axios.get(
+                        `http://localhost:3000/post/${this.id}/${this.title}/${i}`
+                    )).data.comments;
+                    for (const comment of comments) {
+                        this.comments.push(comment);
+                    }
+                }
+            } else {
+                if (this.currentPage === 1) {
+                    this.comments = [];
+                }
+                for (const comment of data.comments) {
+                    this.comments.push(comment);
+                }
+            }
+            this.createdAt = moment
+                .utc(data.createdAt)
+                .local()
+                .format("MM/DD/YYYY, HH:mm");
+            this.updatedAt = moment
+                .utc(data.updatedAt)
+                .local()
+                .format("MM/DD/YYYY, HH:mm");
+        } catch (__) {
+            // error
         }
-        for (const comment of data.comments) {
-            this.comments.push(comment);
-        }
-        this.createdAt = moment
-            .utc(data.createdAt)
-            .local()
-            .format("MM/DD/YYYY, HH:mm");
-        this.updatedAt = moment
-            .utc(data.updatedAt)
-            .local()
-            .format("MM/DD/YYYY, HH:mm");
     }
 }
 </script>

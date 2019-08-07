@@ -1,9 +1,3 @@
 {
-    "sqltools.connections": [
-        {
-            "database": "./backend/database.sqlite",
-            "dialect": "SQLite",
-            "name": "FUCK"
-        }
-    ]
+    "sqltools.connections": []
 }
