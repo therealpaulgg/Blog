@@ -169,6 +169,16 @@ html, body
 
 .preview::-webkit-scrollbar-track
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
+
+thead
+    background-color: rgba(0,0,0,0.15)
+tr:nth-child(even) 
+    background-color: rgba(0,0,0,0.15)
+table, th, td
+    border: 1px solid rgba(0,0,0,0.15)
+th, td
+    padding: 10px
+
 .light
     a
         color: black !important
