@@ -11,121 +11,159 @@ let router = express.Router()
 
 router.get("/", (req, res) => res.send("Hello world"))
 
-// error checking, ensure pagenum is an integer
+// Gets a bunch of posts, paginated
 router.get("/posts/:page", async (req, res) => {
     let pageNum = req.params.page
-    const postsPerPage = 10
-    const postRepo = getConnection().getRepository(Post)
-    const qb = postRepo.createQueryBuilder("p")
-        .orderBy("p.createdAt", "DESC")
-        .leftJoinAndSelect("p.user", "user")
-        .skip((pageNum - 1) * postsPerPage)
-        .take(postsPerPage)
-
-    let result = await qb.getMany()
-    let posts = []
-    for (let post of result) {
-        let obj = {
-            postId: post.id,
-            urlTitle: post.urlTitle,
-            title: post.title,
-            content: post.content,
-            username: post.user.username,
-            createdAt: post.createdAt,
-            updatedAt: post.updatedAt
-        }
-        posts.push(obj)
-    }
-
-    // use this to get number of pages 
-    let count = await qb.getCount()
-    const pages = Math.ceil(count / postsPerPage)
-    res.send(
-        {
-            posts,
-            pages
-        }
-    )
-})
-
-router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
-    let pageNum = req.params.pageNum;
-    const postsPerPage = 10
-    const postRepo = getConnection().getRepository(Comment)
-    const qb = postRepo.createQueryBuilder("c")
-        .where("c.postId = :postId", { postId: req.params.postId })
-        .leftJoinAndSelect("c.user", "user")
-        .orderBy("c.createdAt", "DESC")
-        .skip((pageNum - 1) * postsPerPage)
-        .take(postsPerPage)
-
-    try {
-        let result = await qb.getMany()
-        let comments = []
-        result.forEach(comment => {
-            comments.push({
-                content: comment.content,
-                user: comment.user.username,
-                createdAt: comment.createdAt,
-                updatedAt: comment.updatedAt,
-                id: comment.id
-            })
-        })
-        let count = await qb.getCount()
-        const pages = Math.ceil(count / postsPerPage)
-
-        getConnection().manager.findOne(Post, { id: req.params.postId }, { relations: ["user"] }).then(result => {
-            let formattedData = {
-                postId: result.id,
-                urlTitle: result.urlTitle,
-                title: result.title,
-                content: result.content,
-                username: result.user.username,
-                createdAt: result.createdAt,
-                updatedAt: result.updatedAt,
-                comments,
-                pages,
-                commentCount: count
+    if (parseInt(pageNum)) {
+        const postsPerPage = 10
+        const postRepo = getConnection().getRepository(Post)
+        const qb = postRepo.createQueryBuilder("p")
+            .orderBy("p.createdAt", "DESC")
+            .leftJoinAndSelect("p.user", "user")
+            .skip((pageNum - 1) * postsPerPage)
+            .take(postsPerPage)
+        try {
+            let result = await qb.getMany()
+            let posts = []
+            for (let post of result) {
+                let obj = {
+                    postId: post.id,
+                    urlTitle: post.urlTitle,
+                    title: post.title,
+                    content: post.content,
+                    username: post.user.username,
+                    createdAt: post.createdAt,
+                    updatedAt: post.updatedAt
+                }
+                posts.push(obj)
             }
-            res.send(formattedData)
-        }).catch(err => res.send({ title: "Oof!", content: "No post found. :(" }))
 
-    } catch (err) {
-        res.send({ title: "Oof!", content: "No post found. :(" })
-    }
-})
-
-router.get("/cansetup", async (req, res) => {
-    let connection = getConnection()
-    let admin = await connection.manager.findOne(PermissionBlock, { superAdmin: true })
-    let foo = {
-        canSetup: false
-    }
-    if (!admin) {
-        foo.canSetup = true;
-        res.send(foo);
+            // use this to get number of pages 
+            let count = await qb.getCount()
+            const pages = Math.ceil(count / postsPerPage)
+            res.send(
+                {
+                    posts,
+                    pages
+                }
+            )
+        } catch (__) {
+            res.status(500).send({
+                error: "Something went wrong."
+            })
+        }
     } else {
-        res.send(foo);
+        res.status(400).send({
+            error: "Must specify a page number: /posts/:pagenum"
+        })
     }
 })
 
+// Gets a post with comments, paginated
+router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
+    let pageNum = parseInt(req.params.pageNum)
+    let postId = parseInt(req.params.postId)
+    if (postId && pageNum) {
+        const postsPerPage = 10
+        const postRepo = getConnection().getRepository(Comment)
+        const qb = postRepo.createQueryBuilder("c")
+            .where("c.postId = :postId", { postId })
+            .leftJoinAndSelect("c.user", "user")
+            .orderBy("c.createdAt", "DESC")
+            .skip((pageNum - 1) * postsPerPage)
+            .take(postsPerPage)
+
+        try {
+            let result = await qb.getMany()
+            let comments = []
+            result.forEach(comment => {
+                comments.push({
+                    content: comment.content,
+                    user: comment.user.username,
+                    createdAt: comment.createdAt,
+                    updatedAt: comment.updatedAt,
+                    id: comment.id
+                })
+            })
+            let count = await qb.getCount()
+            const pages = Math.ceil(count / postsPerPage)
+
+            getConnection().manager.findOne(Post, { id: req.params.postId }, { relations: ["user"] }).then(result => {
+                let formattedData = {
+                    postId: result.id,
+                    urlTitle: result.urlTitle,
+                    title: result.title,
+                    content: result.content,
+                    username: result.user.username,
+                    createdAt: result.createdAt,
+                    updatedAt: result.updatedAt,
+                    comments,
+                    pages,
+                    commentCount: count
+                }
+                res.send(formattedData)
+            }).catch(err => res.send({ title: "Oof!", content: "No post found. :(" }))
+
+        } catch (err) {
+            // This is the actual 'title' and 'content' info that is sent to user, so should be 200 OK.
+            res.send({ error: "No post could be found.", title: "Oof!", content: "No post found. :(" })
+        }
+    } else {
+        res.status(400).send({
+            error: "Format is: /postId/postUrlName/commentPageNum, postId & commentPageNum must be integers"
+        })
+    }
+})
+
+// Checks to see if an admin exists. If not, lets an admin account be created.
+router.get("/cansetup", async (req, res) => {
+    try {
+        let connection = getConnection()
+        let admin = await connection.manager.findOne(PermissionBlock, { superAdmin: true })
+        let foo = {
+            canSetup: false
+        }
+        if (!admin) {
+            foo.canSetup = true;
+            res.send(foo);
+        } else {
+            res.send(foo);
+        }
+    } catch (__) {
+        res.status(500).send({
+            error: "Something went wrong."
+        })
+    }
+
+})
+
+// Checks to see if user is able to post (currently simply checks if is a superAdmin)
 router.get("/canpost", checkAuth, async (req, res) => {
-    let connection = getConnection();
-    let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] });
-    let foo = {
-        canPost: false
+    try {
+        let connection = getConnection();
+        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] });
+        let foo = {
+            canPost: false
+        }
+        if (user.permissionBlock.superAdmin) {
+            foo.canPost = true;
+        }
+        res.send(foo)
+    } catch (__) {
+        res.status(500).send({
+            error: "Something went wrong."
+        })
     }
-    if (user.permissionBlock.superAdmin) {
-        foo.canPost = true;
-    }
-    res.send(foo)
 })
 
+// Registers a superadmin as long as initial setup is still possible.
 router.post("/initialsetup", async (req, res) => {
     let connection = getConnection();
     let admin = await connection.manager.findOne(PermissionBlock, { superAdmin: true })
     if (admin) {
-        res.status(401).send("Not allowed.")
+        res.status(401).send({
+            error: "Not allowed."
+        })
     } else {
         try {
             let permissionBlock = new PermissionBlock();
@@ -137,13 +175,18 @@ router.post("/initialsetup", async (req, res) => {
                 password_hash: await argon2.hash(req.body.password) as string,
                 permissionBlock: permissionBlock
             })
-            res.send("registered");
+            res.send({
+                success: "Admin user created."
+            });
         } catch (err) {
-            res.status(500).send("Something went wrong.")
+            res.status(500).send({
+                error: "Something went wrong."
+            })
         }
     }
 })
 
+// Posts a comment (anyone can do this, need to use recaptcha in future or disable registration)
 router.post("/comment", checkAuth, async (req, res) => {
     // Data should be sent through body
     let connection = getConnection()
@@ -157,38 +200,46 @@ router.post("/comment", checkAuth, async (req, res) => {
             comment.content = content
             comment.user = user
             await connection.manager.save(comment)
-            res.send("done")
+            res.send({
+                success: "Comment posted."
+            })
         } else {
-            res.status(400).send("Comment content body format invalid (nonexistent, empty, or longer than 2000 chars)")
+            res.status(400).send({
+                error: "Comment content body format invalid (nonexistent, empty, or longer than 2000 chars)"
+            })
         }
     } else {
-        res.status(404).send("Post not found or user not found.")
+        res.status(404).send({
+            error: "Post not found or user not found."
+        })
     }
 })
 
-router.post("/jwt-verify", (req, res) => {
-    try {
-        res.send(jwt.verify(req.body.token, "VERYSECRETKEY"))
-    } catch (__) {
-        res.status(401).send("Invalid token.")
-    }
-})
-
+// Code for creating a new post
 router.post("/newpost", checkAuth, checkAdmin, async (req, res) => {
     let connection = getConnection()
     let title: string = req.body.title
     let content = req.body.content
     if ((title != null && title.length > 0) && (content != null && content.length > 0)) {
-        let post = new Post()
-        post.title = title
-        post.content = content
-        post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
-        let user = await connection.manager.findOne(User, { username: res.locals.user })
-        post.user = user
-        await connection.manager.save(post)
-        res.send("Done")
+        try {
+            let post = new Post()
+            post.title = title
+            post.content = content
+            post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
+            let user = await connection.manager.findOne(User, { username: res.locals.user })
+            post.user = user
+            await connection.manager.save(post)
+            res.send("Done")
+        } catch (__) {
+            res.status(500).send({
+                error: "Something went wrong."
+            })
+        }
+
     } else {
-        res.status(400).send("Missing title or post content.")
+        res.status(400).send({
+            error: "Missing title or post content."
+        })
     }
 })
 
@@ -206,10 +257,14 @@ router.post("/editpost", checkAuth, async (req, res) => {
                 urlTitle: post.urlTitle
             })
         } else {
-            res.status(401).send("You are not the owner of this post.")
+            res.status(401).send({
+                error: "You are not the owner of this post."
+            })
         }
     } catch (err) {
-        res.status(400).send("Bad request.")
+        res.status(400).send({
+            error: "Bad request."
+        })
     }
 })
 
@@ -229,10 +284,14 @@ router.post("/register", async (req, res) => {
             })
             res.send("registered")
         } else {
-            res.status(400).send("User with this username already exists.")
+            res.status(400).send({
+                error: "User with this username already exists."
+            })
         }
     } else {
-        res.status(400).send("Username too long (must be < 30 characters).")
+        res.status(400).send({
+            error: "Username too long (must be < 30 characters)."
+        })
     }
 })
 
@@ -244,11 +303,17 @@ router.post("/deletepost", checkAuth, (req, res) => {
                 await connection.manager.remove(post.comments)
             }
             await connection.manager.remove(post)
-            res.send("Done")
+            res.send({
+                success: "Post deleted."
+            })
         } else {
-            res.send("You are not the owner of this post.")
+            res.status(401).send({
+                error: "You are not the owner of this post."
+            })
         }
-    }).catch(() => res.status(404).send("Post does not exist."))
+    }).catch(() => res.status(404).send({
+        error: "Post does not exist."
+    }))
 })
 
 router.post("/deletecomment", checkAuth, async (req, res) => {
@@ -260,12 +325,18 @@ router.post("/deletecomment", checkAuth, async (req, res) => {
         let commentUser = comment.user;
         if (res.locals.user === commentUser.username || comment.post.user.username === res.locals.user || user.permissionBlock.superAdmin) {
             await connection.manager.remove(comment);
-            res.send("deleted")
+            res.send({
+                success: "Deleted."
+            })
         } else {
-            res.status(401).send("Unauthorized")
+            res.status(401).send({
+                error: "Unauthorized"
+            })
         }
     } catch (err) {
-        res.status(404).send("No comment found.")
+        res.status(404).send({
+            error: "No comment found."
+        })
     }
 })
 
@@ -282,46 +353,55 @@ router.post("/login", (req, res) => {
                 admin: result.permissionBlock.superAdmin
             })
         } else {
-            res.status(401).send("Unauthorized")
+            res.status(401).send({
+                error: "Unauthorized"
+            })
         }
-    }).catch(() => res.status(401).send("User not found in our system."))
+    }).catch(() => res.status(401).send(res.status(401).send({
+        error: "User not found in our system."
+    })))
 })
 
 router.post("/renew-jwt", checkAuth, (req, res) => {
-    // shouldn't have to verify the user that is sending, right?
     let token = jwt.sign({ username: res.locals.user }, "VERYSECRETKEY", { expiresIn: 60 * 30 });
     let age = 30 * 60 * 1000;
     res.cookie("auth", token, { maxAge: age });
     let date = new Date(new Date().getTime() + age).getTime();
     res.cookie("expiration", date, { maxAge: age });
-    res.send("JWT renewed");
+    res.send({
+        success: "JWT renewed"
+    });
 })
 
+// Middleware function
 function checkAuth(req, res, next) {
     try {
         let token: any = jwt.verify(req.cookies["auth"], "VERYSECRETKEY")
         res.locals.user = token.username
         next()
     } catch (__) {
-        res.status(401).send("Unauthorized")
+        res.status(401).send({
+            error: "Unauthorized"
+        })
     }
 }
 
+// Middleware function
 async function checkAdmin(req, res, next) {
-    console.log("am here")
     try {
         let connection = getConnection()
-        console.log(res.locals.user)
         let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] });
-        console.log(user);
         if (user.permissionBlock.superAdmin) {
             next();
         } else {
-            res.status(401).send("Unauthorized")
+            res.status(401).send({
+                error: "Unauthorized"
+            })
         }
     } catch (err) {
-        console.log(err)
-        res.status(401).send("Unauthorized")
+        res.status(401).send({
+            error: "Unauthorized"
+        })
     }
 }
 
