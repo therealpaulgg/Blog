@@ -191,6 +191,7 @@ import emoji from "markdown-it-emoji";
 import math from "markdown-it-math";
 import katex from "katex";
 import twemoji from "twemoji";
+import markdownItAttrs from "markdown-it-attrs";
 
 // Old code that was used for highlightJS
 
@@ -212,7 +213,6 @@ import twemoji from "twemoji";
 // });
 
 export let md: markdownit = markdownit({
-  html: true,
   highlight: (str, lang) => {
     if (lang) {
       const langObject = Prism.languages[lang];
@@ -254,4 +254,9 @@ md.use(math, {
   }
 });
 md.use(emoji);
+md.use(markdownItAttrs, {
+  leftDelimiter: "{",
+  rightDelimiter: "}",
+  allowedAttributes: ["id", "class", "style", /^regex.*$/]
+});
 md.renderer.rules.emoji = (token, idx) => twemoji.parse(token[idx].content);

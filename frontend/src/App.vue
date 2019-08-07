@@ -32,6 +32,11 @@
                             to="/administration"
                             v-bind:active="$route.path == '/administration'"
                         >Administration</b-nav-item>
+                        <b-nav-item
+                            v-if="isAuthenticated"
+                            to="/profile"
+                            v-bind:active="$route.path == '/profile'"
+                        >Profile</b-nav-item>
                     </b-nav>
                 </div>
                 <br />

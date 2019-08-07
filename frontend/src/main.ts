@@ -115,6 +115,12 @@ router.beforeEach(async (to, from, next) => {
         } else {
             next();
         }
+    } else if (to.matched.some((record) => record.meta.noAuth)) {
+        if (store.state.authenticated) {
+            next("/");
+        } else {
+            next();
+        }
     } else if (to.matched.some((record) => record.meta.initialSetup)) {
         try {
             const { data } = await axios.get("http://localhost:3000/cansetup");

@@ -51,7 +51,7 @@ export default {
         commit("SET_ADMIN", admin);
     },
     setCanPost({ commit }: { commit: any }, canPost: boolean) {
-        commit("SET_CAN_POST", canPost)
+        commit("SET_CAN_POST", canPost);
     },
     async determineTokenRefreshInterval({ commit, dispatch }: { commit: any, dispatch: any }) {
         try {

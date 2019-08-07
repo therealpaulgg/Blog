@@ -1,6 +1,7 @@
 <template>
     <div class="administration">
         <p>Not implemented yet.</p>
+        <!-- I dont really know what to do for this. Maybe show users, posts, etc in paginated format?--> 
     </div>
 </template>
 

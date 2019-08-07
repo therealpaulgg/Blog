@@ -825,9 +825,9 @@
   resolved "https://registry.yarnpkg.com/@types/linkify-it/-/linkify-it-2.1.0.tgz#ea3dd64c4805597311790b61e872cbd1ed2cd806"
   integrity sha512-Q7DYAOi9O/+cLLhdaSvKdaumWyHbm7HAk/bFwwyTuU0arR5yyCeW5GOoqt4tJTpDRxhpx9Q8kQL6vMpuw9hDSw==
 
-"@types/markdown-it@0.0.8":
+"@types/markdown-it@^0.0.8":
   version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@types/markdown-it/-/markdown-it-0.0.8.tgz#9af8704acde87fec70475369ba0413d50717bd8d"
+  resolved "https://rds-npm.edpl.us/@types%2fmarkdown-it/-/markdown-it-0.0.8.tgz#9af8704acde87fec70475369ba0413d50717bd8d"
   integrity sha512-ouaTOi5kAdkTPl97u6uDkth9od4pQffPF9STcjYVZKFrEwLYf15s7Z772WxWE3IOcYBJglaT0XqdyNEiEfGgYg==
   dependencies:
     "@types/linkify-it" "*"
@@ -4929,6 +4929,11 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
+markdown-it-attrs@^3.0.0:
+  version "3.0.0"
+  resolved "https://rds-npm.edpl.us/markdown-it-attrs/-/markdown-it-attrs-3.0.0.tgz#e4c383f9ad00f733e8e868776db4fd6dd07cf1c8"
+  integrity sha512-DTIDzAQuQ9eEqq0y8GhdWB458vt0zYMp3M1R+IBMYlsMGY+oFOlZ/Gwk5Lg74v1ffYQ0kbDULqEbIbCowerJOA==
+
 markdown-it-emoji@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/markdown-it-emoji/-/markdown-it-emoji-1.4.0.tgz#9bee0e9a990a963ba96df6980c4fddb05dfb4dcc"
@@ -7839,7 +7844,7 @@ twemoji-parser@12.1.0:
 
 twemoji@^12.1.2:
   version "12.1.2"
-  resolved "https://registry.yarnpkg.com/twemoji/-/twemoji-12.1.2.tgz#13a685c3732c196e04f762159072cf66c04d4cec"
+  resolved "https://rds-npm.edpl.us/twemoji/-/twemoji-12.1.2.tgz#13a685c3732c196e04f762159072cf66c04d4cec"
   integrity sha512-myi1YKL4nXBWorlmHDxHxHTCpel0e0jGtWQwwab0XyCAf3r9PnkZX0c+IAnPW+K6+TKXBJulMRPifeMhiPKYuw==
   dependencies:
     fs-extra "^8.0.1"

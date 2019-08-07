@@ -7,6 +7,7 @@ import Login from "./views/Login.vue";
 import Register from "./views/Register.vue";
 import InitialSetup from "./views/InitialSetup.vue";
 import Administration from "./views/Administration.vue";
+import Profile from "./views/Profile.vue";
 
 Vue.use(Router);
 
@@ -39,7 +40,8 @@ export default new Router({
     {
         path: "/register",
         name: "register",
-        component: Register
+        component: Register,
+        meta: { noAuth: true }
     },
     {
         path: "/initialsetup",
@@ -52,6 +54,12 @@ export default new Router({
       name: "administration",
       component: Administration,
       meta: { isAdmin: true }
+    },
+    {
+      path: "/profile",
+      name: "profile",
+      component: Profile,
+      meta: { requiresAuth: true }
     }
   ],
 });

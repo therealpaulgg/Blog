@@ -43,44 +43,33 @@
             <br />
             <button style="margin-top: 10px" @click="addCode">Add</button>
         </div>
-        <font-awesome-icon class="icon" icon="file-code" ref="htmlbtn" @click="toggle(3)"></font-awesome-icon>
-        <div
-            class="popup"
-            v-if="popups[3]"
-            v-closable="{
-                        exclude: refs,
-                        handler: 'closeAll'
-                    }"
-        >
-            <p>Hey! Markdown is a superset of HTML! Just paste your HTML (and even inline CSS styles) into the editor!</p>
-        </div>
-        <font-awesome-icon class="icon" icon="heading" ref="headerbtn" @click="toggle(4)"></font-awesome-icon>
+        <font-awesome-icon class="icon" icon="heading" ref="headerbtn" @click="toggle(3)"></font-awesome-icon>
         <font-awesome-icon
             class="icon"
             icon="bold"
             ref="boldbtn"
-            @click="toggle(5)"
+            @click="toggle(4)"
             v-shortkey="['ctrl', 'b']"
-            @shortkey="toggle(5)"
+            @shortkey="toggle(4)"
         ></font-awesome-icon>
         <font-awesome-icon
             class="icon"
             icon="italic"
             ref="italicbtn"
-            @click="toggle(6)"
+            @click="toggle(5)"
             v-shortkey="['ctrl', 'i']"
-            @shortkey="toggle(6)"
+            @shortkey="toggle(5)"
         ></font-awesome-icon>
         <font-awesome-icon
             class="icon"
             icon="underline"
             ref="underlinebtn"
-            @click="toggle(7)"
+            @click="toggle(6)"
             v-shortkey="['ctrl', 'u']"
-            @shortkey="toggle(7)"
+            @shortkey="toggle(6)"
         ></font-awesome-icon>
-        <font-awesome-icon class="icon" icon="quote-left" ref="quotebtn" @click="toggle(8)"></font-awesome-icon>
-        <font-awesome-icon class="icon" icon="calculator" ref="mathbtn" @click="toggle(9)"></font-awesome-icon>
+        <font-awesome-icon class="icon" icon="quote-left" ref="quotebtn" @click="toggle(7)"></font-awesome-icon>
+        <font-awesome-icon class="icon" icon="calculator" ref="mathbtn" @click="toggle(8)"></font-awesome-icon>
     </div>
 </template>
 
@@ -100,7 +89,7 @@ export default class PostToolbar extends Vue {
     @Prop() protected editor: any;
     protected popups: boolean[];
     protected functions: Array<{ function: (...args) => any; args: any[] }>;
-    protected POPUP_NUM = 10;
+    protected POPUP_NUM = 9;
     protected url: string;
     protected name: string;
     protected language: string;
@@ -108,7 +97,6 @@ export default class PostToolbar extends Vue {
         "linkbtn",
         "emojibtn",
         "codebtn",
-        "htmlbtn",
         "headerbtn",
         "boldbtn",
         "italicbtn",
@@ -126,9 +114,8 @@ export default class PostToolbar extends Vue {
             { function: this.makeLink, args: [] },
             null,
             null,
-            null,
             { function: this.styleText, args: ["## ", ""] },
-            { function: this.styleText, args: ["**", "**"] },
+            { function: this.styleText, args: ["__", "__"] },
             { function: this.styleText, args: ["*", "*"] },
             { function: this.styleText, args: ["<u>", "</u>"] },
             { function: this.styleText, args: ["> ", ""] },
@@ -284,6 +271,7 @@ export default class PostToolbar extends Vue {
 
 .toolbar::-webkit-scrollbar-track
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
+
 .dark
     .popup
         background-color: #20212B
@@ -295,6 +283,7 @@ export default class PostToolbar extends Vue {
         color: white
     .toolbar::-webkit-scrollbar-thumb
         background-color: #3e404c
+    
 .light
     .popup
         background-color: #e9ecef
