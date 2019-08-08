@@ -1,11 +1,12 @@
 import express from "express"
-import { getConnection } from "typeorm";
+import { getConnection, Connection } from "typeorm";
 import jwt from "jsonwebtoken";
 import argon2 from "argon2"
 import { Post } from "./entity/Post";
 import { User } from "./entity/User";
 import { Comment } from "./entity/Comment";
 import { PermissionBlock } from "./entity/PermissionBlock";
+import md5 from "md5";
 
 let router = express.Router()
 
@@ -175,6 +176,40 @@ router.get("/isadmin", checkAuth, async (req, res) => {
     }
 })
 
+function getPermStr(pBlock: PermissionBlock) {
+    switch (true) {
+        case pBlock.normal: return "normal"
+        case pBlock.author: return "author"
+        case pBlock.moderator: return "moderator"
+        case pBlock.superAdmin: return "superadmin"
+        default: return "normal" 
+    }
+}
+
+router.get("/profile/:username", async (req, res) => {
+    try { 
+        let connection = getConnection();
+        let user = await connection.manager.findOne(User, {username: req.params.username}, {relations: ["permissionBlock", "posts", "comments"]});
+        if (user) {
+            let permissionLevel = getPermStr(user.permissionBlock)
+            res.send({
+                username: user.username,
+                gravatarUrl: user.gravatarUrl,
+                createdAt: user.createdAt,
+                permissionLevel
+            })
+        } else {
+            res.status(404).send({
+                error: "User not found."
+            })
+        }
+    } catch (__) {
+        res.status(500).send({
+            error: "Something went wrong."
+        })
+    }
+})
+
 // Registers a superadmin as long as initial setup is still possible.
 router.post("/initialsetup", async (req, res) => {
     let connection = getConnection();
@@ -187,16 +222,28 @@ router.post("/initialsetup", async (req, res) => {
         try {
             let permissionBlock = new PermissionBlock();
             permissionBlock.superAdmin = true;
-            await connection.manager.save(permissionBlock);
-            await connection.manager.save(User, {
-                username: req.body.username as string,
-                email: req.body.email as string,
-                password_hash: await argon2.hash(req.body.password) as string,
-                permissionBlock: permissionBlock
-            })
-            res.send({
-                success: "Admin user created."
-            });
+            let username = req.body.username;
+            let email = req.body.email;
+            let password = req.body.password
+            if (username != null && email != null && password != null) {
+                let gravatarUrl = `https://www.gravatar.com/avatar/${md5(email)}?s=200`
+                await connection.manager.save(permissionBlock);
+                await connection.manager.save(User, {
+                    username,
+                    email,
+                    password_hash: await argon2.hash(password),
+                    gravatarUrl,
+                    permissionBlock: permissionBlock
+                })
+                res.send({
+                    success: "Admin user created."
+                });
+            } else {
+                res.status(400).send({
+                    error: "Missing username, email, or password."
+                })
+            }
+            
         } catch (err) {
             res.status(500).send({
                 error: "Something went wrong."
@@ -248,7 +295,9 @@ router.post("/newpost", checkAuth, checkAdmin, async (req, res) => {
             let user = await connection.manager.findOne(User, { username: res.locals.user })
             post.user = user
             await connection.manager.save(post)
-            res.send("Done")
+            res.send({
+                success: "Post created."
+            })
         } catch (__) {
             res.status(500).send({
                 error: "Something went wrong."
@@ -294,14 +343,28 @@ router.post("/register", async (req, res) => {
         let user = await connection.manager.findOne(User, { username: req.body.username })
         if (!user) {
             let permissionBlock = new PermissionBlock();
-            await connection.manager.save(permissionBlock);
-            await connection.manager.save(User, {
-                username: req.body.username as string,
-                email: req.body.email as string,
-                password_hash: await argon2.hash(req.body.password) as string,
-                permissionBlock
-            })
-            res.send("registered")
+            let username = req.body.username;
+            let email = req.body.email;
+            let password = req.body.password
+            if (username != null && email != null && password != null) {
+                let gravatarUrl = `https://www.gravatar.com/avatar/${md5(email)}?s=200`
+                await connection.manager.save(permissionBlock);
+                await connection.manager.save(User, {
+                    username,
+                    email,
+                    password_hash: await argon2.hash(password) as string,
+                    gravatarUrl,
+                    permissionBlock
+                })
+                res.send({
+                    success: "User registered."
+                })
+            } else {
+                res.status(400).send({
+                    error: "Missing username, email, or password."
+                })
+            }
+            
         } else {
             res.status(400).send({
                 error: "User with this username already exists."

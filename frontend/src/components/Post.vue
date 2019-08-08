@@ -7,14 +7,25 @@
             <hr />
             <h1 class="bigtitle">{{header}}</h1>
             <div class="metadata">
-                <span class="metaelement">By: <i>{{user}}</i></span>
+                <span class="metaelement">
+                    By:
+                    <i>
+                        <router-link :to="`/profile/${user}`">{{user}}</router-link>
+                    </i>
+                </span>
                 <span class="metaelement">
                     <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
-                    <span class="metaelement">{{createdAt}}</span>
+                    <span class="metaelement">
+                        {{dateCreated}},
+                        <i>{{sinceCreation}}</i>
+                    </span>
                 </span>
                 <span class="metaelement" v-if="createdAt !== updatedAt">
                     <font-awesome-icon icon="sync-alt"></font-awesome-icon>
-                    <span class="metaelement"><i>Updated {{updatedAt}}</i></span>
+                    <span class="metaelement">
+                        {{dateUpdated}},
+                        <i>{{sinceUpdate}}</i>
+                    </span>
                 </span>
                 <span class="metaelement" v-if="commentCount">
                     <font-awesome-icon icon="comments"></font-awesome-icon>
@@ -56,8 +67,8 @@
                     </div>
                 </div>
                 <div style="padding-top: 15px">
-                <a class="button" style="margin-right: 10px" @click="editing = false">Cancel</a>
-                <a class="button" :class="theme" @click="makeEdits">Submit Edit</a>
+                    <a class="button" style="margin-right: 10px" @click="editing = false">Cancel</a>
+                    <a class="button" :class="theme" @click="makeEdits">Submit Edit</a>
                 </div>
             </div>
             <div v-else>
@@ -90,11 +101,7 @@
                     </div>
                 </div>
                 <div v-if="postingComment" style="position: relative; padding-top: 15px">
-                <a
-                    class="button"
-                    :class="theme"
-                    @click="postComment"
-                >Submit Comment</a>
+                    <a class="button" :class="theme" @click="postComment">Submit Comment</a>
                 </div>
                 <hr />
                 <Comment
@@ -352,6 +359,44 @@ export default class Post extends Vue {
         }
     }
 
+    protected get dateCreated() {
+        if (this.createdAt) {
+            return moment
+                .utc(this.createdAt)
+                .local()
+                .format("MM/DD/YYYY, HH:mm");
+        } else {
+            return null;
+        }
+    }
+
+    protected get dateUpdated() {
+        if (this.updatedAt) {
+            return moment
+                .utc(this.updatedAt)
+                .local()
+                .format("MM/DD/YYYY, HH:mm");
+        } else {
+            return null;
+        }
+    }
+
+    protected get sinceCreation() {
+        if (this.createdAt) {
+            return moment(this.createdAt).fromNow();
+        } else {
+            return null;
+        }
+    }
+
+    protected get sinceUpdate() {
+        if (this.updatedAt) {
+            return moment(this.updatedAt).fromNow();
+        } else {
+            return null;
+        }
+    }
+
     protected async fetchData() {
         try {
             const { data }: { data: PostModel } = await axios.get(
@@ -368,14 +413,8 @@ export default class Post extends Vue {
             for (const comment of data.comments) {
                 this.comments.push(comment);
             }
-            this.createdAt = moment
-                .utc(data.createdAt)
-                .local()
-                .format("MM/DD/YYYY, HH:mm");
-            this.updatedAt = moment
-                .utc(data.updatedAt)
-                .local()
-                .format("MM/DD/YYYY, HH:mm");
+            this.createdAt = data.createdAt;
+            this.updatedAt = data.updatedAt;
         } catch (__) {
             // error
         }

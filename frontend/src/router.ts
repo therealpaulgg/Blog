@@ -60,6 +60,12 @@ export default new Router({
       name: "profile",
       component: Profile,
       meta: { requiresAuth: true }
+    },
+    {
+        path: "/profile/:passedUser",
+        name: "profileExplicit",
+        component: Profile,
+        props: true
     }
   ],
 });

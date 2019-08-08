@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, Unique, JoinColumn} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn} from "typeorm";
 import { Post } from "./Post";
 import { Comment } from "./Comment";
 import { PermissionBlock } from "./PermissionBlock";
@@ -9,6 +9,12 @@ export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @CreateDateColumn()
+    createdAt: string
+
+    @UpdateDateColumn()
+    updatedAt: string
+
     @Column()
     username: string;
 
@@ -17,6 +23,9 @@ export class User {
 
     @Column()
     password_hash: string;
+
+    @Column({nullable: true})
+    gravatarUrl: string;
 
     @OneToMany(type => Post, post => post.user)
     posts: Array<Post>

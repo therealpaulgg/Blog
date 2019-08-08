@@ -1,5 +1,5 @@
 <template>
-    <div id="app">
+    <div id="app" :class="getTheme">
         <link rel="stylesheet" :href="cssUrl" data-noprefix />
         <div class="jumbotron jumbotron-fluid" :class="getTheme">
             <div class="container">
@@ -171,6 +171,13 @@ html, body
     transition: 0.5s
     -webkit-transition: 0.5s
     overflow-y: auto
+.jumbotron::-webkit-scrollbar
+    width: 10px
+.jumbotron::-webkit-scrollbar-thumb
+    border-radius: 10px
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3)
+.jumbotron::-webkit-scrollbar-track
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
 .preview::-webkit-scrollbar
     width: 10px
 
@@ -200,34 +207,32 @@ th, td
         transition: 0.5s
         -webkit-transition: 0.5s
     .preview::-webkit-scrollbar-thumb
-        background-color: #dddddd
+        background-color: #dddddd !important
     hr
         background-color: gray
     transition: 0.5s
     -webkit-transition: 0.5s
-
+    .jumbotron::-webkit-scrollbar-thumb
+        background-color: #cccccc !important
 .dark
     background-color: #20212B !important
     color: white
     .preview::-webkit-scrollbar-thumb
         background-color: #3e404c
-
+    .jumbotron::-webkit-scrollbar-thumb
+        background-color: #3e404c !important
     a.active
         background-color: #2a2c39 !important 
-
     a
         color: white !important
         transition: 0.5s
         -webkit-transition: 0.5s
-    
     hr
         background-color: white
-    
     a:hover
         color: #FF79c6 !important
         transition: 0.5s
         -webkit-transition: 0.5s
-
     transition: 0.5s
     -webkit-transition: 0.5s
 

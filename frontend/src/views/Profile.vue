@@ -1,16 +1,18 @@
 <template>
     <div class="profile">
-        <p>Not implemented yet.</p>
-        <!-- 
-            image of user's gravatar, which the url for is pulled from server. 
-            url in format of https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50?s=200
-            generate url ONCE on server using https://www.npmjs.com/package/md5
-            -->
-        <!-- username of user -->
-        <!-- registration date of user, momentjs to display age of account -->
+        <!-- <p>Not implemented yet.</p> -->
+        <div v-if="!notFound">
+        <img :src="gravatarUrl">
+        <h3>{{user}}</h3>
+        <p>Registered on {{createdAt}}, {{age}}</p>
+        <!-- have an icon for administrator, moderator, author, or regular user -->
+        <p>{{permissionLevel}}</p>
+        </div>
+        <div v-else>
+            <h1>User '{{user}}' not found.</h1>
+        </div>
         <!-- number of user comments -->
         <!-- if the user can post, return number of user posts -->
-        <!-- have an icon for administrator, moderator, author, or regular user -->
         <!-- 
             if the authenticated user is an admin/mod, 
         provide admin options to delete account w/o banning, 
@@ -23,15 +25,55 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-property-decorator";
 import axios from "axios";
 import { State } from "vuex-class";
+import moment from "moment";
 
 @Component
 export default class Profile extends Vue {
+    @Prop(String) protected passedUser: string | null;
+    protected user: string | null;
+    protected gravatarUrl: string | null;
+    protected createdAt: string | null;
+    protected permissionLevel: string | null;
+    protected age: string | null;
+    protected notFound: boolean = false;
+
+    constructor() {
+        super();
+        this.user = this.passedUser != null ? this.passedUser : null;
+        this.gravatarUrl = null;
+        this.createdAt = null;
+        this.permissionLevel = null;
+        this.age = null;
+    }
 
     get theme() {
         return this.$store.getters.getTheme;
+    }
+
+    get username() {
+        return this.$store.state.username;
+    }
+
+    protected async mounted() {
+        try {
+            if (this.user == null) {
+                this.user = this.username;
+            }
+            const { data } = await axios.get(`http://localhost:3000/profile/${this.user}`);
+            this.user = data.username;
+            this.gravatarUrl = data.gravatarUrl;
+            this.createdAt =  moment
+                .utc(data.createdAt)
+                .local()
+                .format("MM/DD/YYYY, HH:mm");
+            this.permissionLevel = data.permissionLevel;
+            this.age = moment(data.createdAt).fromNow();
+        } catch (__) {
+            this.notFound = true;
+        }
     }
 }
 </script>
