@@ -16,13 +16,13 @@ function defaultState(): State {
         postTitle: "",
         content: "",
         commentContent: "",
-        alerts: [],
+        alert: null,
         editPostTitle: "",
         editContent: "",
         username: "",
         pages: 1,
         canPost: false,
-        isAdmin: false
+        isAdmin: false,
     };
 }
 

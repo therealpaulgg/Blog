@@ -39,7 +39,7 @@ export default {
         state.postTitle = text;
     },
     ADD_ALERT(state: State, alert: Alert) {
-        state.alerts.push(alert);
+        state.alert = alert;
     },
     EDIT_EDIT_CONTENT(state: State, text: string) {
         state.editContent = text;

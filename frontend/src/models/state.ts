@@ -8,7 +8,7 @@ export interface State {
     content: string;
     commentContent: string;
     postTitle: string;
-    alerts: Alert[];
+    alert: Alert;
     editContent: string;
     editPostTitle: string;
     username: string;

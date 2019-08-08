@@ -1,10 +1,7 @@
 <template>
-    <div class="postblock" :class="getTheme">
-        <h1 style="display: inline-block;">{{title}}</h1>
+    <div class="postblock" :class="getTheme" @click="goToPost">
         <p style="float: right;">{{date}}</p>
-        <div>
-            <router-link :to="`/posts/${id}/${urlTitle}`">Go to Post!</router-link>
-        </div>
+        <h1>{{title}}</h1>
     </div>
 </template>
 
@@ -24,26 +21,39 @@ export default class PostBlock extends Vue {
     @Getter("getTheme") private getTheme: string;
 
     get date() {
-        return moment
+        return `${moment
             .utc(this.createdAt)
             .local()
-            .format("MM/DD/YYYY, HH:mm");
+            .format("MM/DD/YYYY, HH:mm")}, ${moment(this.createdAt).fromNow()}`;
+    }
+
+    protected goToPost() {
+        this.$router.push(`/posts/${this.id}/${this.urlTitle}`)
     }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
-.dark
-    background-color: #2a2c39 !important
+.postblock
     padding: 20px
     margin: 20px
     border-radius: 20px
+    transition: 0.5s
+    -webkit-transition: 0.5s
+.postblock.dark
     color: white
-.light
+    background-color: #2a2c39 !important
+.postblock.dark:hover
+    background-color: #3e4154 !important
+.postblock.light    
     background-color: white !important
-    padding: 20px
-    margin: 20px
-    border-radius: 20px
     color: black
+.postblock.light:hover
+    background-color: #f2feff !important
+.postblock:hover
+    border-radius: 50px
+    transition: 0.5s
+    -webkit-transition: 0.5s
+    cursor: pointer
 </style>

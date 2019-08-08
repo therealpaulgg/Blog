@@ -29,6 +29,6 @@ export default {
         return state.canPost;
     },
     getAlert(state: State) {
-        return state.alerts[state.alerts.length - 1];
+        return state.alert;
     }
 };

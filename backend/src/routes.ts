@@ -422,27 +422,40 @@ router.post("/deletecomment", checkAuth, async (req, res) => {
     }
 })
 
-router.post("/login", (req, res) => {
-    getConnection().manager.findOne(User, { username: req.body.username }, { relations: ["permissionBlock"] }).then(async result => {
-        if (await argon2.verify(result.password_hash, req.body.password)) {
-            let token = jwt.sign({ username: req.body.username }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
-            let age = 30 * 60 * 1000
-            res.cookie("auth", token, { maxAge: age })
-            let date = new Date(new Date().getTime() + age).getTime();
-            res.cookie("expiration", date, { maxAge: age })
-            res.send({
-                username: req.body.username,
-                canPost: result.permissionBlock.superAdmin,
-                admin: result.permissionBlock.superAdmin
-            })
-        } else {
+router.post("/login", async (req, res) => {
+    let username = req.body.username
+    let password = req.body.password
+    if ((username != null && username != "") && (password != null && password != "")) {
+        try {
+            let user = await getConnection().manager.findOne(User, { username }, { relations: ["permissionBlock"] })
+            if (await argon2.verify(user.password_hash, password)) {
+                let token = jwt.sign({ username }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
+                let age = 30 * 60 * 1000
+                res.cookie("auth", token, { maxAge: age })
+                let date = new Date(new Date().getTime() + age).getTime();
+                res.cookie("expiration", date, { maxAge: age })
+                res.send({
+                    username,
+                    canPost: user.permissionBlock.superAdmin,
+                    admin: user.permissionBlock.superAdmin
+                })
+            } else {
+                res.status(401).send({
+                    error: "Unauthorized"
+                })
+            }
+        } catch {
             res.status(401).send({
-                error: "Unauthorized"
+                error: "User not found in our system."
             })
         }
-    }).catch(() => res.status(401).send(res.status(401).send({
-        error: "User not found in our system."
-    })))
+        
+    } else {
+        res.status(400).send({
+            error: "Must include username and password in login request."
+        })
+    }
+    
 })
 
 router.post("/renew-jwt", checkAuth, (req, res) => {

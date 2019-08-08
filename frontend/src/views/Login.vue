@@ -14,6 +14,13 @@
                     <b-input-group size="sm">
                     <b-button :variant="theme" @click="authenticate">Login</b-button>
                     </b-input-group>
+                    <!-- <g-signin-button
+                        :params="googleSignInParams"
+                        @success="gOauthSuccess"
+                        @error="gOauthError"
+                    >
+                    </g-signin-button> -->
+                    <!-- <div style="margin-top: 20px" class="g-signin2" data-onsuccess="onSignIn"></div> -->
                 </b-col>
             </b-row>
         </b-container>
@@ -25,6 +32,7 @@ import { Component, Vue } from "vue-property-decorator";
 import PostBlock from "@/components/PostBlock.vue"; // @ is an alias to /src
 import axios from "axios";
 import { Action } from "vuex-class";
+// import GSigninButton from "vue-google-signin-button";
 
 @Component
 export default class Home extends Vue {
@@ -32,10 +40,26 @@ export default class Home extends Vue {
     @Action("logout") protected logout: any;
     protected username: string;
     protected password: string;
+    protected googleSignInParams = {
+        client_id: "270164016094-hu9876dvd5e3bkjq0lhpp6ne4uhmf6d8.apps.googleusercontent.com"
+    };
+
     constructor() {
         super();
         this.username = "";
         this.password = "";
+    }
+
+    protected gOauthSuccess() {
+        console.log("Success!")
+    }
+
+    protected gOauthError() {
+        console.log("error!")
+    }
+
+    protected onSuccess() {
+        console.log("success?")
     }
 
     protected get theme() {

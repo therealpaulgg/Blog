@@ -58,20 +58,36 @@ export default class Register extends Vue {
         try {
             await axios.post(
                 "http://localhost:3000/register",
-                { username: this.username, email: this.email, password: this.password },
+                {
+                    username: this.username,
+                    email: this.email,
+                    password: this.password
+                },
                 { withCredentials: true }
             );
-            await axios.post(
+        } catch {
+            this.$store.dispatch("addAlert", {
+                alertType: "danger",
+                alertText:
+                    "There was a problem with registration. Please try again."
+            });
+        }
+        try {
+            let { data} = await axios.post(
                 "http://localhost:3000/login",
                 { username: this.username, password: this.password },
                 { withCredentials: true }
             );
+            this.$store.dispatch("setUsername", data.username);
+                this.$store.dispatch("setAdmin", data.admin);
+                this.$store.dispatch("setCanPost", data.canPost);
             this.login(true);
             this.$router.push("/");
-        } catch (err) {
+        } catch {
             this.$store.dispatch("addAlert", {
                 alertType: "danger",
-                alertText: "Incorrect username or password."
+                alertText:
+                    "There was a problem logging in automatically. Please log in manually."
             });
         }
     }

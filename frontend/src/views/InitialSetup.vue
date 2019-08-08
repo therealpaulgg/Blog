@@ -68,11 +68,14 @@ export default class InitialSetup extends Vue {
                 },
                 { withCredentials: true }
             );
-            await axios.post(
+            let { data } = await axios.post(
                 "http://localhost:3000/login",
                 { username: this.username, password: this.password },
                 { withCredentials: true }
             );
+            this.$store.dispatch("setUsername", data.username);
+            this.$store.dispatch("setAdmin", data.admin);
+            this.$store.dispatch("setCanPost", data.canPost);
             this.login(true);
             this.$router.push("/");
         } catch (err) {

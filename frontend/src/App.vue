@@ -5,12 +5,13 @@
             <div class="container">
                 <h1>The Blog for Engineers</h1>
                 <hr />
-                <b-alert v-for="(alert, index) in alerts"
-                    :key="index"
+                <b-alert
+                    v-if="alert"
                     show
                     dismissible
                     fade
                     :variant="alert.alertType"
+                    @dismissed="alert = null"
                 >{{alert.alertText}}</b-alert>
                 <div>
                     <b-nav tabs>
@@ -66,6 +67,7 @@ export default class App extends Vue {
     @Getter("isAdmin") protected isAdmin: boolean;
     @Getter("getTheme") private getTheme: string;
 
+
     protected changeTheme() {
         this.getTheme === "light"
             ? this.setTheme("dark")
@@ -82,8 +84,11 @@ export default class App extends Vue {
             : "https://cdn.jsdelivr.net/gh/dracula/prism/css/dracula-prism.css";
     }
 
-    get alerts() {
-        return this.$store.state.alerts;
+    get alert() {
+        return this.$store.state.alert;
+    }
+    set alert(val) {
+        this.$store.dispatch("addAlert", null);
     }
 
     protected mounted() {
@@ -156,7 +161,7 @@ blockquote:nth-of-type(even) footer:after
     height: 1.2em !important
     width: 1.2em !important
 .themebtn
-    position: absolute
+    position: fixed
     top: 0
     right: 0
     margin: 20px
