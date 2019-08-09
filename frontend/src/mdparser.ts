@@ -192,6 +192,7 @@ import math from "markdown-it-math";
 import katex from "katex";
 import twemoji from "twemoji";
 import markdownItAttrs from "markdown-it-attrs";
+import mentions from "markdown-it-mentions";
 
 // Old code that was used for highlightJS
 
@@ -260,3 +261,7 @@ md.use(markdownItAttrs, {
   allowedAttributes: ["id", "class", "style", /^regex.*$/]
 });
 md.renderer.rules.emoji = (token, idx) => twemoji.parse(token[idx].content);
+md.use(mentions, {
+  parseURL: (username) => `/profile/${username}`,
+  external: true 
+})

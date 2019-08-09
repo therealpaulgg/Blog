@@ -1,19 +1,30 @@
 <template>
     <div class="comment" :class="getTheme" v-if="alive">
         <div class="metadata">
-                <span class="metaelement">By: <i><router-link :to="`/profile/${comment.user}`">{{comment.user}}</router-link></i></span>
+            <span class="metaelement">
+                By:
+                <i>
+                    <router-link :to="`/profile/${comment.user}`">{{comment.user}}</router-link>
+                </i>
+            </span>
+            <span class="metaelement">
+                <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
                 <span class="metaelement">
-                    <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
-                    <span class="metaelement">{{date}}, <i>{{timeSince}}</i></span>
+                    {{date}},
+                    <i>{{timeSince}}</i>
                 </span>
-                <span class="metaelement" v-if="repliesCount">
-                    <font-awesome-icon icon="comments"></font-awesome-icon>
-                    {{repliesCount}}
-                </span>
-                <span v-if="$store.state.username === comment.user || $store.getters.isAdmin || ownsPost" style="float: right">
-                    <a @click="deleteComment" class="delete metaelement">Delete</a>
-                </span>
-            </div>
+            </span>
+            <span class="metaelement" v-if="repliesCount">
+                <font-awesome-icon icon="comments"></font-awesome-icon>
+                {{repliesCount}}
+            </span>
+            <span
+                v-if="$store.state.username === comment.user || $store.getters.isAdmin || ownsPost"
+                style="float: right"
+            >
+                <a @click="deleteComment" class="delete metaelement">Delete</a>
+            </span>
+        </div>
         <div v-html="renderedContent"></div>
     </div>
 </template>
@@ -55,19 +66,29 @@ export default class Comment extends Vue {
 
     protected async deleteComment() {
         try {
-            await axios.post(
+            let { data } = await axios.post(
                 "http://localhost:3000/deletecomment",
                 { id: this.comment.id },
                 { withCredentials: true }
             );
             this.$store.dispatch("addAlert", {
                 alertType: "success",
-                alertText: "Comment deleted."
+                alertText: data.success
             });
             this.$emit("deletedComment");
             this.alive = false;
         } catch (err) {
-            // do something
+            if (err.response) {
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: err.response.data.error
+                });
+            } else {
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: "Something went wrong."
+                });
+            }
         }
     }
 }

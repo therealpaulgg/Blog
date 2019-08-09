@@ -1,6 +1,8 @@
 <template>
     <div class="postblock" :class="getTheme" @click="goToPost">
-        <p style="float: right;">{{date}}</p>
+        <p style="float: right;">
+            by {{author}}, {{date}}
+        </p>
         <h1>{{title}}</h1>
     </div>
 </template>
@@ -15,6 +17,7 @@ export default class PostBlock extends Vue {
     @Prop(Number) protected readonly id!: number;
     @Prop(String) protected readonly title!: string;
     @Prop(String) protected readonly content!: string;
+    @Prop(String) protected readonly author!: string;
     @Prop(String) protected readonly urlTitle!: string;
     @Prop(String) protected readonly createdAt: string;
     @Prop(String) protected readonly updatedAt: string;
@@ -28,7 +31,7 @@ export default class PostBlock extends Vue {
     }
 
     protected goToPost() {
-        this.$router.push(`/posts/${this.id}/${this.urlTitle}`)
+        this.$router.push(`/posts/${this.id}/${this.urlTitle}`);
     }
 }
 </script>

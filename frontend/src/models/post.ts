@@ -1,5 +1,4 @@
 import { CommentModel } from "./comment";
-import moment from "moment";
 
 export interface PostModel {
     postId: number;

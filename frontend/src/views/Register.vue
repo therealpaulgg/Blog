@@ -55,39 +55,58 @@ export default class Register extends Vue {
     }
 
     protected async register() {
-        try {
-            await axios.post(
-                "http://localhost:3000/register",
-                {
-                    username: this.username,
-                    email: this.email,
-                    password: this.password
-                },
-                { withCredentials: true }
-            );
-        } catch {
+        if (this.password === this.confirmPassword) {
+            try {
+                await axios.post(
+                    "http://localhost:3000/register",
+                    {
+                        username: this.username,
+                        email: this.email,
+                        password: this.password
+                    },
+                    { withCredentials: true }
+                );
+                try {
+                    let { data } = await axios.post(
+                        "http://localhost:3000/login",
+                        { username: this.username, password: this.password },
+                        { withCredentials: true }
+                    );
+                    this.$store.dispatch("setUsername", data.username);
+                    this.$store.dispatch("setAdmin", data.admin);
+                    this.$store.dispatch("setCanPost", data.canPost);
+                    this.login(true);
+                    this.$router.push("/");
+                    this.$store.dispatch("addAlert", {
+                        alertType: "success",
+                        alertText:
+                            "You have been registered and automatically logged in."
+                    });
+                } catch {
+                    this.$store.dispatch("addAlert", {
+                        alertType: "danger",
+                        alertText:
+                            "You have been registered, but there was a problem logging in automatically. Please log in manually."
+                    });
+                }
+            } catch (err) {
+                if (err.response) {
+                    this.$store.dispatch("addAlert", {
+                        alertType: "danger",
+                        alertText: err.response.data.error
+                    });
+                } else {
+                    this.$store.dispatch("addAlert", {
+                        alertType: "danger",
+                        alertText:
+                            "There was a problem with registration. Please try again."
+                    });
+                }
+            }
+        } else {
             this.$store.dispatch("addAlert", {
-                alertType: "danger",
-                alertText:
-                    "There was a problem with registration. Please try again."
-            });
-        }
-        try {
-            let { data} = await axios.post(
-                "http://localhost:3000/login",
-                { username: this.username, password: this.password },
-                { withCredentials: true }
-            );
-            this.$store.dispatch("setUsername", data.username);
-                this.$store.dispatch("setAdmin", data.admin);
-                this.$store.dispatch("setCanPost", data.canPost);
-            this.login(true);
-            this.$router.push("/");
-        } catch {
-            this.$store.dispatch("addAlert", {
-                alertType: "danger",
-                alertText:
-                    "There was a problem logging in automatically. Please log in manually."
+                alertType: "warning",
+                alertText: "Your passwords do not match. Please try again."
             });
         }
     }

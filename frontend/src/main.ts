@@ -23,7 +23,12 @@ import {
     faCalculator,
     faComments,
     faCalendarAlt,
-    faSyncAlt
+    faSyncAlt,
+    faUser,
+    faUserShield,
+    faUserEdit,
+    faUsersCog,
+    faUserSecret
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -43,7 +48,12 @@ library.add(
     faCalculator,
     faComments,
     faCalendarAlt,
-    faSyncAlt
+    faSyncAlt,
+    faUser,
+    faUserShield,
+    faUserEdit,
+    faUsersCog,
+    faUserSecret
 );
 
 Vue.component("font-awesome-icon", FontAwesomeIcon);

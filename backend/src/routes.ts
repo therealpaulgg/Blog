@@ -1,4 +1,4 @@
-import express from "express"
+import express, { Response } from "express"
 import { getConnection, Connection } from "typeorm";
 import jwt from "jsonwebtoken";
 import argon2 from "argon2"
@@ -6,6 +6,7 @@ import { Post } from "./entity/Post";
 import { User } from "./entity/User";
 import { Comment } from "./entity/Comment";
 import { PermissionBlock } from "./entity/PermissionBlock";
+import validator from "validator";
 import md5 from "md5";
 
 let router = express.Router()
@@ -176,22 +177,25 @@ router.get("/isadmin", checkAuth, async (req, res) => {
     }
 })
 
+// if user has all permission fields, should return the highest one
 function getPermStr(pBlock: PermissionBlock) {
     switch (true) {
-        case pBlock.normal: return "normal"
-        case pBlock.author: return "author"
-        case pBlock.moderator: return "moderator"
         case pBlock.superAdmin: return "superadmin"
-        default: return "normal" 
+        case pBlock.moderator: return "moderator"
+        case pBlock.author: return "author"
+        case pBlock.normal: return "normal"
+        default: return "normal"
     }
 }
 
 router.get("/profile/:username", async (req, res) => {
-    try { 
+    try {
         let connection = getConnection();
-        let user = await connection.manager.findOne(User, {username: req.params.username}, {relations: ["permissionBlock", "posts", "comments"]});
+        let user = await connection.manager.findOne(User, { username: req.params.username }, { relations: ["permissionBlock", "posts", "comments"] });
         if (user) {
             let permissionLevel = getPermStr(user.permissionBlock)
+            console.log(user.permissionBlock)
+            console.log(permissionLevel)
             res.send({
                 username: user.username,
                 gravatarUrl: user.gravatarUrl,
@@ -222,28 +226,18 @@ router.post("/initialsetup", async (req, res) => {
         try {
             let permissionBlock = new PermissionBlock();
             permissionBlock.superAdmin = true;
+            permissionBlock.normal = false;
             let username = req.body.username;
             let email = req.body.email;
             let password = req.body.password
             if (username != null && email != null && password != null) {
-                let gravatarUrl = `https://www.gravatar.com/avatar/${md5(email)}?s=200`
-                await connection.manager.save(permissionBlock);
-                await connection.manager.save(User, {
-                    username,
-                    email,
-                    password_hash: await argon2.hash(password),
-                    gravatarUrl,
-                    permissionBlock: permissionBlock
-                })
-                res.send({
-                    success: "Admin user created."
-                });
+                registerUser(permissionBlock, username, email, password, res)
             } else {
                 res.status(400).send({
                     error: "Missing username, email, or password."
                 })
             }
-            
+
         } catch (err) {
             res.status(500).send({
                 error: "Something went wrong."
@@ -296,7 +290,7 @@ router.post("/newpost", checkAuth, checkAdmin, async (req, res) => {
             post.user = user
             await connection.manager.save(post)
             res.send({
-                success: "Post created."
+                success: "Post successfully created."
             })
         } catch (__) {
             res.status(500).send({
@@ -322,7 +316,8 @@ router.post("/editpost", checkAuth, async (req, res) => {
             post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
             await connection.manager.save(post)
             res.send({
-                urlTitle: post.urlTitle
+                urlTitle: post.urlTitle,
+                success: "Post successfully edited."
             })
         } else {
             res.status(401).send({
@@ -336,43 +331,69 @@ router.post("/editpost", checkAuth, async (req, res) => {
     }
 })
 
-// TODO: password requirements
-router.post("/register", async (req, res) => {
-    if (req.body.username.length < 30) {
+async function registerUser(permissionBlock: PermissionBlock, username, email, password, res: Response) {
+    if (username.length < 30) {
         let connection = await getConnection()
-        let user = await connection.manager.findOne(User, { username: req.body.username })
+        let user = await connection.manager.findOne(User, {where: [
+            { username },
+            { email }
+        ]})
         if (!user) {
-            let permissionBlock = new PermissionBlock();
-            let username = req.body.username;
-            let email = req.body.email;
-            let password = req.body.password
-            if (username != null && email != null && password != null) {
-                let gravatarUrl = `https://www.gravatar.com/avatar/${md5(email)}?s=200`
-                await connection.manager.save(permissionBlock);
-                await connection.manager.save(User, {
-                    username,
-                    email,
-                    password_hash: await argon2.hash(password) as string,
-                    gravatarUrl,
-                    permissionBlock
+            let usernameCheck = username.match(/\w+/)
+            if (usernameCheck != null) {
+                if (validator.isEmail(email)) {
+                    let gravatarUrl = `https://www.gravatar.com/avatar/${md5(email)}?s=200`
+                    await connection.manager.save(permissionBlock);
+                    await connection.manager.save(User, {
+                        username,
+                        email,
+                        password_hash: await argon2.hash(password) as string,
+                        gravatarUrl,
+                        permissionBlock
+                    })
+                    res.send({
+                        success: "User registered."
+                    })
+                } else {
+                    res.status(400).send({
+                        error: "You must submit a valid email."
+                    })
+                }
+            } else {
+                res.status(400).send({
+                    error: "Username can only contain alphanumeric characters and underscores. [a-z, A-Z, 0-9, _]"
                 })
-                res.send({
-                    success: "User registered."
+            }
+        } else {
+            if (user.email === email) {
+                res.status(400).send({
+                    error: "This email is already in use. Please select a different email."
                 })
             } else {
                 res.status(400).send({
-                    error: "Missing username, email, or password."
+                    error: "User with this username already exists. Please select a different username."
                 })
             }
             
-        } else {
-            res.status(400).send({
-                error: "User with this username already exists."
-            })
         }
     } else {
         res.status(400).send({
             error: "Username too long (must be < 30 characters)."
+        })
+    }
+}
+
+// TODO: password requirements
+router.post("/register", async (req, res) => {
+    let permissionBlock = new PermissionBlock();
+    let username: string = req.body.username;
+    let email = req.body.email;
+    let password = req.body.password
+    if (username != null && email != null && password != null) {
+        registerUser(permissionBlock, username, email, password, res)
+    } else {
+        res.status(400).send({
+            error: "Missing username, email, or password."
         })
     }
 })
@@ -386,7 +407,7 @@ router.post("/deletepost", checkAuth, (req, res) => {
             }
             await connection.manager.remove(post)
             res.send({
-                success: "Post deleted."
+                success: "Post successfully deleted."
             })
         } else {
             res.status(401).send({
@@ -408,11 +429,11 @@ router.post("/deletecomment", checkAuth, async (req, res) => {
         if (res.locals.user === commentUser.username || comment.post.user.username === res.locals.user || user.permissionBlock.superAdmin) {
             await connection.manager.remove(comment);
             res.send({
-                success: "Deleted."
+                success: "Comment successfully deleted."
             })
         } else {
             res.status(401).send({
-                error: "Unauthorized"
+                error: "You are not authorized to perform this action."
             })
         }
     } catch (err) {
@@ -434,28 +455,30 @@ router.post("/login", async (req, res) => {
                 res.cookie("auth", token, { maxAge: age })
                 let date = new Date(new Date().getTime() + age).getTime();
                 res.cookie("expiration", date, { maxAge: age })
+                let personalizedLoginMsg = user.permissionBlock.superAdmin ? "Welcome, admin :)" : ""
                 res.send({
                     username,
                     canPost: user.permissionBlock.superAdmin,
-                    admin: user.permissionBlock.superAdmin
+                    admin: user.permissionBlock.superAdmin,
+                    success: `You have successfully been logged in.\n${personalizedLoginMsg}`
                 })
             } else {
                 res.status(401).send({
-                    error: "Unauthorized"
+                    error: "Username or password is incorrect."
                 })
             }
         } catch {
             res.status(401).send({
-                error: "User not found in our system."
+                error: "Username or password is incorrect."
             })
         }
-        
+
     } else {
         res.status(400).send({
             error: "Must include username and password in login request."
         })
     }
-    
+
 })
 
 router.post("/renew-jwt", checkAuth, (req, res) => {
@@ -470,14 +493,21 @@ router.post("/renew-jwt", checkAuth, (req, res) => {
 })
 
 // Middleware function
-function checkAuth(req, res, next) {
+async function checkAuth(req, res, next) {
     try {
         let token: any = jwt.verify(req.cookies["auth"], "VERYSECRETKEY")
-        res.locals.user = token.username
-        next()
+        let user = await getConnection().manager.findOne(User, {username: token.username})
+        if (user) {
+            res.locals.user = token.username
+            next()
+        } else {
+            res.status(401).send({
+                error: "Authorization failed. Please log in again."
+            })
+        }
     } catch (__) {
         res.status(401).send({
-            error: "Unauthorized"
+            error: "Authorization failed. Please log in again."
         })
     }
 }
@@ -499,6 +529,10 @@ async function checkAdmin(req, res, next) {
             error: "Unauthorized"
         })
     }
+}
+
+async function processUserMentions() {
+
 }
 
 export = router 

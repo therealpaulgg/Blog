@@ -13,6 +13,7 @@
       "@types/markdown-it": "0.0.8",
       "@types/md5": "^2.1.33",
       "@types/morgan": "^1.7.36",
+      "@types/validator": "^10.11.2",
       "argon2": "^0.24.0",
       "body-parser": "^1.18.1",
       "cookie-parser": "^1.4.4",
@@ -24,7 +25,8 @@
       "reflect-metadata": "^0.1.10",
       "sqlite3": "^4.0.3",
       "ts-node-dev": "^1.0.0-pre.40",
-      "typeorm": "^0.2.18"
+      "typeorm": "^0.2.18",
+      "validator": "^11.1.0"
    },
    "scripts": {
       "start": "ts-node src/app.ts",

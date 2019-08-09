@@ -195,15 +195,26 @@ export default class Post extends Vue {
                 { id: this.id },
                 { withCredentials: true }
             )
-            .then(() => {
+            .then(res => {
                 this.$store.dispatch("fetchPosts", 1);
                 this.$store.dispatch("addAlert", {
                     alertType: "success",
-                    alertText: "Post deleted."
+                    alertText: res.data.success
                 });
                 this.$router.push("/");
             })
-            .catch(() => {
+            .catch(err => {
+                if (err.response) {
+                    this.$store.dispatch("addAlert", {
+                        alertType: "danger",
+                        alertText: err.response.data.error
+                    });
+                } else {
+                    this.$store.dispatch("addAlert", {
+                        alertType: "danger",
+                        alertText: "Something went wrong."
+                    });
+                }
                 this.$router.push("/");
             });
     }
@@ -269,7 +280,7 @@ export default class Post extends Vue {
 
     protected async makeEdits() {
         try {
-            const newUrlTitle = (await axios.post(
+            const { data } = await axios.post(
                 "http://localhost:3000/editpost",
                 {
                     id: this.id,
@@ -278,58 +289,71 @@ export default class Post extends Vue {
                     newContent: this.editContent
                 },
                 { withCredentials: true }
-            )).data.urlTitle;
+            );
+            let newUrlTitle = data.newUrlTitle;
+            let msg = data.success;
             this.editContent = "";
             this.$store.dispatch("addAlert", {
                 alertType: "success",
-                alertText: "Post edited."
+                alertText: msg
             });
             this.editing = false;
             // technically this doesn't initialize a new component (wtf vue?)
             this.$router.push(`/posts/${this.id}/${newUrlTitle}`);
             this.fetchData();
         } catch (err) {
-            // The user should never actually get to this point in theory,
-            // but it is here for safety. (Delete cookies)
-            this.$store.dispatch("forceLogout");
-            this.$store.dispatch("addAlert", {
-                alertType: "danger",
-                alertText:
-                    "There was an authentication problem. Please log in again."
-            });
+            if (err.response.status === 401) {
+                this.$store.dispatch("forceLogout");
+                this.$router.push("/login");
+                this.editing = false;
+            }
+            if (err.response.data) {
+                console.log(err.response);
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: err.response.data.error
+                });
+            } else {
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: "Something went wrong."
+                });
+            }
         }
     }
 
     protected async postComment() {
-        if (this.commentContent.length <= 2000) {
-            try {
-                await axios.post(
-                    "http://localhost:3000/comment",
-                    { urlTitle: this.title, content: this.commentContent },
-                    { withCredentials: true }
-                );
-                this.commentContent = "";
-                this.$store.dispatch("addAlert", {
-                    alertType: "success",
-                    alertText: "Comment successfully created."
-                });
-                this.postingComment = false;
-                await this.loadComments();
-            } catch (err) {
-                // The user should never actually get to this point in theory,
-                // but it is here for safety. (Delete cookies)
+        try {
+            await axios.post(
+                "http://localhost:3000/comment",
+                { urlTitle: this.title, content: this.commentContent },
+                { withCredentials: true }
+            );
+            this.commentContent = "";
+            this.$store.dispatch("addAlert", {
+                alertType: "success",
+                alertText: "Comment successfully created."
+            });
+            this.postingComment = false;
+            await this.loadComments();
+        } catch (err) {
+            if (err.response.status === 401) {
                 this.$store.dispatch("forceLogout");
+                this.$router.push("/login");
+                this.postingComment = false;
+            }
+            if (err.response.data) {
+                console.log(err.response);
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
-                    alertText:
-                        "There was an authentication problem. Please log in again."
+                    alertText: err.response.data.error
+                });
+            } else {
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: "Something went wrong."
                 });
             }
-        } else {
-            this.$store.dispatch("addAlert", {
-                alertType: "warning",
-                alertText: "Your comment cannot be longer than 2000 characters."
-            });
         }
     }
 

@@ -113,25 +113,34 @@ export default class NewPost extends Vue {
                 { title: this.title, content: this.content },
                 { withCredentials: true }
             )
-            .then(() => {
+            .then((res) => {
                 this.title = "";
                 this.content = "";
                 this.$store.dispatch("fetchPosts", 1);
                 this.$router.push("/");
                 this.$store.dispatch("addAlert", {
                     alertType: "success",
-                    alertText: "Posted successfully created."
+                    alertText: res.data.success
                 });
             })
-            .catch((err) => {
-                // This will probably happen if the user deletes their cookies
-                this.$store.dispatch("forceLogout");
-                this.$store.dispatch("addAlert", {
-                    alertType: "danger",
-                    alertText:
-                        "There was an authentication problem. Please log in again."
-                });
-                this.$router.push("/login");
+            .catch(err => {
+                if (err.response.status === 401) {
+                    this.$store.dispatch("forceLogout");
+                    this.$router.push("/login");
+                }
+                if (err.response.data) {
+                    console.log(err.response);
+                    this.$store.dispatch("addAlert", {
+                        alertType: "danger",
+                        alertText: err.response.data.error
+                    });
+                } else {
+                    this.$store.dispatch("addAlert", {
+                        alertType: "danger",
+                        alertText: "Something went wrong."
+                    });
+                }
+                
             });
     }
 }

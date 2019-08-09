@@ -6,7 +6,27 @@
         <h3>{{user}}</h3>
         <p>Registered on {{createdAt}}, {{age}}</p>
         <!-- have an icon for administrator, moderator, author, or regular user -->
+        <div v-if="permissionLevel === 'normal'">
+            <font-awesome-icon icon="user"></font-awesome-icon>
+        <p>Normal</p>
+        </div>
+        <div v-else-if="permissionLevel === 'author'">
+            <font-awesome-icon icon="user-edit"></font-awesome-icon>
         <p>{{permissionLevel}}</p>
+        </div>
+        <div v-else-if="permissionLevel === 'moderator'">
+            <font-awesome-icon icon="users-cog"></font-awesome-icon>
+        <p>Moderator</p>
+        </div>
+        <div v-else-if="permissionLevel === 'superadmin'">
+            <font-awesome-icon icon="user-shield"></font-awesome-icon>
+        <p>Super Admin</p>
+        </div>
+        <div v-else>
+            <font-awesome-icon icon="user-secret"></font-awesome-icon>
+        <p>Secret Role</p>
+        </div>
+        
         </div>
         <div v-else>
             <h1>User '{{user}}' not found.</h1>

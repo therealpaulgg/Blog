@@ -6,14 +6,8 @@ export default {
     setTheme({ commit }: { commit: any }, theme: string) {
         commit("SET_THEME", theme);
     },
-    login({ commit, dispatch }: { commit: any, dispatch: any }, registered: boolean) {
+    login({ commit, dispatch }: { commit: any, dispatch: any }) {
         commit("LOGIN");
-        if (registered) {
-            // tslint:disable-next-line: max-line-length
-            dispatch("addAlert", { alertType: "success", alertText: "You have successfully registered and have been logged in." });
-        } else {
-            dispatch("addAlert", { alertType: "success", alertText: "You have successfully logged in." });
-        }
         dispatch("determineTokenRefreshInterval");
     },
     forceLogout({ commit }: { commit: any }) {
@@ -21,7 +15,10 @@ export default {
     },
     logout({ commit, dispatch }: { commit: any, dispatch: any }) {
         commit("LOGOUT");
-        dispatch("addAlert", { alertType: "success", alertText: "You have successfully logged out." });
+        dispatch("addAlert", {
+            alertType: "success",
+            alertText: "You have been successfully logged out."
+        })
     },
     fetchPosts({ commit }: { commit: any }, page: number) {
         commit("FETCH_POSTS", page);
@@ -61,7 +58,7 @@ export default {
                 commit("LOGOUT");
                 dispatch("addAlert", {
                     alertType: "danger",
-                    alertText: "Your session has expired. Please log in again."
+                    alertText: "Your login session has expired. Please log in again."
                 });
             } else {
                 const timeout = expiry - new Date().getTime();

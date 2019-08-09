@@ -12,14 +12,14 @@
                     </b-input-group>
                     <br />
                     <b-input-group size="sm">
-                    <b-button :variant="theme" @click="authenticate">Login</b-button>
+                        <b-button :variant="theme" @click="authenticate">Login</b-button>
                     </b-input-group>
                     <!-- <g-signin-button
                         :params="googleSignInParams"
                         @success="gOauthSuccess"
                         @error="gOauthError"
                     >
-                    </g-signin-button> -->
+                    </g-signin-button>-->
                     <!-- <div style="margin-top: 20px" class="g-signin2" data-onsuccess="onSignIn"></div> -->
                 </b-col>
             </b-row>
@@ -41,7 +41,8 @@ export default class Home extends Vue {
     protected username: string;
     protected password: string;
     protected googleSignInParams = {
-        client_id: "270164016094-hu9876dvd5e3bkjq0lhpp6ne4uhmf6d8.apps.googleusercontent.com"
+        client_id:
+            "270164016094-hu9876dvd5e3bkjq0lhpp6ne4uhmf6d8.apps.googleusercontent.com"
     };
 
     constructor() {
@@ -51,15 +52,15 @@ export default class Home extends Vue {
     }
 
     protected gOauthSuccess() {
-        console.log("Success!")
+        console.log("Success!");
     }
 
     protected gOauthError() {
-        console.log("error!")
+        console.log("error!");
     }
 
     protected onSuccess() {
-        console.log("success?")
+        console.log("success?");
     }
 
     protected get theme() {
@@ -88,13 +89,24 @@ export default class Home extends Vue {
                 this.$store.dispatch("setAdmin", res.data.admin);
                 this.$store.dispatch("setCanPost", res.data.canPost);
                 this.login();
+                this.$store.dispatch("addAlert", {
+                        alertType: "success",
+                        alertText: res.data.success
+                    });
                 this.$router.push("/");
             })
-            .catch((err: Error) => {
-                this.$store.dispatch("addAlert", {
-                    alertType: "danger",
-                    alertText: "Incorrect username or password."
-                });
+            .catch(err => {
+                if (err.response != null) {
+                    this.$store.dispatch("addAlert", {
+                        alertType: "danger",
+                        alertText: err.response.data.error
+                    });
+                } else {
+                    this.$store.dispatch("addAlert", {
+                        alertType: "danger",
+                        alertText: "Incorrect username or password."
+                    });
+                }
             });
     }
 }
