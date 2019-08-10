@@ -1,6 +1,7 @@
-import {Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, OneToMany, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, OneToMany, JoinColumn, ManyToMany, JoinTable } from "typeorm";
 import { User } from "./User";
 import { Comment } from "./Comment";
+import { Tag } from "./Tag";
 
 @Entity()
 export class Post {
@@ -24,9 +25,13 @@ export class Post {
     content: string;
 
     @ManyToOne(type => User, user => user.posts)
-    @JoinColumn({ name: "userId"})
+    @JoinColumn({ name: "userId" })
     user: User;
 
     @OneToMany(type => Comment, comment => comment.post)
     comments: Array<Comment>
+
+    @ManyToMany(type => Tag)
+    @JoinTable()
+    tags: Tag[];
 }

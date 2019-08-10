@@ -55,5 +55,8 @@ export default {
     },
     SET_CAN_POST(state: State, canPost: boolean) {
         state.canPost = canPost;
+    },
+    EDIT_TAGS(state: State, tags: string) {
+        state.tags = tags;
     }
 };

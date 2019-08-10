@@ -5,6 +5,15 @@
         <input type="text" :class="theme" style="width: 100%" class="title" v-model="title" />
         <br />
         <br />
+        <label>Tags (please input tags as hashtags like this: '#mypost #specialcategory')</label>
+        <div style="position: relative">
+            <div style="display: inline-block;" v-for="(tag, index) in parsedTags" :key="index" :class="theme" class="hashtag">{{tag}}<font-awesome-icon @click="removeTag(tag)" icon="times-circle" style="font-size: 12px; margin-left: 4px;float: right; position: absolute; cursor: pointer"/></div>
+        </div>
+        <br />
+        <input type="text" :class="theme" style="width: 100%" class="title" v-model="tags" />
+        <br />
+        <br />
+        <label>Tags not in lowercase or with special characters will not be submitted.</label>
         <div class="container">
             <div class="row">
                 <div class="col">
@@ -101,6 +110,29 @@ export default class NewPost extends Vue {
         this.$store.dispatch("editContent", val);
     }
 
+    get tags() {
+        return this.$store.getters.getTags;
+    }
+    set tags(val) {
+        this.$store.dispatch("editTags", val);
+    }
+
+    get parsedTags() {
+        let re = /(^|\s)(#[a-z\d-_]+)/g,
+            match;
+        let foo = [];
+        while ((match = re.exec(this.tags))) {
+            if (!foo.find(thing => thing === match[2])) foo.push(match[2]);
+        }
+        return foo;
+    }
+
+    // substring MAGIC
+    protected removeTag(tag: string) {
+        let index = (this.tags as string).indexOf(tag)
+        this.tags = (this.tags as string).substring(0, index) + (this.tags as string).substring(index + tag.length + 1, this.tags.length)
+    }
+
     get vsTheme() {
         const theme = this.$store.getters.getTheme;
         return theme === "dark" ? "dracula" : "vs-light";
@@ -110,10 +142,10 @@ export default class NewPost extends Vue {
         axios
             .post(
                 "http://localhost:3000/newpost",
-                { title: this.title, content: this.content },
+                { title: this.title, content: this.content, tags: this.tags },
                 { withCredentials: true }
             )
-            .then((res) => {
+            .then(res => {
                 this.title = "";
                 this.content = "";
                 this.$store.dispatch("fetchPosts", 1);
@@ -140,7 +172,6 @@ export default class NewPost extends Vue {
                         alertText: "Something went wrong."
                     });
                 }
-                
             });
     }
 }
@@ -169,6 +200,13 @@ export default class NewPost extends Vue {
     padding: 0px
     border-radius: 5px
     overflow-y: auto
+.hashtag
+    margin: 10px 
+    padding-left: 10px
+    padding-right: 20px
+    padding-top: 5px
+    padding-bottom: 5px 
+    border-radius: 5px
 .dark
     .preview
         background-color: #2a2c39 !important
@@ -177,6 +215,8 @@ export default class NewPost extends Vue {
     .title
         border-color: #20212B !important
         background-color: #2a2c39 !important
+    .hashtag
+        background-color: black !important
 .light
     .preview
         background-color: #FFFFFE !important
@@ -185,6 +225,7 @@ export default class NewPost extends Vue {
     .title
         border-color: white !important
         background-color: white !important
-
+    .hashtag
+        background-color: white !important
 </style>
 

@@ -30,5 +30,8 @@ export default {
     },
     getAlert(state: State) {
         return state.alert;
+    },
+    getTags(state: State) {
+        return state.tags;
     }
 };

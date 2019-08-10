@@ -4,6 +4,9 @@
             by {{author}}, {{date}}
         </p>
         <h1>{{title}}</h1>
+        <div style="position: relative">
+            <div style="display: inline-block;" v-for="(tag, index) in tags" :key="index" :class="theme" class="hashtag">#{{tag}}</div>
+        </div>
     </div>
 </template>
 
@@ -21,6 +24,7 @@ export default class PostBlock extends Vue {
     @Prop(String) protected readonly urlTitle!: string;
     @Prop(String) protected readonly createdAt: string;
     @Prop(String) protected readonly updatedAt: string;
+    @Prop() protected readonly tags: string[]
     @Getter("getTheme") private getTheme: string;
 
     get date() {
@@ -59,4 +63,17 @@ export default class PostBlock extends Vue {
     transition: 0.5s
     -webkit-transition: 0.5s
     cursor: pointer
+.hashtag
+    margin: 10px 
+    padding-left: 5px
+    padding-right: 5px
+    padding-top: 5px
+    padding-bottom: 5px 
+    border-radius: 5px
+.dark
+    .hashtag
+        background-color: black !important
+.light
+    .hashtag
+        background-color: white !important
 </style>

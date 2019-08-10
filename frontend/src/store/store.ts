@@ -23,6 +23,7 @@ function defaultState(): State {
         pages: 1,
         canPost: false,
         isAdmin: false,
+        tags: ""
     };
 }
 

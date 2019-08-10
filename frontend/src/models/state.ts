@@ -15,4 +15,5 @@ export interface State {
     pages: number;
     canPost: boolean;
     isAdmin: boolean;
+    tags: string;
 }

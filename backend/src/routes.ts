@@ -8,10 +8,25 @@ import { Comment } from "./entity/Comment";
 import { PermissionBlock } from "./entity/PermissionBlock";
 import validator from "validator";
 import md5 from "md5";
+import { Tag } from "./entity/Tag";
 
 let router = express.Router()
 
 router.get("/", (req, res) => res.send("Hello world"))
+
+router.get("/tags", async (req, res) => {
+    try {
+        let connection = getConnection()
+        let tags = await connection.manager.find(Tag)
+        res.send({
+            tags
+        })
+    } catch {
+        res.status(500).send({
+            error: "Something went wrong."
+        })
+    }
+})
 
 // Gets a bunch of posts, paginated
 router.get("/posts/:page", async (req, res) => {
@@ -22,20 +37,23 @@ router.get("/posts/:page", async (req, res) => {
         const qb = postRepo.createQueryBuilder("p")
             .orderBy("p.createdAt", "DESC")
             .leftJoinAndSelect("p.user", "user")
+            .leftJoinAndSelect("p.tags", "tag")
             .skip((pageNum - 1) * postsPerPage)
             .take(postsPerPage)
         try {
             let result = await qb.getMany()
             let posts = []
             for (let post of result) {
+                let tags = []
+                post.tags.forEach(tag => tags.push(tag.tagStr))
                 let obj = {
                     postId: post.id,
                     urlTitle: post.urlTitle,
                     title: post.title,
-                    content: post.content,
                     username: post.user.username,
                     createdAt: post.createdAt,
-                    updatedAt: post.updatedAt
+                    updatedAt: post.updatedAt,
+                    tags
                 }
                 posts.push(obj)
             }
@@ -49,7 +67,7 @@ router.get("/posts/:page", async (req, res) => {
                     pages
                 }
             )
-        } catch (__) {
+        } catch {
             res.status(500).send({
                 error: "Something went wrong."
             })
@@ -131,7 +149,7 @@ router.get("/cansetup", async (req, res) => {
         } else {
             res.send(foo);
         }
-    } catch (__) {
+    } catch {
         res.status(500).send({
             error: "Something went wrong."
         })
@@ -151,7 +169,7 @@ router.get("/canpost", checkAuth, async (req, res) => {
             foo.canPost = true;
         }
         res.send(foo)
-    } catch (__) {
+    } catch {
         res.status(500).send({
             error: "Something went wrong."
         })
@@ -170,7 +188,7 @@ router.get("/isadmin", checkAuth, async (req, res) => {
             foo.isAdmin = true;
         }
         res.send(foo)
-    } catch (__) {
+    } catch {
         res.status(500).send({
             error: "Something went wrong."
         })
@@ -207,7 +225,7 @@ router.get("/profile/:username", async (req, res) => {
                 error: "User not found."
             })
         }
-    } catch (__) {
+    } catch {
         res.status(500).send({
             error: "Something went wrong."
         })
@@ -275,11 +293,38 @@ router.post("/comment", checkAuth, async (req, res) => {
     }
 })
 
+async function parseTags(tags: string) {
+    // returns Tag objects from database or makes new ones and then returns them all
+    let re = /(^|\s)#([a-z\d-_]+)/g, match
+    let foo = []
+    while (match = re.exec(tags)) {
+        if (!foo.find(thing => thing === match[2])) foo.push(match[2]);
+    }
+    let returnVal = []
+    let connection = getConnection()
+    for (let tag of foo) {
+        try {
+            let bar = await connection.manager.findOne(Tag, { tagStr: tag })
+            let newTag
+            if (!bar) {
+                newTag = new Tag()
+                newTag.tagStr = tag
+                connection.manager.save(newTag)
+            } else newTag = bar
+            returnVal.push(newTag)
+        } catch {
+            console.log("Couldn't query database for tag, or save tag.")
+        }
+    }
+    return returnVal
+}
+
 // Code for creating a new post
 router.post("/newpost", checkAuth, checkAdmin, async (req, res) => {
     let connection = getConnection()
     let title: string = req.body.title
     let content = req.body.content
+    let tags = req.body.tags
     if ((title != null && title.length > 0) && (content != null && content.length > 0)) {
         try {
             let post = new Post()
@@ -288,16 +333,20 @@ router.post("/newpost", checkAuth, checkAdmin, async (req, res) => {
             post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
             let user = await connection.manager.findOne(User, { username: res.locals.user })
             post.user = user
+            let postTags = []
+            if (tags != null && tags != "") {
+                postTags = await parseTags(tags)
+                post.tags = postTags
+            }
             await connection.manager.save(post)
             res.send({
                 success: "Post successfully created."
             })
-        } catch (__) {
+        } catch {
             res.status(500).send({
                 error: "Something went wrong."
             })
         }
-
     } else {
         res.status(400).send({
             error: "Missing title or post content."
@@ -334,10 +383,12 @@ router.post("/editpost", checkAuth, async (req, res) => {
 async function registerUser(permissionBlock: PermissionBlock, username, email, password, res: Response) {
     if (username.length < 30) {
         let connection = await getConnection()
-        let user = await connection.manager.findOne(User, {where: [
-            { username },
-            { email }
-        ]})
+        let user = await connection.manager.findOne(User, {
+            where: [
+                { username },
+                { email }
+            ]
+        })
         if (!user) {
             let usernameCheck = username.match(/\w+/)
             if (usernameCheck != null) {
@@ -374,7 +425,7 @@ async function registerUser(permissionBlock: PermissionBlock, username, email, p
                     error: "User with this username already exists. Please select a different username."
                 })
             }
-            
+
         }
     } else {
         res.status(400).send({
@@ -496,7 +547,7 @@ router.post("/renew-jwt", checkAuth, (req, res) => {
 async function checkAuth(req, res, next) {
     try {
         let token: any = jwt.verify(req.cookies["auth"], "VERYSECRETKEY")
-        let user = await getConnection().manager.findOne(User, {username: token.username})
+        let user = await getConnection().manager.findOne(User, { username: token.username })
         if (user) {
             res.locals.user = token.username
             next()
@@ -505,7 +556,7 @@ async function checkAuth(req, res, next) {
                 error: "Authorization failed. Please log in again."
             })
         }
-    } catch (__) {
+    } catch {
         res.status(401).send({
             error: "Authorization failed. Please log in again."
         })

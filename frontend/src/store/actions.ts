@@ -50,6 +50,9 @@ export default {
     setCanPost({ commit }: { commit: any }, canPost: boolean) {
         commit("SET_CAN_POST", canPost);
     },
+    editTags({ commit }: { commit: any }, tags: string) {
+        commit("EDIT_TAGS", tags);
+    },
     async determineTokenRefreshInterval({ commit, dispatch }: { commit: any, dispatch: any }) {
         try {
             const expiry = parseInt(Cookies.get("expiration"), 10);

@@ -28,7 +28,8 @@ import {
     faUserShield,
     faUserEdit,
     faUsersCog,
-    faUserSecret
+    faUserSecret,
+    faTimesCircle
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -53,7 +54,8 @@ library.add(
     faUserShield,
     faUserEdit,
     faUsersCog,
-    faUserSecret
+    faUserSecret,
+    faTimesCircle
 );
 
 Vue.component("font-awesome-icon", FontAwesomeIcon);

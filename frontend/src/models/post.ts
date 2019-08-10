@@ -11,4 +11,5 @@ export interface PostModel {
     comments: CommentModel[];
     pages: number;
     commentCount: number;
+    tags: string[];
 }
