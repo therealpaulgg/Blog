@@ -1,5 +1,5 @@
 import express, { Response } from "express"
-import { getConnection, Connection } from "typeorm";
+import { getConnection, Connection, ReplSet } from "typeorm";
 import jwt from "jsonwebtoken";
 import argon2 from "argon2"
 import { Post } from "./entity/Post";
@@ -9,6 +9,7 @@ import { PermissionBlock } from "./entity/PermissionBlock";
 import validator from "validator";
 import md5 from "md5";
 import { Tag } from "./entity/Tag";
+import Mail from "./services/mail";
 
 let router = express.Router()
 
@@ -402,6 +403,125 @@ router.get("/usercomments/:username/:page", async (req, res) => {
     } catch {
         res.status(500).send({
             error: "Something went wrong."
+        })
+    }
+})
+
+router.get("/resetpassword/:token", (req, res) => {
+    let token = req.params.token
+    if (token != null) {
+        try {
+            let contents: any = jwt.verify(token, "VERYSECRETKEY")
+            if (contents != null) {
+                res.send({
+                    username: contents.username,
+                    email: contents.email
+                })
+            } else {
+                res.status(401).send({
+                    error: "Invalid token."
+                })
+            }
+        } catch {
+            res.status(401).send({
+                error: "Invalid token."
+            })
+        }
+    } else {
+        res.status(400).send({
+            error: "No token sent."
+        })
+    }
+})
+
+router.post("/resetpassword/:token", async (req, res) => {
+    let token = req.params.token
+    let password = req.body.password
+    if (token != null) {
+        if (password != null) {
+            try {
+                let contents: any = jwt.verify(token, "VERYSECRETKEY")
+                if (contents != null) {
+                    try {
+                        let username = contents.username
+                        let email = contents.email
+                        let connection = getConnection()
+                        let user = await connection.manager.findOne(User, { username, email })
+                        if (user != null) {
+                            user.password_hash = await argon2.hash(password)
+                            connection.manager.save(user)
+                            res.send({
+                                success: "Password successfully reset, please login."
+                            })
+                        } else {
+                            res.status(401).send({
+                                error: "Token malformed - could not verify username & email. Please make a new password reset request."
+                            })
+                        }
+                    } catch {
+                        res.status(500).send({
+                            error: "Something went wrong."
+                        })
+                    }
+                } else {
+                    res.status(401).send({
+                        error: "Invalid token."
+                    })
+                }
+            } catch {
+                res.status(401).send({
+                    error: "Invalid token."
+                })
+            }
+        } else {
+            res.status(400).send({
+                error: "No password was found in your request."
+            })
+        }
+    } else {
+        res.status(400).send({
+            error: "No token sent."
+        })
+    }
+})
+
+router.post("/resetpasswordreq", async (req, res) => {
+    let email = req.body.email;
+    if (email != null) {
+        try {
+            let user = await getConnection().manager.findOne(User, { email: req.body.email })
+            if (user != null) {
+                Mail.to = user.email
+                let token = jwt.sign({
+                    username: user.username,
+                    email: user.email,
+                }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
+                Mail.message =
+                    `<p>Hello ${user.username},</p>
+                <p>Someone has requested a reset to your password.</p>
+                <p>If this was you, click on the following link or copy it into your browser:</p>
+                <p><a href='http://localhost:8080/resetpassword/${token}'>http://localhost:3000/resetpassword/${token}</a></p>
+                <p>This token will expire in 30 minutes.</p>
+                
+                <p>If this was not you, you can ignore this email.</p>
+                `
+                let success = await Mail.sendMail();
+                res.send({
+                    success
+                })
+            } else {
+                res.status(404).send({
+                    error: "That email was not found in our system."
+                })
+            }
+        } catch {
+            res.status(404).send({
+                error: "That email was not found in our system."
+            })
+        }
+    } else {
+        res.status(400).send({
+            error: "You must include an email in your request."
         })
     }
 })

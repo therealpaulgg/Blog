@@ -14,6 +14,8 @@
                     <b-input-group size="sm">
                         <b-button :variant="theme" @click="authenticate">Login</b-button>
                     </b-input-group>
+                    <br>
+                    <div>Forgot your password? <router-link to="/resetpasswordreq"><b>Click here to reset it.</b></router-link></div>
                     <!-- <g-signin-button
                         :params="googleSignInParams"
                         @success="gOauthSuccess"

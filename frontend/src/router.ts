@@ -11,6 +11,8 @@ import Profile from "./views/Profile.vue";
 import TagAndPosts from "./views/TagAndPosts.vue";
 import Tags from "./views/Tags.vue";
 import Notifications from "./views/Notifications.vue";
+import ResetPassword from "./views/ResetPassword.vue";
+import ResetPasswordRequest from "./views/ResetPasswordRequest.vue";
 
 Vue.use(Router);
 
@@ -120,6 +122,25 @@ export default new Router({
             component: Notifications,
             meta: {
                 title: "Notifications"
+            }
+        },
+        {
+            path: "/resetpassword/:token",
+            name: "resetpassword",
+            component: ResetPassword,
+            props: true,
+            meta: {
+                noAuth: true,
+                title: "Reset Password"
+            }
+        },
+        {
+            path: "/resetpasswordreq",
+            name: "resetpasswordreq",
+            component: ResetPasswordRequest,
+            meta: {
+                noAuth: true,
+                title: "Reset Password Request"
             }
         }
     ],
