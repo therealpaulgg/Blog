@@ -55,44 +55,5 @@ export default {
     },
     editTags({ commit }: { commit: any }, tags: string) {
         commit("EDIT_TAGS", tags);
-    },
-    async determineTokenRefreshInterval({ commit, dispatch }: { commit: any, dispatch: any }) {
-        try {
-            const expiry = parseInt(Cookies.get("expiration"), 10);
-            const authCookie = Cookies.get("auth");
-            if (isNaN(expiry) || authCookie == null) {
-                commit("LOGOUT");
-                dispatch("addAlert", {
-                    alertType: "danger",
-                    alertText: "Your login session has expired. Please log in again."
-                });
-            } else {
-                const timeout = expiry - new Date().getTime();
-                const delay = 10000;
-                if (timeout - delay > 0) {
-                    setTimeout(async () => {
-                        try {
-                            await axios.post("http://localhost:3000/renew-jwt", {}, { withCredentials: true });
-                            dispatch("determineTokenRefreshInterval");
-                        } catch {
-                            commit("LOGOUT");
-                            dispatch("addAlert", {
-                                alertType: "danger",
-                                alertText: "Your login session has expired, please log in again."
-                            });
-                        }
-                    }, timeout - delay);
-                } else {
-                    await axios.post("http://localhost:3000/renew-jwt", {}, { withCredentials: true });
-                    dispatch("determineTokenRefreshInterval");
-                }
-            }
-        } catch (err) {
-            commit("LOGOUT");
-            dispatch("addAlert", {
-                alertType: "danger",
-                alertText: "Your login session has expired, please log in again."
-            });
-        }
     }
 };

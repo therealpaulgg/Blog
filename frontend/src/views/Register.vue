@@ -4,19 +4,19 @@
             <b-row>
                 <b-col lg="4">
                     <b-input-group size="sm" prepend="Username">
-                        <b-form-input class="ifield" v-model="username" />
+                        <b-form-input class="ifield" v-model="username" v-on:keyup.enter="register" />
                     </b-input-group>
                     <br />
                     <b-input-group size="sm" prepend="Email">
-                        <b-form-input class="ifield" v-model="email" type="email" />
+                        <b-form-input class="ifield" v-model="email" type="email" v-on:keyup.enter="register" />
                     </b-input-group>
                     <br />
                     <b-input-group size="sm" prepend="Password">
-                        <b-form-input class="ifield" v-model="password" type="password" />
+                        <b-form-input class="ifield" v-model="password" type="password" v-on:keyup.enter="register" />
                     </b-input-group>
                     <br />
                     <b-input-group size="sm" prepend="Confirm Password">
-                        <b-form-input class="ifield" v-model="confirmPassword" type="password" />
+                        <b-form-input class="ifield" v-model="confirmPassword" type="password" v-on:keyup.enter="register" />
                     </b-input-group>
                     <br />
                     <b-input-group size="sm">

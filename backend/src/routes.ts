@@ -19,11 +19,10 @@ router.get("/tags/:pageNum", async (req, res) => {
     if (pageNum) {
         try {
             let connection = getConnection()
-            // let tags = await connection.manager.find(Tag)
             const postsPerPage = 10
-            const postRepo = getConnection().getRepository(Tag)
+            const postRepo = connection.getRepository(Tag)
             const qb = postRepo.createQueryBuilder("t")
-                .orderBy("t.createdAt", "DESC")
+                .orderBy("t.tagStr", "ASC")
                 .skip((pageNum - 1) * postsPerPage)
                 .take(postsPerPage)
             let tags = await qb.getMany()
@@ -292,13 +291,12 @@ router.get("/profile/:username", async (req, res) => {
         let user = await connection.manager.findOne(User, { username: req.params.username }, { relations: ["permissionBlock", "posts", "comments"] });
         if (user) {
             let permissionLevel = getPermStr(user.permissionBlock)
-            console.log(user.permissionBlock)
-            console.log(permissionLevel)
             res.send({
                 username: user.username,
                 gravatarUrl: user.gravatarUrl,
                 createdAt: user.createdAt,
-                permissionLevel
+                permissionLevel,
+                bio: user.bio
             })
         } else {
             res.status(404).send({
@@ -308,6 +306,36 @@ router.get("/profile/:username", async (req, res) => {
     } catch {
         res.status(500).send({
             error: "Something went wrong."
+        })
+    }
+})
+
+router.post("/updatebio", checkAuth, async (req, res) => {
+    let bio = req.body.bio
+    let username = req.body.username
+    if (res.locals.user === username) {
+        try {
+            let connection = getConnection()
+            let user = await connection.manager.findOne(User, { username })
+            if (user) {
+                user.bio = bio
+                connection.manager.save(user)
+                res.send({
+                    success: "Bio updated successfully."
+                })
+            } else {
+                res.status(500).send({
+                    error: "Something went wrong."
+                })
+            }
+        } catch {
+            res.status(500).send({
+                error: "Something went wrong."
+            })
+        }
+    } else {
+        res.status(401).send({
+            error: "You are not authorized to perform this action."
         })
     }
 })

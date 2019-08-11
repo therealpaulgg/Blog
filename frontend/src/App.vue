@@ -48,6 +48,9 @@
                 <transition name="fade">
                     <font-awesome-icon class="themebtn" @click="changeTheme" :icon="icon"></font-awesome-icon>
                 </transition>
+                <div class="notification">
+                <font-awesome-icon icon="bell" @click="gotoNotifications"></font-awesome-icon>
+                </div>
             </div>
         </div>
     </div>
@@ -58,6 +61,7 @@ import { State, Getter, Action } from "vuex-class";
 import { Component, Vue } from "vue-property-decorator";
 import Cookies from "js-cookie";
 import BootstrapVue from "bootstrap-vue";
+import axios from "axios";
 
 @Component
 export default class App extends Vue {
@@ -94,8 +98,54 @@ export default class App extends Vue {
 
     protected mounted() {
         if (this.isAuthenticated) {
-            this.$store.dispatch("determineTokenRefreshInterval");
+            this.determineTokenRefreshInterval()
         }
+    }
+
+    protected async determineTokenRefreshInterval() {
+        try {
+            const expiry = parseInt(Cookies.get("expiration"), 10);
+            const authCookie = Cookies.get("auth");
+            if (isNaN(expiry) || authCookie == null) {
+                this.$store.commit("LOGOUT");
+                this.$router.push("/login");
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: "Your login session has expired. Please log in again."
+                });
+            } else {
+                const timeout = expiry - new Date().getTime();
+                const delay = 10000;
+                if (timeout - delay > 0) {
+                    setTimeout(async () => {
+                        try {
+                            await axios.post("http://localhost:3000/renew-jwt", {}, { withCredentials: true });
+                            this.determineTokenRefreshInterval();
+                        } catch {
+                            this.$store.commit("LOGOUT");
+                            this.$router.push("/login");
+                            this.$store.dispatch("addAlert", {
+                                alertType: "danger",
+                                alertText: "Your login session has expired, please log in again."
+                            });
+                        }
+                    }, timeout - delay);
+                } else {
+                    await axios.post("http://localhost:3000/renew-jwt", {}, { withCredentials: true });
+                    this.determineTokenRefreshInterval();
+                }
+            }
+        } catch (err) {
+            this.$store.commit("LOGOUT");
+            this.$store.dispatch("addAlert", {
+                alertType: "danger",
+                alertText: "Your login session has expired, please log in again."
+            });
+        }
+    }
+
+    protected gotoNotifications() {
+        this.$router.push("/notifications")
     }
 
     protected logout() {
@@ -161,6 +211,12 @@ blockquote:nth-of-type(even) footer:after
 .emoji
     height: 1.2em !important
     width: 1.2em !important
+.notification
+    position: fixed
+    top: -3px
+    right: 40px
+    margin: 20px
+    cursor: pointer
 .themebtn
     position: fixed
     top: 0

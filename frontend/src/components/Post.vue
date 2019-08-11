@@ -550,7 +550,7 @@ export default class Post extends Vue {
     .metadata
         background-color: #FFFFFE !important
     .hashtag
-        background-color: white !important
+        background-color: #e9ecef !important
     .hashtag:hover
         color: #00ccff
 </style>

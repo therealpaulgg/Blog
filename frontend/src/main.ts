@@ -29,7 +29,8 @@ import {
     faUserEdit,
     faUsersCog,
     faUserSecret,
-    faTimesCircle
+    faTimesCircle,
+    faBell
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -55,7 +56,8 @@ library.add(
     faUserEdit,
     faUsersCog,
     faUserSecret,
-    faTimesCircle
+    faTimesCircle,
+    faBell
 );
 
 Vue.component("font-awesome-icon", FontAwesomeIcon);
@@ -173,6 +175,9 @@ router.beforeEach(async (to, from, next) => {
         next();
     }
 });
+
+const title = "Blog";
+router.afterEach((to, from) => document.title = `${to.meta.title} | ${title}` || title);
 
 new Vue({
     router,

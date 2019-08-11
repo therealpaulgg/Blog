@@ -97,7 +97,7 @@ export default class PostBlock extends Vue {
         color: #FF79c6
 .light
     .hashtag
-        background-color: white !important
+        background-color: #e9ecef !important
     .hashtag:hover
         color: #00ccff
 </style>

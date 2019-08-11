@@ -24,8 +24,11 @@ export class User {
     @Column()
     password_hash: string;
 
-    @Column({nullable: true})
+    @Column()
     gravatarUrl: string;
+
+    @Column({nullable: true})
+    bio: string
 
     @OneToMany(type => Post, post => post.user)
     posts: Array<Post>

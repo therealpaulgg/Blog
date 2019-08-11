@@ -36,7 +36,6 @@ export default class TagAndPosts extends Vue {
     constructor() {
         super()
         this.pageNum = 1;
-        console.log("i'm created")
     }
 
     get show() {
@@ -52,7 +51,6 @@ export default class TagAndPosts extends Vue {
     }
 
     protected mounted() {
-        console.log("i'm mounted")
         this.$store.dispatch("fetchTagPosts", {page: this.pageNum, tag: this.tag});
     }
 
