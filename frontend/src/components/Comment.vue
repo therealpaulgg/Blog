@@ -1,11 +1,11 @@
 <template>
-    <div class="comment" :class="getTheme" v-if="alive">
+    <div class="comment" :class="{'light': getTheme === 'light', 'dark': getTheme === 'dark', 'condensed': condensed}" v-if="alive" @click="gotoPost(comment.postId, comment.postUrlTitle)">
         <div class="metadata">
-            <span class="metaelement">
+            <span class="metaelement" v-if="comment != null && !condensed">
                 By:
-                <i>
+                <b>
                     <router-link :to="`/profile/${comment.user}`">{{comment.user}}</router-link>
-                </i>
+                </b>
             </span>
             <span class="metaelement">
                 <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
@@ -19,7 +19,7 @@
                 {{repliesCount}}
             </span>
             <span
-                v-if="$store.state.username === comment.user || $store.getters.isAdmin || ownsPost"
+                v-if="comment != null && !condensed && ($store.state.username === comment.user || $store.getters.isAdmin || ownsPost)"
                 style="float: right"
             >
                 <a @click="deleteComment" class="delete metaelement">Delete</a>
@@ -41,6 +41,7 @@ import axios from "axios";
 export default class Comment extends Vue {
     @Prop() protected comment: CommentModel;
     @Prop() protected ownsPost: boolean;
+    @Prop() protected condensed: boolean;
     protected alive: boolean;
     protected renderedContent: string;
     protected repliesCount: number | null;
@@ -50,18 +51,27 @@ export default class Comment extends Vue {
         super();
         this.alive = true;
         this.repliesCount = null;
-        this.renderedContent = md.render(this.comment.content);
+        this.renderedContent =
+            this.comment != null ? md.render(this.comment.content) : null;
     }
 
     get date() {
-        return moment
-            .utc(this.comment.createdAt)
-            .local()
-            .format("MM/DD/YYYY, HH:mm");
+        return this.comment
+            ? moment
+                  .utc(this.comment.createdAt)
+                  .local()
+                  .format("MM/DD/YYYY, HH:mm")
+            : null;
     }
 
     get timeSince() {
-        return moment(this.comment.createdAt).fromNow();
+        return this.comment ? moment(this.comment.createdAt).fromNow() : null;
+    }
+
+    protected gotoPost(id, urlTitle) {
+        if (this.condensed) {
+            this.$router.push(`/posts/${id}/${urlTitle}`)
+        }
     }
 
     protected async deleteComment() {
@@ -113,9 +123,20 @@ export default class Comment extends Vue {
 .comment
     padding: 20px
     margin: 20px
-    border-radius: 20px
+    border-radius: 10px
     max-height: 300px
     overflow-y: auto
+.comment.condensed
+    padding: 10px 10px 0px 10px
+.comment.condensed:hover
+    border-radius: 20px
+    transition: 0.5s
+    -webkit-transition: 0.5s
+    cursor: pointer
+.comment.light.condensed:hover
+    background-color: #f2feff !important
+.comment.dark.condensed:hover
+    background-color: #3e4154 !important
 .comment::-webkit-scrollbar
     width: 10px
 .comment::-webkit-scrollbar-thumb

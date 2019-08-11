@@ -1,14 +1,25 @@
 <template>
-    <div class="postblock" :class="getTheme" @click="goToPost">
-        <p style="float: right;">
-            by
-            <i>
-                <a @click.stop="gotoUser(author)">{{author}}</a>
-            </i>
-            , {{date}}
-        </p>
-        <h1>{{title}}</h1>
-        <div style="position: relative">
+    <div
+        class="postblock"
+        :class="{'light': getTheme === 'light', 'dark': getTheme === 'dark', 'condensed': condensed}"
+        @click="goToPost"
+    >
+            <p style="float: right;" :class="{'lessnoticed':condensed}">
+                <span v-if="!condensed">
+                    by
+                    <b v-if="username === author">
+                        <a @click.stop="gotoUser(author)">you</a>
+                    </b>
+                    <b v-else>
+                        <a @click.stop="gotoUser(author)">{{author}}</a>
+                    </b>
+                    ,
+                </span>
+                {{date}}
+            </p>
+        <h2 v-if="!condensed">{{title}}</h2>
+        <h3 v-else>{{title}}</h3>
+        <div style="position: relative" v-if="!condensed">
             <div
                 style="display: inline-block;"
                 v-for="(tag, index) in tags"
@@ -35,13 +46,20 @@ export default class PostBlock extends Vue {
     @Prop(String) protected readonly createdAt: string;
     @Prop(String) protected readonly updatedAt: string;
     @Prop() protected readonly tags: string[];
+    @Prop() condensed: boolean;
     @Getter("getTheme") private getTheme: string;
 
     get date() {
         return `${moment
             .utc(this.createdAt)
             .local()
-            .format("MM/DD/YYYY, HH:mm")}, ${moment.utc(this.createdAt).fromNow()}`;
+            .format("MM/DD/YYYY, HH:mm")}, ${moment
+            .utc(this.createdAt)
+            .fromNow()}`;
+    }
+
+    get username() {
+        return this.$store.state.username;
     }
 
     protected fooBar(tag) {
@@ -66,6 +84,9 @@ export default class PostBlock extends Vue {
     border-radius: 20px
     transition: 0.5s
     -webkit-transition: 0.5s
+.postblock.condensed
+    padding: 10px 10px 1px 10px
+    border-radius: 10px
 .postblock.dark
     color: white
     background-color: #2a2c39 !important
@@ -81,6 +102,11 @@ export default class PostBlock extends Vue {
     transition: 0.5s
     -webkit-transition: 0.5s
     cursor: pointer
+.postblock.condensed:hover
+    border-radius: 20px
+    transition: 0.5s
+    -webkit-transition: 0.5s
+    cursor: pointer
 .hashtag
     margin: 10px 
     padding-left: 5px
@@ -90,12 +116,19 @@ export default class PostBlock extends Vue {
     border-radius: 5px
     transition: 0.25s
     -webkit-transition: 0.25s
+.lessnoticed
+    font-style: italic
+    
 .dark
+    .lessnoticed
+        color: #d5d5d5
     .hashtag
         background-color: black !important
     .hashtag:hover
         color: #FF79c6
 .light
+    .lessnoticed
+        color: #787878
     .hashtag
         background-color: #e9ecef !important
     .hashtag:hover

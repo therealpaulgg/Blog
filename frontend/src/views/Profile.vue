@@ -2,57 +2,102 @@
     <div class="profile">
         <!-- <p>Not implemented yet.</p> -->
         <div v-if="!notFound">
-            <img :src="gravatarUrl" />
-            <h3>{{user}}</h3>
-            <p>Registered on {{createdAt}}, {{age}}</p>
-            <!-- have an icon for administrator, moderator, author, or regular user -->
-            <div v-if="permissionLevel === 'normal'">
-                <font-awesome-icon icon="user"></font-awesome-icon>
-                <p>Normal</p>
-            </div>
-            <div v-else-if="permissionLevel === 'author'">
-                <font-awesome-icon icon="user-edit"></font-awesome-icon>
-                <p>{{permissionLevel}}</p>
-            </div>
-            <div v-else-if="permissionLevel === 'moderator'">
-                <font-awesome-icon icon="users-cog"></font-awesome-icon>
-                <p>Moderator</p>
-            </div>
-            <div v-else-if="permissionLevel === 'superadmin'">
-                <font-awesome-icon icon="user-shield"></font-awesome-icon>
-                <p>Super Admin</p>
-            </div>
-            <div v-else>
-                <font-awesome-icon icon="user-secret"></font-awesome-icon>
-                <p>Secret Role</p>
-            </div>
-            <div v-if="bio">
-                <h2>Bio</h2>
-                <p>{{bio}}</p>
+            <div class="row">
+                <div class="col">
+                    <img :src="gravatarUrl" />
+                    <h3>{{user}}</h3>
+                    <p>Registered on {{createdAt}}, {{age}}</p>
+                    <!-- have an icon for administrator, moderator, author, or regular user -->
+                    <div v-if="permissionLevel === 'normal'">
+                        <font-awesome-icon icon="user"></font-awesome-icon>
+                        <p>Normal</p>
+                    </div>
+                    <div v-else-if="permissionLevel === 'author'">
+                        <font-awesome-icon icon="user-edit"></font-awesome-icon>
+                        <p>{{permissionLevel}}</p>
+                    </div>
+                    <div v-else-if="permissionLevel === 'moderator'">
+                        <font-awesome-icon icon="users-cog"></font-awesome-icon>
+                        <p>Moderator</p>
+                    </div>
+                    <div v-else-if="permissionLevel === 'superadmin'">
+                        <font-awesome-icon icon="user-shield"></font-awesome-icon>
+                        <p>Super Admin</p>
+                    </div>
+                    <div v-else>
+                        <font-awesome-icon icon="user-secret"></font-awesome-icon>
+                        <p>Secret Role</p>
+                    </div>
+                    <div v-if="bio">
+                        <h2>Bio</h2>
+                        <p>{{bio}}</p>
+                    </div>
+                    <b-button
+                        v-if="!editing && user === username"
+                        :variant="theme"
+                        @click="editBio"
+                        style="margin-bottom: 10px"
+                    >Edit Bio</b-button>
+                    <div v-if="editing">
+                        <textarea
+                            rows="5"
+                            cols="30"
+                            style="margin-bottom: 10px"
+                            class="input"
+                            :class="theme"
+                            v-model="bio"
+                        ></textarea>
+                        <br />
+                        <b-button
+                            :variant="theme"
+                            @click="editBio"
+                            style="margin-right: 10px"
+                        >Cancel</b-button>
+                        <b-button :variant="theme" @click="submitBio">Submit</b-button>
+                    </div>
+                </div>
+                <div class="col">
+                    <h1 style="text-align: center">Posts</h1>
+                    <PostBlock
+                        v-for="post in posts"
+                        :key="post.postId"
+                        :title="post.title"
+                        :content="post.content"
+                        :urlTitle="post.urlTitle"
+                        :createdAt="post.createdAt"
+                        :updatedAt="post.updatedAt"
+                        :id="post.postId"
+                        :author="post.username"
+                        :tags="post.tags"
+                        :condensed="true"
+                    ></PostBlock>
+                    <b-button v-if="showPostBtn" @click="loadPosts" :variant="theme">Load More Posts</b-button>
+                    <p v-else-if="posts && posts.length === 0">No posts found.</p>
+                    <p v-else>All posts loaded.</p>
+                </div>
+                <div class="col">
+                    <h1 style="text-align: center">Comments</h1>
+                    <Comment
+                        v-for="comment in comments"
+                        :key="comment.id"
+                        :comment="comment"
+                        :ownsPost="false"
+                        :condensed="true"
+                    />
+                    <b-button
+                        v-if="showCommentBtn"
+                        @click="loadComments"
+                        :variant="theme"
+                    >Load More Comments</b-button>
+                    <p v-else-if="comments && comments.length === 0">No comments found.</p>
+                    <p v-else>All comments loaded.</p>
+                </div>
             </div>
         </div>
         <div v-else>
             <h1>User '{{user}}' not found.</h1>
         </div>
-        <b-button
-            v-if="!editing && user === username"
-            :variant="theme"
-            @click="editBio"
-            style="margin-bottom: 10px"
-        >Edit Bio</b-button>
-        <div v-if="editing">
-            <textarea
-                rows="5"
-                cols="30"
-                style="margin-bottom: 10px"
-                class="input"
-                :class="theme"
-                v-model="bio"
-            ></textarea>
-            <br />
-            <b-button :variant="theme" @click="editBio" style="margin-right: 10px">Cancel</b-button>
-            <b-button :variant="theme" @click="submitBio">Submit</b-button>
-        </div>
+
         <!-- number of user comments -->
         <!-- if the user can post, return number of user posts -->
         <!-- 
@@ -71,8 +116,17 @@ import { Component, Vue, Prop } from "vue-property-decorator";
 import axios from "axios";
 import { State } from "vuex-class";
 import moment from "moment";
+import PostBlock from "../components/PostBlock.vue";
+import Comment from "../components/Comment.vue";
+import { PostModel } from "../models/post";
+import { CommentModel } from "../models/comment";
 
-@Component
+@Component({
+    components: {
+        PostBlock,
+        Comment
+    }
+})
 export default class Profile extends Vue {
     @Prop(String) protected passedUser: string | null;
     protected user: string | null;
@@ -83,6 +137,12 @@ export default class Profile extends Vue {
     protected bio: string | null;
     protected notFound: boolean = false;
     protected editing: boolean = false;
+    protected postPage: number = 1;
+    protected commentPage: number = 1;
+    protected posts: PostModel[];
+    protected comments: CommentModel[];
+    protected postPages: number | null;
+    protected commentPages: number | null;
 
     constructor() {
         super();
@@ -92,6 +152,10 @@ export default class Profile extends Vue {
         this.permissionLevel = null;
         this.age = null;
         this.bio = null;
+        this.posts = [];
+        this.comments = [];
+        this.postPages = null;
+        this.commentPages = null;
     }
 
     protected editBio() {
@@ -104,6 +168,24 @@ export default class Profile extends Vue {
 
     get username() {
         return this.$store.state.username;
+    }
+
+    get showPostBtn() {
+        return this.postPages > this.postPage;
+    }
+
+    get showCommentBtn() {
+        return this.commentPages > this.commentPage;
+    }
+
+    protected loadPosts() {
+        this.postPage += 1;
+        this.postData();
+    }
+
+    protected loadComments() {
+        this.commentPage += 1;
+        this.commentData();
     }
 
     protected async submitBio() {
@@ -137,6 +219,53 @@ export default class Profile extends Vue {
     }
 
     protected async mounted() {
+        await this.profileData();
+        if (!this.notFound) {
+            this.postData();
+            this.commentData();
+        }
+    }
+
+    protected async postData() {
+        try {
+            const { data } = await axios.get(
+                `http://localhost:3000/userposts/${this.user}/${this.postPage}`
+            );
+            if (this.postPage === 1) {
+                this.postPages = data.pages;
+                this.posts = data.posts;
+            } else {
+                const posts = data.posts as PostModel[];
+                console.log(this.posts)
+                for (const post of posts) {
+                    this.posts.push(post);
+                }
+            }
+        } catch {
+            this.notFound = true;
+        }
+    }
+
+    protected async commentData() {
+        try {
+            const { data } = await axios.get(
+                `http://localhost:3000/usercomments/${this.user}/${this.postPage}`
+            );
+            if (this.commentPage === 1) {
+                this.commentPages = data.pages;
+                this.comments = data.comments;
+            } else {
+                const comments = data.comments as CommentModel[];
+                for (const comment of comments) {
+                    this.comments.push(comment);
+                }
+            }
+        } catch {
+            this.notFound = true;
+        }
+    }
+
+    protected async profileData() {
         try {
             if (this.user == null) {
                 this.user = this.username;

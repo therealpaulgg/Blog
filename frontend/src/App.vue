@@ -48,9 +48,9 @@
                 <transition name="fade">
                     <font-awesome-icon class="themebtn" @click="changeTheme" :icon="icon"></font-awesome-icon>
                 </transition>
-                <div class="notification">
+                <!-- <div class="notification">
                 <font-awesome-icon icon="bell" @click="gotoNotifications"></font-awesome-icon>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>

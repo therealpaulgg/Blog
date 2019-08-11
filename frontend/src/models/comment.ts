@@ -4,4 +4,6 @@ export interface CommentModel {
     createdAt: string;
     updatedAt: string;
     id: number;
+    postId: number | undefined;
+    postUrlTitle: string | undefined;
 }

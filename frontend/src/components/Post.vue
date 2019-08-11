@@ -1,17 +1,17 @@
 <template>
     <div class="post">
         <div class="container">
-            <router-link to="/">
-                <font-awesome-icon style="margin-right: 10px" icon="arrow-left"></font-awesome-icon>Back to Home
-            </router-link>
+            <a @click="$router.go(-1)">
+                <font-awesome-icon style="margin-right: 10px" icon="arrow-left"></font-awesome-icon>Back
+            </a>
             <hr />
             <h1 class="bigtitle">{{header}}</h1>
             <div class="metadata">
                 <span class="metaelement">
                     By:
-                    <i>
+                    <b>
                         <router-link :to="`/profile/${user}`">{{user}}</router-link>
-                    </i>
+                    </b>
                 </span>
                 <span class="metaelement">
                     <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
@@ -512,6 +512,8 @@ export default class Post extends Vue {
 .metaelement
     margin-left: 10px
     margin-right: 10px
+a:hover
+    cursor: pointer
 .hashtag
     margin: 10px 
     padding-left: 5px

@@ -310,6 +310,102 @@ router.get("/profile/:username", async (req, res) => {
     }
 })
 
+router.get("/userposts/:username/:page", async (req, res) => {
+    let username = req.params.username
+    try {
+        let user = await getConnection().manager.findOne(User, { username })
+        if (user) {
+            const postsPerPage = 10
+            let page = req.params.page
+            const postRepo = getConnection().getRepository(Post)
+            const qb = postRepo.createQueryBuilder("p")
+                .where("p.userId = :userId", { userId: user.id })
+                .leftJoinAndSelect("p.tags", "tag")
+                .orderBy("p.createdAt", "DESC")
+                .skip((page - 1) * postsPerPage)
+                .take(postsPerPage)
+            let result = await qb.getMany()
+            let count = await qb.getCount()
+            const pages = Math.ceil(count / postsPerPage)
+            let posts = []
+            for (let post of result) {
+                let tags = []
+                post.tags.forEach(tag => tags.push(tag.tagStr))
+                let obj = {
+                    postId: post.id,
+                    urlTitle: post.urlTitle,
+                    title: post.title,
+                    username: user.username,
+                    createdAt: post.createdAt,
+                    updatedAt: post.updatedAt,
+                    tags
+                }
+                posts.push(obj)
+            }
+            res.send({
+                posts,
+                pages
+            })
+        } else {
+            res.status(404).send({
+                error: "User not found."
+            })
+        }
+
+    } catch {
+        res.status(500).send({
+            error: "Something went wrong."
+        })
+    }
+})
+
+router.get("/usercomments/:username/:page", async (req, res) => {
+    let username = req.params.username
+    try {
+        let user = await getConnection().manager.findOne(User, { username })
+        if (user) {
+            const commentsPerPage = 10
+            let page = req.params.page
+            const postRepo = getConnection().getRepository(Comment)
+            const qb = postRepo.createQueryBuilder("c")
+                .where("c.userId = :userId", { userId: user.id })
+                .leftJoinAndSelect("c.post", "post")
+                .orderBy("c.createdAt", "DESC")
+                .skip((page - 1) * commentsPerPage)
+                .take(commentsPerPage)
+            let result = await qb.getMany()
+            let count = await qb.getCount()
+            const pages = Math.ceil(count / commentsPerPage)
+            let comments = []
+            for (let comment of result) {
+                let obj = {
+                    commentId: comment.id,
+                    postUrlTitle: comment.post.urlTitle,
+                    postId: comment.post.id,
+                    user: user.username,
+                    createdAt: comment.createdAt,
+                    updatedAt: comment.updatedAt,
+                    content: comment.content
+                }
+                comments.push(obj)
+            }
+            res.send({
+                comments,
+                pages
+            })
+        } else {
+            res.status(404).send({
+                error: "User not found."
+            })
+        }
+
+    } catch {
+        res.status(500).send({
+            error: "Something went wrong."
+        })
+    }
+})
+
 router.post("/updatebio", checkAuth, async (req, res) => {
     let bio = req.body.bio
     let username = req.body.username
