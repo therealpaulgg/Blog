@@ -16,4 +16,6 @@ export interface State {
     canPost: boolean;
     isAdmin: boolean;
     tags: string;
+    tagPosts: PostModel[];
+    tagPages: number;
 }

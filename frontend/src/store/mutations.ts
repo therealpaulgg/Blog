@@ -29,6 +29,18 @@ export default {
             }
         }
     },
+    async FETCH_TAG_POSTS(state: State, payload: {page: number, tag: string}) {
+        const { data } = await axios.get(`http://localhost:3000/tag/${payload.tag}/${payload.page}`);
+        if (payload.page === 1) {
+            state.tagPosts = data.posts as PostModel[];
+            state.tagPages = data.pages as number;
+        } else {
+            const posts =  data.posts as PostModel[];
+            for (const post of posts) {
+                state.tagPosts.push(post);
+            }
+        }
+    },
     EDIT_CONTENT(state: State, text: string) {
         state.content = text;
     },

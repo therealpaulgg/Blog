@@ -14,14 +14,91 @@ let router = express.Router()
 
 router.get("/", (req, res) => res.send("Hello world"))
 
-router.get("/tags", async (req, res) => {
+router.get("/tags/:pageNum", async (req, res) => {
+    let pageNum = parseInt(req.params.pageNum)
+    if (pageNum) {
+        try {
+            let connection = getConnection()
+            // let tags = await connection.manager.find(Tag)
+            const postsPerPage = 10
+            const postRepo = getConnection().getRepository(Tag)
+            const qb = postRepo.createQueryBuilder("t")
+                .orderBy("t.createdAt", "DESC")
+                .skip((pageNum - 1) * postsPerPage)
+                .take(postsPerPage)
+            let tags = await qb.getMany()
+            let sending = []
+            tags.forEach(tag => sending.push(tag.tagStr))
+            let count = await qb.getCount()
+            let pages = Math.ceil(count / postsPerPage)
+            res.send({
+                tags: sending,
+                pages
+            })
+        } catch {
+            res.status(500).send({
+                error: "Something went wrong."
+            })
+        }
+    }
+})
+
+router.get("/tag/:tag/:pageNum", async (req, res) => {
     try {
-        let connection = getConnection()
-        let tags = await connection.manager.find(Tag)
-        res.send({
-            tags
-        })
-    } catch {
+        let id = parseInt(req.params.id)
+        let tag = req.params.tag
+        let pageNum = req.params.pageNum
+        if (id != null && tag != null && pageNum != null && pageNum >= 1) {
+            const postRepo = getConnection().getRepository(Post)
+            let data: any[] = await postRepo.query(
+                `
+                select p.id as postId, p.createdAt, p.updatedAt, p.urlTitle, p.title, t.id as tagId, t.tagStr, u.id, u.username
+                from post_tags_tag pt, tag t, user u,
+                    (select p.*
+                     from post p, post_tags_tag pt, tag t
+                     where p.id = pt.postid 
+                       and pt.tagid = t.id
+                       and t.tagstr = ?) p
+                where p.id = pt.postid 
+                  and t.id = pt.tagid
+                  and u.id = p.userid
+                ORDER BY p.createdAt DESC;
+                `,
+                [tag]
+            )
+            // most efficient algorithm ever, better time complexity but lower space complexity
+            let sending = []
+            let seen = {}
+            for (let d of data) {
+                if (seen[d.postId] != null) {
+                    sending[seen[d.postId]].tags.push(d.tagStr)
+                } else {
+                    seen[d.postId] = sending.length
+                    sending[seen[d.postId]] = {
+                        postId: d.postId,
+                        urlTitle: d.urlTitle,
+                        title: d.title,
+                        username: d.username,
+                        createdAt: d.createdAt,
+                        updatedAt: d.updatedAt,
+                        tags: [d.tagStr]
+                    }
+                }
+            }
+            const postsPerPage = 10
+            let pages = Math.ceil(sending.length / postsPerPage)
+            let part = sending.slice((pageNum - 1) * postsPerPage, (pageNum - 1) * postsPerPage + postsPerPage)
+            res.send({
+                posts: part,
+                pages
+            })
+
+        } else {
+            res.status(404).send({
+                error: "Could not find tag."
+            })
+        }
+    } catch (err) {
         res.status(500).send({
             error: "Something went wrong."
         })
@@ -108,7 +185,9 @@ router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
             let count = await qb.getCount()
             const pages = Math.ceil(count / postsPerPage)
 
-            getConnection().manager.findOne(Post, { id: req.params.postId }, { relations: ["user"] }).then(result => {
+            getConnection().manager.findOne(Post, { id: req.params.postId }, { relations: ["user", "tags"] }).then(result => {
+                let tags = []
+                result.tags.forEach(tag => tags.push(tag.tagStr))
                 let formattedData = {
                     postId: result.id,
                     urlTitle: result.urlTitle,
@@ -119,7 +198,8 @@ router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
                     updatedAt: result.updatedAt,
                     comments,
                     pages,
-                    commentCount: count
+                    commentCount: count,
+                    tags
                 }
                 res.send(formattedData)
             }).catch(err => res.send({ title: "Oof!", content: "No post found. :(" }))

@@ -23,6 +23,9 @@ export default {
     fetchPosts({ commit }: { commit: any }, page: number) {
         commit("FETCH_POSTS", page);
     },
+    fetchTagPosts({ commit }: { commit: any}, payload: {page: number, tag: string}) {
+        commit("FETCH_TAG_POSTS", payload);
+    },
     editContent({ commit }: { commit: any }, text: string) {
         commit("EDIT_CONTENT", text);
     },

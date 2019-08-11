@@ -16,6 +16,7 @@
                 <div>
                     <b-nav tabs>
                         <b-nav-item class="test" to="/" v-bind:active="$route.path == '/'">Home</b-nav-item>
+                        <b-nav-item class="test" to="/tags" v-bind:active="$route.path == '/tags'">Tags</b-nav-item>
                         <b-nav-item
                             v-if="isAuthenticated && canPost"
                             to="/newpost"
@@ -42,7 +43,7 @@
                 </div>
                 <br />
                 <!-- <keep-alive include="Home"> -->
-                <router-view />
+                <router-view :key="$route.fullPath"/>
                 <!-- </keep-alive> -->
                 <transition name="fade">
                     <font-awesome-icon class="themebtn" @click="changeTheme" :icon="icon"></font-awesome-icon>

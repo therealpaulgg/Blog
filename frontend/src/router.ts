@@ -8,6 +8,8 @@ import Register from "./views/Register.vue";
 import InitialSetup from "./views/InitialSetup.vue";
 import Administration from "./views/Administration.vue";
 import Profile from "./views/Profile.vue";
+import TagAndPosts from "./views/TagAndPosts.vue";
+import Tags from "./views/Tags.vue"
 
 Vue.use(Router);
 
@@ -66,6 +68,17 @@ export default new Router({
         name: "profileExplicit",
         component: Profile,
         props: true
+    },
+    {
+        path: "/tag/:tag",
+        name: "tagAndPosts",
+        component: TagAndPosts,
+        props: true
+    },
+    {
+        path: "/tags",
+        name: "tags",
+        component: Tags
     }
   ],
 });

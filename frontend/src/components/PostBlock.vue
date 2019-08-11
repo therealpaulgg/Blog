@@ -1,11 +1,21 @@
 <template>
     <div class="postblock" :class="getTheme" @click="goToPost">
         <p style="float: right;">
-            by {{author}}, {{date}}
+            by
+            <i>
+                <a @click.stop="gotoUser(author)">{{author}}</a>
+            </i>
+            , {{date}}
         </p>
         <h1>{{title}}</h1>
         <div style="position: relative">
-            <div style="display: inline-block;" v-for="(tag, index) in tags" :key="index" :class="theme" class="hashtag">#{{tag}}</div>
+            <div
+                style="display: inline-block;"
+                v-for="(tag, index) in tags"
+                :key="index"
+                class="hashtag"
+                @click.stop="fooBar(tag)"
+            >#{{tag}}</div>
         </div>
     </div>
 </template>
@@ -24,18 +34,26 @@ export default class PostBlock extends Vue {
     @Prop(String) protected readonly urlTitle!: string;
     @Prop(String) protected readonly createdAt: string;
     @Prop(String) protected readonly updatedAt: string;
-    @Prop() protected readonly tags: string[]
+    @Prop() protected readonly tags: string[];
     @Getter("getTheme") private getTheme: string;
 
     get date() {
         return `${moment
             .utc(this.createdAt)
             .local()
-            .format("MM/DD/YYYY, HH:mm")}, ${moment(this.createdAt).fromNow()}`;
+            .format("MM/DD/YYYY, HH:mm")}, ${moment.utc(this.createdAt).fromNow()}`;
+    }
+
+    protected fooBar(tag) {
+        this.$router.push(`/tag/${tag}`);
     }
 
     protected goToPost() {
         this.$router.push(`/posts/${this.id}/${this.urlTitle}`);
+    }
+
+    protected gotoUser(user) {
+        this.$router.push(`/profile/${user}`);
     }
 }
 </script>
@@ -70,10 +88,16 @@ export default class PostBlock extends Vue {
     padding-top: 5px
     padding-bottom: 5px 
     border-radius: 5px
+    transition: 0.25s
+    -webkit-transition: 0.25s
 .dark
     .hashtag
         background-color: black !important
+    .hashtag:hover
+        color: #FF79c6
 .light
     .hashtag
         background-color: white !important
+    .hashtag:hover
+        color: #00ccff
 </style>

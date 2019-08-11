@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany } from "typeorm";
+import { Post } from "./Post";
 
 @Entity()
 export class Tag {
@@ -14,4 +15,7 @@ export class Tag {
 
     @Column()
     tagStr: string;
+
+    @ManyToMany(type => Post)
+    posts: Post[]
 }

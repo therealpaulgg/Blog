@@ -35,7 +35,17 @@
                     <a @click="del" class="delete metaelement" :class="getTheme">Delete</a>
                     <a @click="edit" class="edit metaelement" :class="getTheme">Edit</a>
                 </span>
+                <div>
+                <div
+                    style="display: inline-block;"
+                    v-for="(tag, index) in tags"
+                    :key="index"
+                    class="hashtag"
+                    @click.stop="fooBar(tag)"
+                >#{{tag}}</div>
+                </div>
             </div>
+
             <!-- <div v-if="isAuthenticated && user === username">
                 <a @click="del" class="delete" :class="getTheme">Delete</a>
                 <a @click="edit" class="edit" :class="getTheme">Edit</a>
@@ -157,6 +167,7 @@ export default class Post extends Vue {
     protected pages: number;
     protected currentPage: number;
     protected commentCount: number | null;
+    tags: string[] | null;
     @Prop(String) protected readonly title!: string;
     @Prop(String) protected readonly id!: string;
     @Getter("getTheme") private getTheme: string;
@@ -177,6 +188,7 @@ export default class Post extends Vue {
         this.commentCount = null;
         this.pages = 1;
         this.currentPage = 1;
+        this.tags = null;
     }
 
     @Watch("content")
@@ -421,6 +433,10 @@ export default class Post extends Vue {
         }
     }
 
+    protected fooBar(tag) {
+        this.$router.push(`/tag/${tag}`);
+    }
+
     protected async fetchData() {
         try {
             const { data }: { data: PostModel } = await axios.get(
@@ -431,6 +447,7 @@ export default class Post extends Vue {
             this.user = data.username;
             this.pages = data.pages;
             this.commentCount = data.commentCount;
+            this.tags = data.tags
             if (this.currentPage === 1) {
                 this.comments = [];
             }
@@ -495,6 +512,17 @@ export default class Post extends Vue {
 .metaelement
     margin-left: 10px
     margin-right: 10px
+.hashtag
+    margin: 10px 
+    padding-left: 5px
+    padding-right: 5px
+    padding-top: 5px
+    padding-bottom: 5px 
+    border-radius: 5px
+    transition: 0.25s
+    -webkit-transition: 0.25s
+.hashtag:hover
+    cursor: pointer
 .dark
     .button
         background-color: #2a2c39 !important
@@ -507,6 +535,10 @@ export default class Post extends Vue {
         background-color: #2a2c39 !important
     .metadata
         background-color: #2a2c39 !important
+    .hashtag
+        background-color: black !important
+    .hashtag:hover
+        color: #FF79c6
 .light
     .preview
         background-color: #FFFFFE !important
@@ -517,4 +549,8 @@ export default class Post extends Vue {
         background-color: white !important
     .metadata
         background-color: #FFFFFE !important
+    .hashtag
+        background-color: white !important
+    .hashtag:hover
+        color: #00ccff
 </style>
