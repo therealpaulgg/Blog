@@ -56,7 +56,7 @@
                         <b-button :variant="theme" @click="submitBio">Submit</b-button>
                     </div>
                     <br />
-                    <div v-if="!changingPassword && !changingEmail">
+                    <div v-if="!changingPassword && !changingEmail && user === username">
                         <b-button
                             :variant="theme"
                             style="margin-bottom: 10px"

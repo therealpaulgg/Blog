@@ -23,7 +23,6 @@ app.use(function (req, res, next) {
 app.use(morgan("combined"));
 app.use(express.json())
 app.use(cookieParser())
-
 app.use("/", routes)
 
 // start express server

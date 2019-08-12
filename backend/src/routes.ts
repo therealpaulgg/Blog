@@ -1,4 +1,4 @@
-import express, { Response } from "express"
+import express, { Response, Request } from "express"
 import { getConnection, Connection, ReplSet } from "typeorm";
 import jwt from "jsonwebtoken";
 import argon2 from "argon2"
@@ -10,6 +10,8 @@ import validator from "validator";
 import md5 from "md5";
 import { Tag } from "./entity/Tag";
 import Mail from "./services/mail";
+import { Permissions } from "./services/permissions";
+import { encodeXText } from "nodemailer/lib/shared";
 
 let router = express.Router()
 
@@ -237,7 +239,7 @@ router.get("/cansetup", async (req, res) => {
 
 })
 
-// Checks to see if user is able to post (currently simply checks if is a superAdmin)
+// Checks to see if user is able to post 
 router.get("/canpost", checkAuth, async (req, res) => {
     try {
         let connection = getConnection();
@@ -245,7 +247,8 @@ router.get("/canpost", checkAuth, async (req, res) => {
         let foo = {
             canPost: false
         }
-        if (user.permissionBlock.superAdmin) {
+        // 1 represents the author permission level.
+        if (findPerm(user.permissionBlock) >= 1) {
             foo.canPost = true;
         }
         res.send(foo)
@@ -407,44 +410,37 @@ router.get("/usercomments/:username/:page", async (req, res) => {
     }
 })
 
-router.get("/administration/:page", checkAuth, async (req, res) => {
+router.get("/administration/:page", checkAuth, checkPermissions, async (req, res) => {
     let page = parseInt(req.params.page)
     if (page != null) {
         try {
-            let user = await getConnection().manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
-            if (user != null && user.permissionBlock.superAdmin) {
-                const usersPerPage = 10
-                let page = req.params.page
-                const userRepo = getConnection().getRepository(User)
-                const qb = userRepo.createQueryBuilder("u")
-                    .orderBy("u.username", "ASC")
-                    .leftJoinAndSelect("u.posts", "posts")
-                    .leftJoinAndSelect("u.comments", "comments")
-                    .skip((page - 1) * usersPerPage)
-                    .take(usersPerPage)
-                let result = await qb.getMany()
-                let count = await qb.getCount()
-                const pages = Math.ceil(count / usersPerPage)
-                let users = []
-                for (let user of result) {
+            const usersPerPage = 10
+            let page = req.params.page
+            const userRepo = getConnection().getRepository(User)
+            const qb = userRepo.createQueryBuilder("u")
+                .orderBy("u.username", "ASC")
+                .leftJoinAndSelect("u.posts", "posts")
+                .leftJoinAndSelect("u.comments", "comments")
+                .skip((page - 1) * usersPerPage)
+                .take(usersPerPage)
+            let result = await qb.getMany()
+            let count = await qb.getCount()
+            const pages = Math.ceil(count / usersPerPage)
+            let users = []
+            for (let user of result) {
 
-                    let obj = {
-                        username: user.username,
-                        email: user.email,
-                        postCount: user.posts.length,
-                        commentCount: user.comments.length
-                    }
-                    users.push(obj)
+                let obj = {
+                    username: user.username,
+                    email: user.email,
+                    postCount: user.posts.length,
+                    commentCount: user.comments.length
                 }
-                res.send({
-                    users,
-                    pages
-                })
-            } else {
-                res.status(401).send({
-                    error: "You are not authorized to perform this action."
-                })
+                users.push(obj)
             }
+            res.send({
+                users,
+                pages
+            })
         } catch (err) {
             console.log(err)
             res.status(500).send({
@@ -547,7 +543,7 @@ router.post("/changeemail", checkAuth, async (req, res) => {
     }
 })
 
-router.post("/admindeleteuser/:username", checkAuth, checkAdmin, async (req, res) => {
+router.post("/admindeleteuser/:username", checkAuth, checkPermissions, async (req, res) => {
     let username = req.params.username
     if (username != null) {
         try {
@@ -739,7 +735,7 @@ router.post("/initialsetup", async (req, res) => {
 })
 
 // Posts a comment (anyone can do this, need to use recaptcha in future or disable registration)
-router.post("/comment", checkAuth, async (req, res) => {
+router.post("/comment", checkAuth, checkPermissions, async (req, res) => {
     // Data should be sent through body
     let connection = getConnection()
     let post = await connection.manager.findOne(Post, { urlTitle: req.body.urlTitle })
@@ -794,7 +790,7 @@ async function parseTags(tags: string) {
 }
 
 // Code for creating a new post
-router.post("/newpost", checkAuth, checkAdmin, async (req, res) => {
+router.post("/newpost", checkAuth, checkPermissions, async (req, res) => {
     let connection = getConnection()
     let title: string = req.body.title
     let content = req.body.content
@@ -828,7 +824,7 @@ router.post("/newpost", checkAuth, checkAdmin, async (req, res) => {
     }
 })
 
-router.post("/editpost", checkAuth, async (req, res) => {
+router.post("/editpost", checkAuth, checkPermissions, async (req, res) => {
     let connection = getConnection()
     try {
         let post = await connection.manager.findOne(Post, { id: req.body.id }, { relations: ["user"] })
@@ -923,7 +919,7 @@ router.post("/register", async (req, res) => {
     }
 })
 
-router.post("/deletepost", checkAuth, (req, res) => {
+router.post("/deletepost", checkAuth, checkPermissions, (req, res) => {
     let connection = getConnection()
     connection.manager.findOne(Post, { id: req.body.id }, { relations: ["user", "comments"] }).then(async (post) => {
         if (post.user.username === res.locals.user) {
@@ -944,7 +940,7 @@ router.post("/deletepost", checkAuth, (req, res) => {
     }))
 })
 
-router.post("/deletecomment", checkAuth, async (req, res) => {
+router.post("/deletecomment", checkAuth, checkPermissions, async (req, res) => {
     let connection = getConnection();
     let id = req.body.id
     try {
@@ -1037,21 +1033,33 @@ async function checkAuth(req, res, next) {
     }
 }
 
-// Middleware function
-async function checkAdmin(req, res, next) {
-    try {
-        let connection = getConnection()
-        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] });
-        if (user.permissionBlock.superAdmin) {
-            next();
-        } else {
-            res.status(401).send({
-                error: "Unauthorized"
-            })
-        }
-    } catch (err) {
+let perms = new Permissions(router.stack)
+
+function findPerm(block: PermissionBlock) {
+    if (block.superAdmin) {
+        return 3
+    } else if (block.moderator) {
+        return 2
+    } else if (block.author) {
+        return 1
+    } else {
+        return 0
+    }
+}
+
+// IMPORTANT NOTE: must be used AFTER and ONLY AFTER checkAuth. Cannot be used independently.
+async function checkPermissions(req: Request, res, next) {
+    let username = res.locals.user
+    let user = await getConnection().manager.findOne(User, { username }, { relations: ["permissionBlock"] })
+    let allowedAccess = perms.perms[req.route.path]
+    console.log("Allowed access: " + allowedAccess)
+    let userPerm = findPerm(user.permissionBlock)
+    console.log("User access: " + userPerm)
+    if (userPerm >= allowedAccess) {
+        next()
+    } else {
         res.status(401).send({
-            error: "Unauthorized"
+            error: "You do not have permission to perform this action."
         })
     }
 }
