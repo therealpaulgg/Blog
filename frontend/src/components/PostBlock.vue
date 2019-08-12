@@ -4,7 +4,7 @@
         :class="{'light': getTheme === 'light', 'dark': getTheme === 'dark', 'condensed': condensed}"
         @click="goToPost"
     >
-        <p style="float: right;" :class="{'lessnoticed':condensed}">
+        <div class="lessnoticed" >
             <span v-if="!condensed">
                 by
                 <b v-if="username === author">
@@ -16,7 +16,7 @@
                 ,
             </span>
             {{date}}
-        </p>
+        </div>
         <div style="position: relative; word-wrap: break-word;">
             <h2 v-if="!condensed">{{title}}</h2>
             <h3 v-else>{{title}}</h3>
@@ -118,9 +118,6 @@ export default class PostBlock extends Vue {
     border-radius: 5px
     transition: 0.25s
     -webkit-transition: 0.25s
-.lessnoticed
-    font-style: italic
-    
 .dark
     .lessnoticed
         color: #d5d5d5
