@@ -23,6 +23,7 @@
       "body-parser": "^1.18.1",
       "cookie-parser": "^1.4.4",
       "dotenv": "^8.0.0",
+      "es6-promise": "^4.2.8",
       "express": "^4.15.4",
       "jsonwebtoken": "^8.5.1",
       "katex": "^0.10.2",

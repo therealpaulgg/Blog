@@ -55,6 +55,64 @@
                         >Cancel</b-button>
                         <b-button :variant="theme" @click="submitBio">Submit</b-button>
                     </div>
+                    <br />
+                    <div v-if="!changingPassword && !changingEmail">
+                        <b-button
+                            :variant="theme"
+                            style="margin-bottom: 10px"
+                            @click="changePassword"
+                        >Change Password</b-button>
+                        <br />
+                        <b-button :variant="theme" @click="changeEmail">Change Email</b-button>
+                    </div>
+
+                    <div v-if="changingEmail">
+                        <b-input-group size="sm" prepend="Email" style="margin-bottom: 10px">
+                            <b-form-input
+                                class="ifield"
+                                v-model="email"
+                                type="email"
+                                v-on:keyup.enter="submitEmailChange"
+                            />
+                        </b-input-group>
+                        <b-button :variant="theme" @click="cancel" style="margin-right: 10px">Cancel</b-button>
+                        <b-button @click="submitEmailChange" :variant="theme">Submit</b-button>
+                    </div>
+                    <div v-if="changingPassword">
+                        <b-input-group size="sm" prepend="Old Password">
+                            <b-form-input
+                                class="ifield"
+                                v-model="oldPassword"
+                                type="password"
+                                v-on:keyup.enter="submitPasswordChange"
+                            />
+                        </b-input-group>
+                        <br />
+                        <b-input-group size="sm" prepend="Password">
+                            <b-form-input
+                                class="ifield"
+                                v-model="password"
+                                type="password"
+                                v-on:keyup.enter="submitPasswordChange"
+                            />
+                        </b-input-group>
+                        <br />
+                        <b-input-group
+                            size="sm"
+                            prepend="Confirm Password"
+                            style="margin-bottom: 10px"
+                        >
+                            <b-form-input
+                                class="ifield"
+                                v-model="confirmPassword"
+                                type="password"
+                                v-on:keyup.enter="submitPasswordChange"
+                            />
+                        </b-input-group>
+
+                        <b-button :variant="theme" @click="cancel" style="margin-right: 10px">Cancel</b-button>
+                        <b-button @click="submitPasswordChange" :variant="theme">Submit</b-button>
+                    </div>
                 </div>
                 <div class="col">
                     <h1 style="text-align: center">Posts</h1>
@@ -143,6 +201,12 @@ export default class Profile extends Vue {
     protected comments: CommentModel[];
     protected postPages: number | null;
     protected commentPages: number | null;
+    protected changingPassword: boolean = false;
+    protected changingEmail: boolean = false;
+    protected password: string = "";
+    protected confirmPassword: string = "";
+    protected email: string = "";
+    protected oldPassword: string = "";
 
     constructor() {
         super();
@@ -186,6 +250,88 @@ export default class Profile extends Vue {
     protected loadComments() {
         this.commentPage += 1;
         this.commentData();
+    }
+
+    protected changePassword() {
+        this.changingPassword = true;
+    }
+
+    protected changeEmail() {
+        this.changingEmail = true;
+    }
+
+    protected cancel() {
+        if (this.changingEmail) {
+            this.changingEmail = false;
+        } else if (this.changingPassword) {
+            this.changingPassword = false;
+        }
+    }
+
+    protected async submitEmailChange() {
+        try {
+            console.log("fach")
+            const { data } = await axios.post(
+                "http://localhost:3000/changeemail",
+                { email: this.email },
+                { withCredentials: true }
+            );
+            this.$store.dispatch("addAlert", {
+                alertType: "success",
+                alertText: data.success
+            });
+            this.changingEmail = false;
+        } catch (err) {
+            if (err.response) {
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: err.response.data.error
+                });
+            } else {
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: "Something went wrong."
+                });
+            }
+        }
+    }
+
+    protected async submitPasswordChange() {
+        if (this.password === this.confirmPassword) {
+            try {
+                const { data } = await axios.post(
+                    "http://localhost:3000/changepassword",
+                    {
+                        username: this.username,
+                        password: this.password,
+                        oldPassword: this.oldPassword
+                    },
+                    { withCredentials: true }
+                );
+                this.$store.dispatch("addAlert", {
+                    alertType: "success",
+                    alertText: data.success
+                });
+                this.changingPassword = false;
+            } catch (err) {
+                if (err.response) {
+                    this.$store.dispatch("addAlert", {
+                        alertType: "danger",
+                        alertText: err.response.data.error
+                    });
+                } else {
+                    this.$store.dispatch("addAlert", {
+                        alertType: "danger",
+                        alertText: "Something went wrong."
+                    });
+                }
+            }
+        } else {
+            this.$store.dispatch("addAlert", {
+                alertType: "danger",
+                alertText: "Your passwords do not match."
+            });
+        }
     }
 
     protected async submitBio() {
@@ -236,7 +382,7 @@ export default class Profile extends Vue {
                 this.posts = data.posts;
             } else {
                 const posts = data.posts as PostModel[];
-                console.log(this.posts)
+                console.log(this.posts);
                 for (const post of posts) {
                     this.posts.push(post);
                 }

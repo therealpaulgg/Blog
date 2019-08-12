@@ -165,7 +165,7 @@ router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
         const postsPerPage = 10
         const postRepo = getConnection().getRepository(Comment)
         const qb = postRepo.createQueryBuilder("c")
-            .where("c.postId = :postId", { postId})
+            .where("c.postId = :postId", { postId })
             .leftJoinAndSelect("c.user", "user")
             .orderBy("c.createdAt", "DESC")
             .skip((pageNum - 1) * postsPerPage)
@@ -482,6 +482,104 @@ router.get("/resetpassword/:token", (req, res) => {
     } else {
         res.status(400).send({
             error: "No token sent."
+        })
+    }
+})
+
+router.post("/changepassword", checkAuth, async (req, res) => {
+    let username = req.body.username
+    let password = req.body.password
+    let oldPassword = req.body.oldPassword
+    if (username === res.locals.user && password != null && oldPassword != null) {
+        let connection = getConnection()
+        let user = await connection.manager.findOne(User, { username })
+        if (await argon2.verify(user.password_hash, oldPassword)) {
+            user.password_hash = await argon2.hash(password);
+            try {
+                await connection.manager.save(user)
+                res.send({
+                    success: "Password successfully changed."
+                })
+            } catch {
+                res.status(500).send({
+                    error: "Something went wrong."
+                })
+            }
+        } else {
+            res.status(401).send({
+                error: "Invalid password for user."
+            })
+        }
+    } else {
+        res.status(400).send({
+            error: "Malformed request."
+        })
+    }
+})
+
+
+router.post("/changeemail", checkAuth, async (req, res) => {
+    let email = req.body.email
+    if (email != null) {
+        if (validator.isEmail(email)) {
+            let connection = getConnection()
+            try {
+                let user = await connection.manager.findOne(User, { username: res.locals.user })
+                user.email = email
+                await connection.manager.save(user)
+                res.send({
+                    success: "Email successfully changed."
+                })
+            } catch {
+                res.status(500).send({
+                    error: "Something went wrong."
+                })
+            }
+        } else {
+            res.status(400).send({
+                error: "Email is invalid."
+            })
+        }
+    } else {
+        res.status(400).send({
+            error: "Malformed request."
+        })
+    }
+})
+
+router.post("/admindeleteuser/:username", checkAuth, checkAdmin, async (req, res) => {
+    let username = req.params.username
+    if (username != null) {
+        try {
+            let connection = getConnection()
+            let user = await connection.manager.findOne(User, { username }, { relations: ["comments", "posts"] })
+            if (user != null) {
+                // delete all user comments TODO: make 'deleted' if parent of replies
+                for (let comment of user.comments) {
+                    connection.manager.remove(comment)
+                }
+                // delete all user posts 
+                for (let post of user.posts) {
+                    connection.manager.remove(post)
+                }
+                connection.manager.remove(user)
+                res.send({
+                    success: "User successfully deleted."
+                })
+            } else {
+                res.status(404).send({
+                    error: "User not found."
+                })
+            }
+        } catch (err) {
+            console.log(err)
+            res.status(500).send({
+                error: "Something went wrong."
+            })
+        }
+    } else {
+        res.status(400).send({
+            error: "Invalid username field."
         })
     }
 })

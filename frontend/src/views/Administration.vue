@@ -1,14 +1,27 @@
 <template>
     <div class="administration" :class="theme">
         <!-- I dont really know what to do for this. Maybe show users, posts, etc in paginated format?-->
-        <div class="user" v-for="user in users" :key="user.username" @click="gotoUser(user.username)">
-            <div style="float: right">
-                <font-awesome-icon icon="clipboard" style="margin-right: 10px"></font-awesome-icon>{{user.postCount}}
-                <font-awesome-icon icon="comments" style="margin-left: 10px; margin-right: 10px"></font-awesome-icon>{{user.commentCount}}
+        <div
+            class="user"
+            v-for="user in users"
+            :key="user.username"
+            @click="gotoUser(user.username)"
+        >
+            <div>
+                <div style="float: right">
+                    <font-awesome-icon icon="clipboard" style="margin-right: 10px"></font-awesome-icon>
+                    {{user.postCount}}
+                    <font-awesome-icon
+                        icon="comments"
+                        style="margin-left: 10px; margin-right: 10px"
+                    ></font-awesome-icon>
+                    {{user.commentCount}}
+                </div>
+                <p>{{user.username}}</p>
+                <p>{{user.email}}</p>
+                <b-button v-if="username !== user.username" @click.stop="deleteUser(user)" :variant="theme">Delete User</b-button>
             </div>
-            <p>{{user.username}}</p>
-            <p>{{user.email}}</p>
-        </div>
+        </div>  
         <b-button v-if="showUserButton" @click="getUsers" :variant="theme">Load More Users</b-button>
         <p v-else-if="users && users.length === 0">No users found.</p>
         <p v-else>All users loaded.</p>
@@ -45,8 +58,42 @@ export default class Administration extends Vue {
         return this.$store.getters.getTheme;
     }
 
+    get username() {
+        return this.$store.state.username;
+    }
+
+    protected async deleteUser(user) {
+        try {
+            let { data } = await axios.post(
+                `http://localhost:3000/admindeleteuser/${user.username}`,
+                {},
+                { withCredentials: true }
+            );
+            let index = this.users.findIndex(looking => looking.username === user.username);
+            if (index) {
+                this.users.splice(index, 1);
+            }
+            this.$store.dispatch("addAlert", {
+                alerType: "success",
+                alertText: data.success
+            });
+        } catch (err) {
+            if (err.response) {
+                this.$store.dispatch("addAlert", {
+                    alerType: "danger",
+                    alertText: err.response.data.error
+                });
+            } else {
+                this.$store.dispatch("addAlert", {
+                    alerType: "danger",
+                    alertText: "There was a problem performing this action."
+                });
+            }
+        }
+    }
+
     protected gotoUser(username) {
-        this.$router.push(`/profile/${username}`)
+        this.$router.push(`/profile/${username}`);
     }
 
     protected getAdminData() {
@@ -62,6 +109,9 @@ export default class Administration extends Vue {
             if (this.userPageNum === 1) {
                 this.userPages = data.pages;
                 this.users = data.users;
+                for (let user of this.users) {
+                    user.alive = true;
+                }
             } else {
                 const users = data.users as Array<{
                     username: string;
@@ -69,7 +119,7 @@ export default class Administration extends Vue {
                     postCount: number;
                     commentCount: number;
                 }>;
-                for (const user of users) {
+                for (let user of users) {
                     this.users.push(user);
                 }
             }
