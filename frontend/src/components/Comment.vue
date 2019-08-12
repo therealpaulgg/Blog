@@ -25,7 +25,7 @@
                 <a @click="deleteComment" class="delete metaelement">Delete</a>
             </span>
         </div>
-        <div v-html="renderedContent"></div>
+        <div style="word-wrap: break-word" v-html="renderedContent"></div>
     </div>
 </template>
 

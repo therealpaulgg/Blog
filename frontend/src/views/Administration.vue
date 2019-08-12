@@ -1,7 +1,17 @@
 <template>
-    <div class="administration">
-        <p>Not implemented yet.</p>
-        <!-- I dont really know what to do for this. Maybe show users, posts, etc in paginated format?--> 
+    <div class="administration" :class="theme">
+        <!-- I dont really know what to do for this. Maybe show users, posts, etc in paginated format?-->
+        <div class="user" v-for="user in users" :key="user.username" @click="gotoUser(user.username)">
+            <div style="float: right">
+                <font-awesome-icon icon="clipboard" style="margin-right: 10px"></font-awesome-icon>{{user.postCount}}
+                <font-awesome-icon icon="comments" style="margin-left: 10px; margin-right: 10px"></font-awesome-icon>{{user.commentCount}}
+            </div>
+            <p>{{user.username}}</p>
+            <p>{{user.email}}</p>
+        </div>
+        <b-button v-if="showUserButton" @click="getUsers" :variant="theme">Load More Users</b-button>
+        <p v-else-if="users && users.length === 0">No users found.</p>
+        <p v-else>All users loaded.</p>
     </div>
 </template>
 
@@ -13,12 +23,86 @@ import { State } from "vuex-class";
 
 @Component
 export default class Administration extends Vue {
+    protected userPages: number | null;
+    protected userPageNum: number;
+    protected users: any[];
+    constructor() {
+        super();
+        this.userPageNum = 1;
+        this.userPages = null;
+        this.users = [];
+    }
+
+    protected mounted() {
+        this.getAdminData();
+    }
+
+    get showUserButton() {
+        return this.userPages < this.userPageNum;
+    }
 
     get theme() {
         return this.$store.getters.getTheme;
+    }
+
+    protected gotoUser(username) {
+        this.$router.push(`/profile/${username}`)
+    }
+
+    protected getAdminData() {
+        this.getUsers();
+    }
+
+    protected async getUsers() {
+        try {
+            let { data } = await axios.get(
+                `http://localhost:3000/administration/${this.userPageNum}`,
+                { withCredentials: true }
+            );
+            if (this.userPageNum === 1) {
+                this.userPages = data.pages;
+                this.users = data.users;
+            } else {
+                const users = data.users as Array<{
+                    username: string;
+                    email: string;
+                    postCount: number;
+                    commentCount: number;
+                }>;
+                for (const user of users) {
+                    this.users.push(user);
+                }
+            }
+        } catch (err) {
+            this.$store.dispatch("addAlert", {
+                alerType: "danger",
+                alertText: "There was a problem getting users."
+            });
+        }
     }
 }
 </script>
 
 <style lang="sass" scoped>
+.user
+    padding: 10px
+    margin: 10px
+    border-radius: 10px
+    transition: 0.5s
+    -webkit-transition: 0.5s
+.user:hover
+    border-radius: 30px
+    transition: 0.5s
+    -webkit-transition: 0.5s
+    cursor: pointer
+.light
+    .user
+        background-color: white
+    .user:hover
+        background-color: #f2feff
+.dark
+    .user
+        background-color: #2a2c39
+    .user:hover
+        background-color: #3e4154
 </style>

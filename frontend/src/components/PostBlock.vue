@@ -4,21 +4,23 @@
         :class="{'light': getTheme === 'light', 'dark': getTheme === 'dark', 'condensed': condensed}"
         @click="goToPost"
     >
-            <p style="float: right;" :class="{'lessnoticed':condensed}">
-                <span v-if="!condensed">
-                    by
-                    <b v-if="username === author">
-                        <a @click.stop="gotoUser(author)">you</a>
-                    </b>
-                    <b v-else>
-                        <a @click.stop="gotoUser(author)">{{author}}</a>
-                    </b>
-                    ,
-                </span>
-                {{date}}
-            </p>
-        <h2 v-if="!condensed">{{title}}</h2>
-        <h3 v-else>{{title}}</h3>
+        <p style="float: right;" :class="{'lessnoticed':condensed}">
+            <span v-if="!condensed">
+                by
+                <b v-if="username === author">
+                    <a @click.stop="gotoUser(author)">you</a>
+                </b>
+                <b v-else>
+                    <a @click.stop="gotoUser(author)">{{author}}</a>
+                </b>
+                ,
+            </span>
+            {{date}}
+        </p>
+        <div style="position: relative; word-wrap: break-word;">
+            <h2 v-if="!condensed">{{title}}</h2>
+            <h3 v-else>{{title}}</h3>
+        </div>
         <div style="position: relative" v-if="!condensed">
             <div
                 style="display: inline-block;"

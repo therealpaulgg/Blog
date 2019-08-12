@@ -74,8 +74,13 @@ export default class NewPost extends Vue {
     }
 
     protected updateDimensions() {
-        this.width = this.$refs.editcol.clientWidth;
-        this.height = this.$refs.editcol.clientHeight;
+        if (this.$refs.editcol) {
+            this.width = this.$refs.editcol.clientWidth;
+            this.height = this.$refs.editcol.clientHeight;
+        } else {
+            window.removeEventListener("resize", this.updateDimensions.bind(this))
+        }
+        
     }
 
     protected mounted() {

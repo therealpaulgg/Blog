@@ -7,7 +7,7 @@ class Mail {
     async sendMail() {
 
         let mailOptions = {
-            from: "paulgwebsite@gmail.com",
+            from: "Blog",
             to: this.to,
             subject: "Password Reset Request",
             html: this.message         
@@ -18,8 +18,8 @@ class Mail {
             port: 465,
             secure: true,
             auth: {
-                user: "YOUDONTSEEIT",
-                pass: "YOUREALLYDONTSEEIT"
+                user: process.env.RESET_PASSWORD_EMAIL,
+                pass: process.env.RESET_PASSWORD_PASSWORD
             }
         })
         const transport = P.promisifyAll(transporter)

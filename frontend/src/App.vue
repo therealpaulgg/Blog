@@ -16,7 +16,11 @@
                 <div>
                     <b-nav tabs>
                         <b-nav-item class="test" to="/" v-bind:active="$route.path == '/'">Home</b-nav-item>
-                        <b-nav-item class="test" to="/tags" v-bind:active="$route.path == '/tags'">Tags</b-nav-item>
+                        <b-nav-item
+                            class="test"
+                            to="/tags"
+                            v-bind:active="$route.path == '/tags'"
+                        >Tags</b-nav-item>
                         <b-nav-item
                             v-if="isAuthenticated && canPost"
                             to="/newpost"
@@ -43,14 +47,14 @@
                 </div>
                 <br />
                 <!-- <keep-alive include="Home"> -->
-                <router-view :key="$route.fullPath"/>
+                <router-view :key="$route.fullPath" />
                 <!-- </keep-alive> -->
                 <transition name="fade">
                     <font-awesome-icon class="themebtn" @click="changeTheme" :icon="icon"></font-awesome-icon>
                 </transition>
                 <!-- <div class="notification">
                 <font-awesome-icon icon="bell" @click="gotoNotifications"></font-awesome-icon>
-                </div> -->
+                </div>-->
             </div>
         </div>
     </div>
@@ -71,7 +75,6 @@ export default class App extends Vue {
     @Getter("canPost") protected canPost: boolean;
     @Getter("isAdmin") protected isAdmin: boolean;
     @Getter("getTheme") private getTheme: string;
-
 
     protected changeTheme() {
         this.getTheme === "light"
@@ -98,7 +101,7 @@ export default class App extends Vue {
 
     protected mounted() {
         if (this.isAuthenticated) {
-            this.determineTokenRefreshInterval()
+            this.determineTokenRefreshInterval();
         }
     }
 
@@ -111,7 +114,8 @@ export default class App extends Vue {
                 this.$router.push("/login");
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
-                    alertText: "Your login session has expired. Please log in again."
+                    alertText:
+                        "Your login session has expired. Please log in again."
                 });
             } else {
                 const timeout = expiry - new Date().getTime();
@@ -119,19 +123,30 @@ export default class App extends Vue {
                 if (timeout - delay > 0) {
                     setTimeout(async () => {
                         try {
-                            await axios.post("http://localhost:3000/renew-jwt", {}, { withCredentials: true });
+                            await axios.post(
+                                "http://localhost:3000/renew-jwt",
+                                {},
+                                { withCredentials: true }
+                            );
                             this.determineTokenRefreshInterval();
                         } catch {
-                            this.$store.commit("LOGOUT");
-                            this.$router.push("/login");
-                            this.$store.dispatch("addAlert", {
-                                alertType: "danger",
-                                alertText: "Your login session has expired, please log in again."
-                            });
+                            if (this.isAuthenticated) {
+                                this.$store.commit("LOGOUT");
+                                this.$router.push("/login");
+                                this.$store.dispatch("addAlert", {
+                                    alertType: "danger",
+                                    alertText:
+                                        "Your login session has expired, please log in again."
+                                });
+                            }
                         }
                     }, timeout - delay);
                 } else {
-                    await axios.post("http://localhost:3000/renew-jwt", {}, { withCredentials: true });
+                    await axios.post(
+                        "http://localhost:3000/renew-jwt",
+                        {},
+                        { withCredentials: true }
+                    );
                     this.determineTokenRefreshInterval();
                 }
             }
@@ -139,13 +154,14 @@ export default class App extends Vue {
             this.$store.commit("LOGOUT");
             this.$store.dispatch("addAlert", {
                 alertType: "danger",
-                alertText: "Your login session has expired, please log in again."
+                alertText:
+                    "Your login session has expired, please log in again."
             });
         }
     }
 
     protected gotoNotifications() {
-        this.$router.push("/notifications")
+        this.$router.push("/notifications");
     }
 
     protected logout() {

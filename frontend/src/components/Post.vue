@@ -4,126 +4,128 @@
             <a @click="$router.go(-1)">
                 <font-awesome-icon style="margin-right: 10px" icon="arrow-left"></font-awesome-icon>Back
             </a>
-            <hr />
-            <h1 class="bigtitle">{{header}}</h1>
-            <div class="metadata">
-                <span class="metaelement">
-                    By:
-                    <b>
-                        <router-link :to="`/profile/${user}`">{{user}}</router-link>
-                    </b>
-                </span>
-                <span class="metaelement">
-                    <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
+            <div v-if="!notFound">
+                <hr />
+                <h1 class="bigtitle">{{header}}</h1>
+                <div class="metadata">
                     <span class="metaelement">
-                        {{dateCreated}},
-                        <i>{{sinceCreation}}</i>
+                        By:
+                        <b>
+                            <router-link :to="`/profile/${user}`">{{user}}</router-link>
+                        </b>
                     </span>
-                </span>
-                <span class="metaelement" v-if="createdAt !== updatedAt">
-                    <font-awesome-icon icon="sync-alt"></font-awesome-icon>
                     <span class="metaelement">
-                        {{dateUpdated}},
-                        <i>{{sinceUpdate}}</i>
+                        <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
+                        <span class="metaelement">
+                            {{dateCreated}},
+                            <i>{{sinceCreation}}</i>
+                        </span>
                     </span>
-                </span>
-                <span class="metaelement" v-if="commentCount">
-                    <font-awesome-icon icon="comments"></font-awesome-icon>
-                    {{commentCount}}
-                </span>
-                <span v-if="isAuthenticated && user === username" style="float: right">
-                    <a @click="del" class="delete metaelement" :class="getTheme">Delete</a>
-                    <a @click="edit" class="edit metaelement" :class="getTheme">Edit</a>
-                </span>
-                <div>
-                <div
-                    style="display: inline-block;"
-                    v-for="(tag, index) in tags"
-                    :key="index"
-                    class="hashtag"
-                    @click.stop="fooBar(tag)"
-                >#{{tag}}</div>
+                    <span class="metaelement" v-if="createdAt !== updatedAt">
+                        <font-awesome-icon icon="sync-alt"></font-awesome-icon>
+                        <span class="metaelement">
+                            {{dateUpdated}},
+                            <i>{{sinceUpdate}}</i>
+                        </span>
+                    </span>
+                    <span class="metaelement" v-if="commentCount">
+                        <font-awesome-icon icon="comments"></font-awesome-icon>
+                        {{commentCount}}
+                    </span>
+                    <span v-if="isAuthenticated && user === username" style="float: right">
+                        <a @click="del" class="delete metaelement" :class="getTheme">Delete</a>
+                        <a @click="edit" class="edit metaelement" :class="getTheme">Edit</a>
+                    </span>
+                    <div>
+                        <div
+                            style="display: inline-block;"
+                            v-for="(tag, index) in tags"
+                            :key="index"
+                            class="hashtag"
+                            @click.stop="fooBar(tag)"
+                        >#{{tag}}</div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- <div v-if="isAuthenticated && user === username">
+                <!-- <div v-if="isAuthenticated && user === username">
                 <a @click="del" class="delete" :class="getTheme">Delete</a>
                 <a @click="edit" class="edit" :class="getTheme">Edit</a>
-            </div>-->
-            <hr />
-            <div v-if="editing">
-                <label>Post Title</label>
-                <br />
-                <input
-                    type="text"
-                    :class="theme"
-                    style="width: 100%"
-                    class="title"
-                    v-model="editTitle"
-                />
-                <br />
-                <br />
-                <div class="row">
-                    <div class="col">
-                        <Editor
-                            :height="height"
-                            :width="width"
-                            v-model="editContent"
-                            :initialContent="editContent"
-                        />
-                    </div>
-                    <div class="col preview" ref="eContainer" :class="theme">
-                        <Preview :content="editContent" />
-                    </div>
-                </div>
-                <div style="padding-top: 15px">
-                    <a class="button" style="margin-right: 10px" @click="editing = false">Cancel</a>
-                    <a class="button" :class="theme" @click="makeEdits">Submit Edit</a>
-                </div>
-            </div>
-            <div v-else>
-                <div v-html="renderedContent"></div>
+                </div>-->
                 <hr />
-                <h1>Comments</h1>
-                <a
-                    v-if="isAuthenticated"
-                    class="button"
-                    :class="theme"
-                    @click="showCommentPost"
-                >Comment</a>
-                <p
-                    v-if="postingComment"
-                    v-bind:class="{danger: commentContent.length > 2000}"
-                    style="padding-top: 15px;"
-                >Characters used: {{commentContent.length}} / 2000</p>
-                <div class="row">
-                    <div class="col">
-                        <Editor
-                            v-if="postingComment"
-                            :height="height"
-                            :width="width"
-                            v-model="commentContent"
-                            :initialContent="commentContent"
-                        />
+                <div v-if="editing">
+                    <label>Post Title</label>
+                    <br />
+                    <input
+                        type="text"
+                        :class="theme"
+                        style="width: 100%"
+                        class="title"
+                        v-model="editTitle"
+                    />
+                    <br />
+                    <br />
+                    <div class="row">
+                        <div class="col">
+                            <Editor
+                                :height="height"
+                                :width="width"
+                                v-model="editContent"
+                                :initialContent="editContent"
+                            />
+                        </div>
+                        <div class="col preview" ref="eContainer" :class="theme">
+                            <Preview :content="editContent" />
+                        </div>
                     </div>
-                    <div class="col preview" ref="container" :class="theme">
-                        <Preview v-if="postingComment" :content="commentContent" />
+                    <div style="padding-top: 15px">
+                        <a class="button" style="margin-right: 10px" @click="editing = false">Cancel</a>
+                        <a class="button" :class="theme" @click="makeEdits">Submit Edit</a>
                     </div>
                 </div>
-                <div v-if="postingComment" style="position: relative; padding-top: 15px">
-                    <a class="button" :class="theme" @click="postComment">Submit Comment</a>
+                <div v-else>
+                    <div v-html="renderedContent"></div>
+                    <hr />
+                    <h1>Comments</h1>
+                    <a
+                        v-if="isAuthenticated"
+                        class="button"
+                        :class="theme"
+                        @click="showCommentPost"
+                    >Comment</a>
+                    <p
+                        v-if="postingComment"
+                        v-bind:class="{danger: commentContent.length > 2000}"
+                        style="padding-top: 15px;"
+                    >Characters used: {{commentContent.length}} / 2000</p>
+                    <div class="row">
+                        <div class="col">
+                            <Editor
+                                v-if="postingComment"
+                                :height="height"
+                                :width="width"
+                                v-model="commentContent"
+                                :initialContent="commentContent"
+                            />
+                        </div>
+                        <div class="col preview" ref="container" :class="theme">
+                            <Preview v-if="postingComment" :content="commentContent" />
+                        </div>
+                    </div>
+                    <div v-if="postingComment" style="position: relative; padding-top: 15px">
+                        <a class="button" :class="theme" @click="postComment">Submit Comment</a>
+                    </div>
+                    <hr />
+                    <Comment
+                        v-for="comment in comments"
+                        :key="comment.id"
+                        :comment="comment"
+                        :ownsPost="user === $store.state.username"
+                        @deletedComment="updateCommentsOnDelete"
+                    />
+                    <b-button v-if="show" @click="load" :variant="theme">Load More Comments</b-button>
+                    <p v-else-if="comments.length === 0">No comments found.</p>
+                    <p v-else>All comments loaded.</p>
                 </div>
-                <hr />
-                <Comment
-                    v-for="comment in comments"
-                    :key="comment.id"
-                    :comment="comment"
-                    :ownsPost="user === $store.state.username"
-                    @deletedComment="updateCommentsOnDelete"
-                />
-                <b-button v-if="show" @click="load" :variant="theme">Load More Comments</b-button>
-                <p v-else-if="comments.length === 0">No comments found.</p>
-                <p v-else>All comments loaded.</p>
             </div>
         </div>
     </div>
@@ -167,6 +169,7 @@ export default class Post extends Vue {
     protected pages: number;
     protected currentPage: number;
     protected commentCount: number | null;
+    protected notFound: boolean | null;
     tags: string[] | null;
     @Prop(String) protected readonly title!: string;
     @Prop(String) protected readonly id!: string;
@@ -189,6 +192,7 @@ export default class Post extends Vue {
         this.pages = 1;
         this.currentPage = 1;
         this.tags = null;
+        this.notFound = false;
     }
 
     @Watch("content")
@@ -320,7 +324,6 @@ export default class Post extends Vue {
                 this.editing = false;
             }
             if (err.response.data) {
-                console.log(err.response);
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: err.response.data.error
@@ -355,7 +358,6 @@ export default class Post extends Vue {
                 this.postingComment = false;
             }
             if (err.response.data) {
-                console.log(err.response);
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: err.response.data.error
@@ -447,7 +449,7 @@ export default class Post extends Vue {
             this.user = data.username;
             this.pages = data.pages;
             this.commentCount = data.commentCount;
-            this.tags = data.tags
+            this.tags = data.tags;false
             if (this.currentPage === 1) {
                 this.comments = [];
             }
@@ -456,8 +458,19 @@ export default class Post extends Vue {
             }
             this.createdAt = data.createdAt;
             this.updatedAt = data.updatedAt;
-        } catch (__) {
-            // error
+        } catch (err) {
+            this.notFound = true;
+            if (err.response.data) {
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: err.response.data.error
+                });
+            } else {
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: "Something went wrong."
+                });
+            }
         }
     }
 }

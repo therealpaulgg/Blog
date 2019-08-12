@@ -30,7 +30,8 @@ import {
     faUsersCog,
     faUserSecret,
     faTimesCircle,
-    faBell
+    faBell,
+    faClipboard
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -57,7 +58,8 @@ library.add(
     faUsersCog,
     faUserSecret,
     faTimesCircle,
-    faBell
+    faBell,
+    faClipboard
 );
 
 Vue.component("font-awesome-icon", FontAwesomeIcon);

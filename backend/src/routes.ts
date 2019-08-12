@@ -160,11 +160,12 @@ router.get("/posts/:page", async (req, res) => {
 router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
     let pageNum = parseInt(req.params.pageNum)
     let postId = parseInt(req.params.postId)
-    if (postId && pageNum) {
+    let urlTitle = req.params.urlTitle
+    if (postId && pageNum && urlTitle) {
         const postsPerPage = 10
         const postRepo = getConnection().getRepository(Comment)
         const qb = postRepo.createQueryBuilder("c")
-            .where("c.postId = :postId", { postId })
+            .where("c.postId = :postId", { postId})
             .leftJoinAndSelect("c.user", "user")
             .orderBy("c.createdAt", "DESC")
             .skip((pageNum - 1) * postsPerPage)
@@ -185,7 +186,7 @@ router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
             let count = await qb.getCount()
             const pages = Math.ceil(count / postsPerPage)
 
-            getConnection().manager.findOne(Post, { id: req.params.postId }, { relations: ["user", "tags"] }).then(result => {
+            getConnection().manager.findOne(Post, { id: postId, urlTitle }, { relations: ["user", "tags"] }).then(result => {
                 let tags = []
                 result.tags.forEach(tag => tags.push(tag.tagStr))
                 let formattedData = {
@@ -202,11 +203,10 @@ router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
                     tags
                 }
                 res.send(formattedData)
-            }).catch(err => res.send({ title: "Oof!", content: "No post found. :(" }))
+            }).catch(err => res.status(404).send({ error: "No post found. :(" }))
 
         } catch (err) {
-            // This is the actual 'title' and 'content' info that is sent to user, so should be 200 OK.
-            res.send({ error: "No post could be found.", title: "Oof!", content: "No post found. :(" })
+            res.status(404).send({ error: "No post found. :(" })
         }
     } else {
         res.status(400).send({
@@ -405,6 +405,58 @@ router.get("/usercomments/:username/:page", async (req, res) => {
             error: "Something went wrong."
         })
     }
+})
+
+router.get("/administration/:page", checkAuth, async (req, res) => {
+    let page = parseInt(req.params.page)
+    if (page != null) {
+        try {
+            let user = await getConnection().manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
+            if (user != null && user.permissionBlock.superAdmin) {
+                const usersPerPage = 10
+                let page = req.params.page
+                const userRepo = getConnection().getRepository(User)
+                const qb = userRepo.createQueryBuilder("u")
+                    .orderBy("u.username", "ASC")
+                    .leftJoinAndSelect("u.posts", "posts")
+                    .leftJoinAndSelect("u.comments", "comments")
+                    .skip((page - 1) * usersPerPage)
+                    .take(usersPerPage)
+                let result = await qb.getMany()
+                let count = await qb.getCount()
+                const pages = Math.ceil(count / usersPerPage)
+                let users = []
+                for (let user of result) {
+
+                    let obj = {
+                        username: user.username,
+                        email: user.email,
+                        postCount: user.posts.length,
+                        commentCount: user.comments.length
+                    }
+                    users.push(obj)
+                }
+                res.send({
+                    users,
+                    pages
+                })
+            } else {
+                res.status(401).send({
+                    error: "You are not authorized to perform this action."
+                })
+            }
+        } catch (err) {
+            console.log(err)
+            res.status(500).send({
+                error: "Something went wrong."
+            })
+        }
+    } else {
+        res.status(400).send({
+            error: "Invalid page number."
+        })
+    }
+
 })
 
 router.get("/resetpassword/:token", (req, res) => {
