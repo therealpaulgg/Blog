@@ -2,7 +2,9 @@ export class Permissions {
     perms: any = {
         "/admindeleteuser/:username": 3,
         "/newpost": 1,
-        "/administration/:page": 3
+        "/administration/:page": 3,
+        "/settingdata": 3,
+        "/setuserpermissions": 3
     }
     constructor(stack) {
         // Any route which has not explicitly set permissions will be assumed to be 'normal'.

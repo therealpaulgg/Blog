@@ -1,5 +1,5 @@
 import express, { Response, Request } from "express"
-import { getConnection, Connection, ReplSet } from "typeorm";
+import { createConnection, getConnection } from "typeorm";
 import jwt from "jsonwebtoken";
 import argon2 from "argon2"
 import { Post } from "./entity/Post";
@@ -12,6 +12,12 @@ import { Tag } from "./entity/Tag";
 import Mail from "./services/mail";
 import { Permissions } from "./services/permissions";
 import { encodeXText } from "nodemailer/lib/shared";
+import { SettingsService } from "./services/settings";
+
+let settings: SettingsService | null = null
+
+// must be done in same scope as app
+createConnection().then(() => settings = new SettingsService())
 
 let router = express.Router()
 
@@ -202,7 +208,9 @@ router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
                     comments,
                     pages,
                     commentCount: count,
-                    tags
+                    tags,
+                    commentLimit: settings.limitCommentLength,
+                    commentLimitVal: settings.commentMaxLength
                 }
                 res.send(formattedData)
             }).catch(err => res.status(404).send({ error: "No post found. :(" }))
@@ -221,7 +229,7 @@ router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
 router.get("/cansetup", async (req, res) => {
     try {
         let connection = getConnection()
-        let admin = await connection.manager.findOne(PermissionBlock, { superAdmin: true })
+        let admin = await connection.manager.findOne(PermissionBlock, { permissionLevel: 3 })
         let foo = {
             canSetup: false
         }
@@ -248,7 +256,7 @@ router.get("/canpost", checkAuth, async (req, res) => {
             canPost: false
         }
         // 1 represents the author permission level.
-        if (findPerm(user.permissionBlock) >= 1) {
+        if (user.permissionBlock.permissionLevel >= 1) {
             foo.canPost = true;
         }
         res.send(foo)
@@ -267,7 +275,7 @@ router.get("/isadmin", checkAuth, async (req, res) => {
         let foo = {
             isAdmin: false
         }
-        if (user.permissionBlock.superAdmin) {
+        if (user.permissionBlock.permissionLevel >= 3) {
             foo.isAdmin = true;
         }
         res.send(foo)
@@ -280,11 +288,11 @@ router.get("/isadmin", checkAuth, async (req, res) => {
 
 // if user has all permission fields, should return the highest one
 function getPermStr(pBlock: PermissionBlock) {
-    switch (true) {
-        case pBlock.superAdmin: return "superadmin"
-        case pBlock.moderator: return "moderator"
-        case pBlock.author: return "author"
-        case pBlock.normal: return "normal"
+    switch (pBlock.permissionLevel) {
+        case 3: return "superadmin"
+        case 2: return "moderator"
+        case 1: return "author"
+        case 0: return "normal"
         default: return "normal"
     }
 }
@@ -421,6 +429,7 @@ router.get("/administration/:page", checkAuth, checkPermissions, async (req, res
                 .orderBy("u.username", "ASC")
                 .leftJoinAndSelect("u.posts", "posts")
                 .leftJoinAndSelect("u.comments", "comments")
+                .leftJoinAndSelect("u.permissionBlock", "permissionBlock")
                 .skip((page - 1) * usersPerPage)
                 .take(usersPerPage)
             let result = await qb.getMany()
@@ -433,16 +442,17 @@ router.get("/administration/:page", checkAuth, checkPermissions, async (req, res
                     username: user.username,
                     email: user.email,
                     postCount: user.posts.length,
-                    commentCount: user.comments.length
+                    commentCount: user.comments.length,
+                    permissionLevel: getPermStr(user.permissionBlock)
                 }
                 users.push(obj)
             }
             res.send({
                 users,
-                pages
+                pages,
+                
             })
         } catch (err) {
-            console.log(err)
             res.status(500).send({
                 error: "Something went wrong."
             })
@@ -478,6 +488,71 @@ router.get("/resetpassword/:token", (req, res) => {
     } else {
         res.status(400).send({
             error: "No token sent."
+        })
+    }
+})
+
+router.get("/settingdata", checkAuth, checkPermissions, async (req, res) => {
+    settings.reloadSettings()
+    console.log(settings)
+    res.send({
+        limitCommentLength: settings.limitCommentLength,
+        commentMaxLength: settings.commentMaxLength,
+        limitPostTitleLength: settings.limitPostTitleLength,
+        postTitleMaxLength: settings.postTitleMaxLength,
+        registrationEnabled: settings.registrationEnabled
+    })
+})
+
+router.post("/settingdata", checkAuth, checkPermissions, async (req, res) => {
+    if (req.body.limitCommentLength != null &&
+        req.body.commentMaxLength != null &&
+        req.body.limitPostTitleLength != null &&
+        req.body.postTitleMaxLength != null &&
+        req.body.registrationEnabled != null) {
+        await settings.newSettings(req.body)
+        res.send({
+            success: "Settings updated."
+        })
+    } else {
+        res.status(400).send({
+            error: "Malformed request."
+        })
+    }
+})
+
+router.post("/setuserpermissions", checkAuth, checkPermissions, async (req, res) => {
+    let username = req.body.username;
+    let permissionLevel = req.body.permissionLevel
+    if (username != null && permissionLevel != null && res.locals.user !== username) {
+        let connection = getConnection()
+        let user = await connection.manager.findOne(User, {username})
+        let newPerms: number | null = null;
+        switch (permissionLevel) {
+            case "superadmin": 
+                newPerms = 3;
+                break;
+            case "moderator":
+                newPerms = 2;
+                break;
+            case "author": 
+                newPerms = 1;
+                break;
+            case "normal":
+                newPerms = 0;
+                break;
+            default:
+                newPerms = 0;
+                break;
+        }
+        user.permissionBlock.permissionLevel = newPerms
+        await connection.manager.save(user)
+        res.send({
+            success: "User permissions updated."
+        })
+    } else {
+        res.status(400).send({
+            error: "Malformed request (or you tried to change your own permissions)."
         })
     }
 })
@@ -548,7 +623,7 @@ router.post("/admindeleteuser/:username", checkAuth, checkPermissions, async (re
     if (username != null) {
         try {
             let connection = getConnection()
-            let user = await connection.manager.findOne(User, { username }, { relations: ["comments", "posts"] })
+            let user = await connection.manager.findOne(User, { username }, { relations: ["comments", "posts", "permissionBlock"] })
             if (user != null) {
                 // delete all user comments TODO: make 'deleted' if parent of replies
                 for (let comment of user.comments) {
@@ -558,6 +633,7 @@ router.post("/admindeleteuser/:username", checkAuth, checkPermissions, async (re
                 for (let post of user.posts) {
                     connection.manager.remove(post)
                 }
+                connection.manager.remove(user.permissionBlock)
                 connection.manager.remove(user)
                 res.send({
                     success: "User successfully deleted."
@@ -568,7 +644,6 @@ router.post("/admindeleteuser/:username", checkAuth, checkPermissions, async (re
                 })
             }
         } catch (err) {
-            console.log(err)
             res.status(500).send({
                 error: "Something went wrong."
             })
@@ -705,7 +780,7 @@ router.post("/updatebio", checkAuth, async (req, res) => {
 // Registers a superadmin as long as initial setup is still possible.
 router.post("/initialsetup", async (req, res) => {
     let connection = getConnection();
-    let admin = await connection.manager.findOne(PermissionBlock, { superAdmin: true })
+    let admin = await connection.manager.findOne(PermissionBlock, { permissionLevel: 3 })
     if (admin) {
         res.status(401).send({
             error: "Not allowed."
@@ -713,8 +788,7 @@ router.post("/initialsetup", async (req, res) => {
     } else {
         try {
             let permissionBlock = new PermissionBlock();
-            permissionBlock.superAdmin = true;
-            permissionBlock.normal = false;
+            permissionBlock.permissionLevel = 3;
             let username = req.body.username;
             let email = req.body.email;
             let password = req.body.password
@@ -742,7 +816,7 @@ router.post("/comment", checkAuth, checkPermissions, async (req, res) => {
     let user = await connection.manager.findOne(User, { username: res.locals.user })
     if (post && user) {
         let content: string = req.body.content
-        if (content != null && content.length > 0 && content.length <= 2000) {
+        if (content != null && content.length > 0 && ((!settings.limitCommentLength) || (content.length <= settings.commentMaxLength && settings.limitCommentLength))) {
             let comment = new Comment()
             comment.post = post
             comment.content = content
@@ -753,7 +827,7 @@ router.post("/comment", checkAuth, checkPermissions, async (req, res) => {
             })
         } else {
             res.status(400).send({
-                error: "Comment content body format invalid (nonexistent, empty, or longer than 2000 chars)"
+                error: `Comment content body format invalid (nonexistent, empty, or longer than ${settings.commentMaxLength} chars)`
             })
         }
     } else {
@@ -776,10 +850,10 @@ async function parseTags(tags: string) {
         try {
             let bar = await connection.manager.findOne(Tag, { tagStr: tag })
             let newTag
-            if (!bar) {
+            if (bar == null) {
                 newTag = new Tag()
                 newTag.tagStr = tag
-                connection.manager.save(newTag)
+                await connection.manager.save(newTag)
             } else newTag = bar
             returnVal.push(newTag)
         } catch {
@@ -795,7 +869,9 @@ router.post("/newpost", checkAuth, checkPermissions, async (req, res) => {
     let title: string = req.body.title
     let content = req.body.content
     let tags = req.body.tags
-    if ((title != null && title.length > 0) && (content != null && content.length > 0)) {
+    if ((title != null && title.length > 0) &&
+        (content != null && content.length > 0) &&
+        ((settings.limitPostTitleLength && title.length <= settings.postTitleMaxLength) || !settings.limitPostTitleLength)) {
         try {
             let post = new Post()
             post.title = title
@@ -833,9 +909,10 @@ router.post("/editpost", checkAuth, checkPermissions, async (req, res) => {
             post.title = title
             post.content = req.body.newContent
             post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
+            post.tags = await parseTags(req.body.tags)
             await connection.manager.save(post)
             res.send({
-                urlTitle: post.urlTitle,
+                newUrlTitle: post.urlTitle,
                 success: "Post successfully edited."
             })
         } else {
@@ -906,25 +983,36 @@ async function registerUser(permissionBlock: PermissionBlock, username, email, p
 
 // TODO: password requirements
 router.post("/register", async (req, res) => {
-    let permissionBlock = new PermissionBlock();
-    let username: string = req.body.username;
-    let email = req.body.email;
-    let password = req.body.password
-    if (username != null && email != null && password != null) {
-        registerUser(permissionBlock, username, email, password, res)
+    if (settings.registrationEnabled) {
+        let permissionBlock = new PermissionBlock();
+        let username: string = req.body.username;
+        let email = req.body.email;
+        let password = req.body.password
+        if (username != null && email != null && password != null) {
+            registerUser(permissionBlock, username, email, password, res)
+        } else {
+            res.status(400).send({
+                error: "Missing username, email, or password."
+            })
+        }
     } else {
-        res.status(400).send({
-            error: "Missing username, email, or password."
+        res.status(401).send({
+            error: "Registration is disabled on this blog. Sorry :("
         })
     }
 })
 
-router.post("/deletepost", checkAuth, checkPermissions, (req, res) => {
+router.post("/deletepost", checkAuth, checkPermissions, async (req, res) => {
     let connection = getConnection()
-    connection.manager.findOne(Post, { id: req.body.id }, { relations: ["user", "comments"] }).then(async (post) => {
+    connection.manager.findOne(Post, { id: req.body.id }, { relations: ["user", "comments", "tags"] }).then(async (post) => {
         if (post.user.username === res.locals.user) {
             if (post.comments) {
                 await connection.manager.remove(post.comments)
+            }
+            for (let tag of post.tags) {
+                if (tag.posts.length === 1 && tag.posts[0].id === post.id) {
+                    await connection.manager.remove(tag)
+                }
             }
             await connection.manager.remove(post)
             res.send({
@@ -935,9 +1023,11 @@ router.post("/deletepost", checkAuth, checkPermissions, (req, res) => {
                 error: "You are not the owner of this post."
             })
         }
-    }).catch(() => res.status(404).send({
-        error: "Post does not exist."
-    }))
+    }).catch((err) => {
+        res.status(404).send({
+            error: "Post does not exist."
+        }); console.log(err)
+    })
 })
 
 router.post("/deletecomment", checkAuth, checkPermissions, async (req, res) => {
@@ -947,7 +1037,7 @@ router.post("/deletecomment", checkAuth, checkPermissions, async (req, res) => {
         let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
         let comment = await connection.manager.findOne(Comment, { id: id }, { relations: ["post", "user", "post.user"] })
         let commentUser = comment.user;
-        if (res.locals.user === commentUser.username || comment.post.user.username === res.locals.user || user.permissionBlock.superAdmin) {
+        if (res.locals.user === commentUser.username || comment.post.user.username === res.locals.user || user.permissionBlock.permissionLevel >= 3) {
             await connection.manager.remove(comment);
             res.send({
                 success: "Comment successfully deleted."
@@ -976,11 +1066,11 @@ router.post("/login", async (req, res) => {
                 res.cookie("auth", token, { maxAge: age })
                 let date = new Date(new Date().getTime() + age).getTime();
                 res.cookie("expiration", date, { maxAge: age })
-                let personalizedLoginMsg = user.permissionBlock.superAdmin ? "Welcome, admin :)" : ""
+                let personalizedLoginMsg = user.permissionBlock.permissionLevel >= 3 ? "Welcome, admin :)" : ""
                 res.send({
                     username,
-                    canPost: user.permissionBlock.superAdmin,
-                    admin: user.permissionBlock.superAdmin,
+                    canPost: user.permissionBlock.permissionLevel >= 1,
+                    admin: user.permissionBlock.permissionLevel >= 3,
                     success: `You have successfully been logged in.\n${personalizedLoginMsg}`
                 })
             } else {
@@ -1035,26 +1125,12 @@ async function checkAuth(req, res, next) {
 
 let perms = new Permissions(router.stack)
 
-function findPerm(block: PermissionBlock) {
-    if (block.superAdmin) {
-        return 3
-    } else if (block.moderator) {
-        return 2
-    } else if (block.author) {
-        return 1
-    } else {
-        return 0
-    }
-}
-
 // IMPORTANT NOTE: must be used AFTER and ONLY AFTER checkAuth. Cannot be used independently.
 async function checkPermissions(req: Request, res, next) {
     let username = res.locals.user
     let user = await getConnection().manager.findOne(User, { username }, { relations: ["permissionBlock"] })
     let allowedAccess = perms.perms[req.route.path]
-    console.log("Allowed access: " + allowedAccess)
-    let userPerm = findPerm(user.permissionBlock)
-    console.log("User access: " + userPerm)
+    let userPerm = user.permissionBlock.permissionLevel
     if (userPerm >= allowedAccess) {
         next()
     } else {

@@ -1,30 +1,119 @@
 <template>
     <div class="administration" :class="theme">
         <!-- I dont really know what to do for this. Maybe show users, posts, etc in paginated format?-->
-        <div
-            class="user"
-            v-for="user in users"
-            :key="user.username"
-            @click="gotoUser(user.username)"
-        >
-            <div>
-                <div style="float: right">
-                    <font-awesome-icon icon="clipboard" style="margin-right: 10px"></font-awesome-icon>
-                    {{user.postCount}}
-                    <font-awesome-icon
-                        icon="comments"
-                        style="margin-left: 10px; margin-right: 10px"
-                    ></font-awesome-icon>
-                    {{user.commentCount}}
+        <div class="row">
+            <div class="col">
+                <h3>Settings</h3>
+                <div class="row">
+                    <div class="col">
+                        <p>Limit Comment Length</p>
+                    </div>
+                    <div class="col">
+                        <toggle-button
+                            v-model="limitCommentLength"
+                            :sync="true"
+                            :value="limitCommentLength"
+                        />
+                    </div>
                 </div>
-                <p>{{user.username}}</p>
-                <p>{{user.email}}</p>
-                <b-button v-if="username !== user.username" @click.stop="deleteUser(user)" :variant="theme">Delete User</b-button>
+                <div class="row">
+                    <div class="col">
+                        <p>Comment Max Length</p>
+                    </div>
+                    <div class="col">
+                        <b-input-group size="sm">
+                            <b-form-input class="ifield" v-model="commentMaxLength" />
+                        </b-input-group>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <p>Limit Post Title Length</p>
+                    </div>
+                    <div class="col">
+                        <toggle-button
+                            v-model="limitPostTitleLength"
+                            :sync="true"
+                            :value="limitPostTitleLength"
+                        />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <p>Post Title Max Length</p>
+                    </div>
+                    <div class="col">
+                        <b-input-group size="sm">
+                            <b-form-input class="ifield" v-model="postTitleMaxLength" />
+                        </b-input-group>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <p>Enable Registration</p>
+                    </div>
+                    <div class="col">
+                        <toggle-button
+                            v-model="registrationEnabled"
+                            :sync="true"
+                            :value="registrationEnabled"
+                        />
+                    </div>
+                </div>
+                <b-button :variant="theme" @click="saveSettings">Save Settings</b-button>
             </div>
-        </div>  
-        <b-button v-if="showUserButton" @click="getUsers" :variant="theme">Load More Users</b-button>
-        <p v-else-if="users && users.length === 0">No users found.</p>
-        <p v-else>All users loaded.</p>
+            <div class="col">
+                <h3>Users</h3>
+                <div
+                    class="user"
+                    v-for="user in users"
+                    :key="user.username"
+                    @click="gotoUser(user.username)"
+                >
+                    <div>
+                        <div style="float: right">
+                            <font-awesome-icon icon="clipboard" style="margin-right: 10px"></font-awesome-icon>
+                            {{user.postCount}}
+                            <font-awesome-icon
+                                icon="comments"
+                                style="margin-left: 10px; margin-right: 10px"
+                            ></font-awesome-icon>
+                            {{user.commentCount}}
+                        </div>
+                        <p>{{user.username}}</p>
+                        <p>{{user.email}}</p>
+                        <div v-if="user.permissionLevel === 'normal'">
+                            <font-awesome-icon icon="user"></font-awesome-icon>
+                            <p>Normal</p>
+                        </div>
+                        <div v-else-if="user.permissionLevel === 'author'">
+                            <font-awesome-icon icon="user-edit"></font-awesome-icon>
+                            <p>Author}</p>
+                        </div>
+                        <div v-else-if="user.permissionLevel === 'moderator'">
+                            <font-awesome-icon icon="users-cog"></font-awesome-icon>
+                            <p>Moderator</p>
+                        </div>
+                        <div v-else-if="user.permissionLevel === 'superadmin'">
+                            <font-awesome-icon icon="user-shield"></font-awesome-icon>
+                            <p>Super Admin</p>
+                        </div>
+                        <div v-else>
+                            <font-awesome-icon icon="user-secret"></font-awesome-icon>
+                            <p>Secret Role</p>
+                        </div>
+                        <b-button
+                            v-if="username !== user.username"
+                            @click.stop="deleteUser(user)"
+                            :variant="theme"
+                        >Delete User</b-button>
+                    </div>
+                </div>
+                <b-button v-if="showUserButton" @click="getUsers" :variant="theme">Load More Users</b-button>
+                <p v-else-if="users && users.length === 0">No users found.</p>
+                <p v-else>All users loaded.</p>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -33,17 +122,32 @@ import { Component, Vue } from "vue-property-decorator";
 import PostBlock from "@/components/PostBlock.vue"; // @ is an alias to /src
 import axios from "axios";
 import { State } from "vuex-class";
+import { ToggleButton } from "vue-js-toggle-button";
 
-@Component
+@Component({
+    components: {
+        ToggleButton
+    }
+})
 export default class Administration extends Vue {
     protected userPages: number | null;
     protected userPageNum: number;
     protected users: any[];
+    protected limitCommentLength: boolean | null;
+    protected commentMaxLength: number | null;
+    protected limitPostTitleLength: boolean | null;
+    protected postTitleMaxLength: number | null;
+    protected registrationEnabled: boolean | null;
     constructor() {
         super();
         this.userPageNum = 1;
         this.userPages = null;
         this.users = [];
+        this.limitCommentLength = null;
+        this.commentMaxLength = null;
+        this.limitPostTitleLength = null;
+        this.postTitleMaxLength = null;
+        this.registrationEnabled = null;
     }
 
     protected mounted() {
@@ -69,7 +173,9 @@ export default class Administration extends Vue {
                 {},
                 { withCredentials: true }
             );
-            let index = this.users.findIndex(looking => looking.username === user.username);
+            let index = this.users.findIndex(
+                looking => looking.username === user.username
+            );
             if (index) {
                 this.users.splice(index, 1);
             }
@@ -98,6 +204,58 @@ export default class Administration extends Vue {
 
     protected getAdminData() {
         this.getUsers();
+        this.getSettings();
+    }
+
+    protected async saveSettings() {
+        try {
+            let { data } = await axios.post(
+                "http://localhost:3000/settingdata",
+                {
+                    limitCommentLength: this.limitCommentLength,
+                    commentMaxLength: this.commentMaxLength,
+                    limitPostTitleLength: this.limitPostTitleLength,
+                    postTitleMaxLength: this.postTitleMaxLength,
+                    registrationEnabled: this.registrationEnabled
+                },
+                { withCredentials: true }
+            );
+            this.$store.dispatch("addAlert", {
+                alerType: "success",
+                alertText: data.success
+            });
+        } catch (err) {
+            if (err.response) {
+                this.$store.dispatch("addAlert", {
+                    alerType: "danger",
+                    alertText: err.response.data.error
+                });
+            } else {
+                this.$store.dispatch("addAlert", {
+                    alerType: "danger",
+                    alertText: "There was a problem saving your settings."
+                });
+            }
+        }
+    }
+
+    protected async getSettings() {
+        try {
+            let { data } = await axios.get(
+                "http://localhost:3000/settingdata",
+                { withCredentials: true }
+            );
+            this.limitCommentLength = data.limitCommentLength;
+            this.commentMaxLength = data.commentMaxLength;
+            this.limitPostTitleLength = data.limitPostTitleLength;
+            this.postTitleMaxLength = data.postTitleMaxLength;
+            this.registrationEnabled = data.registrationEnabled;
+        } catch (err) {
+            this.$store.dispatch("addAlert", {
+                alerType: "danger",
+                alertText: "There was a problem getting some admin data."
+            });
+        }
     }
 
     protected async getUsers() {
@@ -109,15 +267,13 @@ export default class Administration extends Vue {
             if (this.userPageNum === 1) {
                 this.userPages = data.pages;
                 this.users = data.users;
-                for (let user of this.users) {
-                    user.alive = true;
-                }
             } else {
                 const users = data.users as Array<{
                     username: string;
                     email: string;
                     postCount: number;
                     commentCount: number;
+                    permissionLevel: string;
                 }>;
                 for (let user of users) {
                     this.users.push(user);
@@ -126,7 +282,7 @@ export default class Administration extends Vue {
         } catch (err) {
             this.$store.dispatch("addAlert", {
                 alerType: "danger",
-                alertText: "There was a problem getting users."
+                alertText: "There was a problem getting some admin data."
             });
         }
     }
@@ -150,9 +306,15 @@ export default class Administration extends Vue {
         background-color: white
     .user:hover
         background-color: #f2feff
+    .ifield
+        background-color: white
 .dark
     .user
         background-color: #2a2c39
     .user:hover
         background-color: #3e4154
+    .ifield
+        border-color: #20212B !important
+        background-color: #2a2c39 !important
+        color: white
 </style>

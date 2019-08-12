@@ -1,12 +1,9 @@
 import "reflect-metadata";
-import {createConnection} from "typeorm";
 import routes from "./routes";
 import express from "express"
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import dotenv from "dotenv";
-
-createConnection()
 
 dotenv.config()
 

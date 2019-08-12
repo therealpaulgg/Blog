@@ -7,17 +7,8 @@ export class PermissionBlock {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column('boolean', { default: false})
-    superAdmin: boolean;
-
-    @Column("boolean", { default: false})
-    moderator: boolean;
-
-    @Column("boolean", { default: false})
-    author: boolean;
-
-    @Column("boolean", { default: true})
-    normal: boolean;
+    @Column({default: 0})
+    permissionLevel: number;
 
     @Column('boolean', { default: true })
     verified: boolean;

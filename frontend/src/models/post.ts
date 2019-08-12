@@ -12,4 +12,6 @@ export interface PostModel {
     pages: number;
     commentCount: number;
     tags: string[];
+    commentLimit: boolean;
+    commentLimitVal: number;
 }

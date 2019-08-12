@@ -31,7 +31,7 @@ export class Post {
     @OneToMany(type => Comment, comment => comment.post)
     comments: Array<Comment>
 
-    @ManyToMany(type => Tag)
+    @ManyToMany(type => Tag, tag => tag.posts)
     @JoinTable()
     tags: Tag[];
 }

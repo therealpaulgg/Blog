@@ -63,7 +63,33 @@
                         v-model="editTitle"
                     />
                     <br />
+                    <label>Tags (please input tags as hashtags like this: '#mypost #specialcategory')</label>
+                    <div style="position: relative">
+                        <div
+                            style="display: inline-block;"
+                            v-for="(tag, index) in parsedTags"
+                            :key="index"
+                            :class="theme"
+                            class="hashtag-edit"
+                        >
+                            {{tag}}
+                            <font-awesome-icon
+                                @click="removeTag(tag)"
+                                icon="times-circle"
+                                style="font-size: 12px; margin-left: 4px;float: right; position: absolute; cursor: pointer"
+                            />
+                        </div>
+                    </div>
                     <br />
+                    <input
+                        type="text"
+                        :class="theme"
+                        style="width: 100%"
+                        class="title"
+                        v-model="editingTags"
+                    />
+                    <br />
+                    <br>
                     <div class="row">
                         <div class="col">
                             <Editor
@@ -94,9 +120,9 @@
                     >Comment</a>
                     <p
                         v-if="postingComment"
-                        v-bind:class="{danger: commentContent.length > 2000}"
+                        v-bind:class="{danger: commentLimit && commentContent.length > commentLimitVal}"
                         style="padding-top: 15px;"
-                    >Characters used: {{commentContent.length}} / 2000</p>
+                    >Characters used: {{commentContent.length}}<span v-if="commentLimit"> / {{commentLimitVal}}</span></p>
                     <div class="row">
                         <div class="col">
                             <Editor
@@ -170,7 +196,10 @@ export default class Post extends Vue {
     protected currentPage: number;
     protected commentCount: number | null;
     protected notFound: boolean | null;
-    tags: string[] | null;
+    protected tags: string[] | null;
+    protected editingTags: string | null;
+    protected commentLimit: boolean | null;
+    protected commentLimitVal: number | null; 
     @Prop(String) protected readonly title!: string;
     @Prop(String) protected readonly id!: string;
     @Getter("getTheme") private getTheme: string;
@@ -193,6 +222,9 @@ export default class Post extends Vue {
         this.currentPage = 1;
         this.tags = null;
         this.notFound = false;
+        this.editingTags = "";
+        this.commentLimit = null;
+        this.commentLimitVal = null;
     }
 
     @Watch("content")
@@ -302,7 +334,8 @@ export default class Post extends Vue {
                     id: this.id,
                     urlTitle: this.title,
                     newTitle: this.editTitle,
-                    newContent: this.editContent
+                    newContent: this.editContent,
+                    tags: this.editingTags
                 },
                 { withCredentials: true }
             );
@@ -314,7 +347,6 @@ export default class Post extends Vue {
                 alertText: msg
             });
             this.editing = false;
-            // technically this doesn't initialize a new component (wtf vue?)
             this.$router.push(`/posts/${this.id}/${newUrlTitle}`);
             this.fetchData();
         } catch (err) {
@@ -427,6 +459,22 @@ export default class Post extends Vue {
         }
     }
 
+    get parsedTags() {
+        let re = /(^|\s)(#[a-z\d-_]+)/g,
+            match;
+        let foo = [];
+        while ((match = re.exec(this.editingTags))) {
+            if (!foo.find(thing => thing === match[2])) foo.push(match[2]);
+        }
+        return foo;
+    }
+
+    // substring MAGIC
+    protected removeTag(tag: string) {
+        let index = (this.editingTags as string).indexOf(tag)
+        this.editingTags = (this.editingTags as string).substring(0, index) + (this.editingTags as string).substring(index + tag.length + 1, this.editingTags.length)
+    }
+
     protected get sinceUpdate() {
         if (this.updatedAt) {
             return moment(this.updatedAt).fromNow();
@@ -449,7 +497,11 @@ export default class Post extends Vue {
             this.user = data.username;
             this.pages = data.pages;
             this.commentCount = data.commentCount;
-            this.tags = data.tags;false
+            this.tags = data.tags;
+            this.commentLimit = data.commentLimit;
+            this.commentLimitVal = data.commentLimitVal;
+            this.tags.forEach(tag => this.editingTags += `#${tag} `)
+            false;
             if (this.currentPage === 1) {
                 this.comments = [];
             }
@@ -536,6 +588,13 @@ a:hover
     border-radius: 5px
     transition: 0.25s
     -webkit-transition: 0.25s
+.hashtag-edit
+    margin: 10px 
+    padding-left: 10px
+    padding-right: 20px
+    padding-top: 5px
+    padding-bottom: 5px 
+    border-radius: 5px
 .hashtag:hover
     cursor: pointer
 .dark
@@ -554,6 +613,10 @@ a:hover
         background-color: black !important
     .hashtag:hover
         color: #FF79c6
+    .hashtag-edit
+        background-color: black !important
+    .hashtag:hover
+        color: #FF79c6
 .light
     .preview
         background-color: #FFFFFE !important
@@ -567,5 +630,9 @@ a:hover
     .hashtag
         background-color: #e9ecef !important
     .hashtag:hover
+        color: #00ccff
+    .hashtag-edit
+        background-color: #e9ecef !important
+    .hashtag-edit:hover
         color: #00ccff
 </style>
