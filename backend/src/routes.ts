@@ -526,30 +526,37 @@ router.post("/setuserpermissions", checkAuth, checkPermissions, async (req, res)
     let permissionLevel = req.body.permissionLevel
     if (username != null && permissionLevel != null && res.locals.user !== username) {
         let connection = getConnection()
-        let user = await connection.manager.findOne(User, {username})
-        let newPerms: number | null = null;
-        switch (permissionLevel) {
-            case "superadmin": 
-                newPerms = 3;
-                break;
-            case "moderator":
-                newPerms = 2;
-                break;
-            case "author": 
-                newPerms = 1;
-                break;
-            case "normal":
-                newPerms = 0;
-                break;
-            default:
-                newPerms = 0;
-                break;
+        let user = await connection.manager.findOne(User, {username}, { relations: ["permissionBlock"]})
+        if (user != null) {
+            let newPerms: number | null = null;
+            switch (permissionLevel) {
+                case "superadmin": 
+                    newPerms = 3;
+                    break;
+                case "moderator":
+                    newPerms = 2;
+                    break;
+                case "author": 
+                    newPerms = 1;
+                    break;
+                case "normal":
+                    newPerms = 0;
+                    break;
+                default:
+                    newPerms = 0;
+                    break;
+            }
+            user.permissionBlock.permissionLevel = newPerms
+            await connection.manager.save(user.permissionBlock)
+            await connection.manager.save(user)
+            res.send({
+                success: "User permissions updated."
+            })
+        } else {
+            res.status(404).send({
+                error: "User not found."
+            })
         }
-        user.permissionBlock.permissionLevel = newPerms
-        await connection.manager.save(user)
-        res.send({
-            success: "User permissions updated."
-        })
     } else {
         res.status(400).send({
             error: "Malformed request (or you tried to change your own permissions)."
@@ -1035,9 +1042,9 @@ router.post("/deletecomment", checkAuth, checkPermissions, async (req, res) => {
     let id = req.body.id
     try {
         let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
-        let comment = await connection.manager.findOne(Comment, { id: id }, { relations: ["post", "user", "post.user"] })
+        let comment = await connection.manager.findOne(Comment, { id: id }, { relations: ["post", "user", "post.user", "user.permissionBlock"] })
         let commentUser = comment.user;
-        if (res.locals.user === commentUser.username || comment.post.user.username === res.locals.user || user.permissionBlock.permissionLevel >= 3) {
+        if (res.locals.user === commentUser.username || comment.post.user.username === res.locals.user || (user.permissionBlock.permissionLevel >= 3 || (user.permissionBlock.permissionLevel >= 2 && comment.user.permissionBlock.permissionLevel < 3))) {
             await connection.manager.remove(comment);
             res.send({
                 success: "Comment successfully deleted."

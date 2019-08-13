@@ -88,7 +88,7 @@
                         </div>
                         <div v-else-if="user.permissionLevel === 'author'">
                             <font-awesome-icon icon="user-edit"></font-awesome-icon>
-                            <p>Author}</p>
+                            <p>Author</p>
                         </div>
                         <div v-else-if="user.permissionLevel === 'moderator'">
                             <font-awesome-icon icon="users-cog"></font-awesome-icon>
@@ -102,11 +102,36 @@
                             <font-awesome-icon icon="user-secret"></font-awesome-icon>
                             <p>Secret Role</p>
                         </div>
-                        <b-button
-                            v-if="username !== user.username"
-                            @click.stop="deleteUser(user)"
+                        <b-dropdown
+                            style="margin-bottom: 10px;"
                             :variant="theme"
-                        >Delete User</b-button>
+                            v-if="user.username !== username"
+                            @click.stop
+                            :text="user.permissionLevel"
+                        >
+                            <b-dropdown-item
+                                @click.stop="user.permissionLevel = 'superadmin'"
+                            >Super Admin</b-dropdown-item>
+                            <b-dropdown-item
+                                @click.stop="user.permissionLevel = 'moderator'"
+                            >Moderator</b-dropdown-item>
+                            <b-dropdown-item @click.stop="user.permissionLevel = 'author'">Author</b-dropdown-item>
+                            <b-dropdown-item @click.stop="user.permissionLevel = 'normal'">Normal</b-dropdown-item>
+                        </b-dropdown>
+                        <div v-if="user.initialPermissionLevel !== user.permissionLevel">
+                            <b-button
+                                style="margin-bottom: 10px"
+                                @click.stop="updatePerms(user)"
+                                :variant="theme"
+                            >Save Changes</b-button>
+                        </div>
+                        <div>
+                            <b-button
+                                v-if="username !== user.username"
+                                @click.stop="deleteUser(user)"
+                                :variant="theme"
+                            >Delete User</b-button>
+                        </div>
                     </div>
                 </div>
                 <b-button v-if="showUserButton" @click="getUsers" :variant="theme">Load More Users</b-button>
@@ -207,6 +232,37 @@ export default class Administration extends Vue {
         this.getSettings();
     }
 
+    protected async updatePerms(user) {
+        console.log("mememem")
+        try {
+            let { data } = await axios.post(
+                "http://localhost:3000/setuserpermissions",
+                {
+                    username: user.username,
+                    permissionLevel: user.permissionLevel
+                },
+                { withCredentials: true }
+            );
+            this.$store.dispatch("addAlert", {
+                alerType: "success",
+                alertText: data.success
+            });
+            user.initialPermissionLevel = user.permissionLevel;
+        } catch (err) {
+            if (err.response) {
+                this.$store.dispatch("addAlert", {
+                    alerType: "danger",
+                    alertText: err.response.data.error
+                });
+            } else {
+                this.$store.dispatch("addAlert", {
+                    alerType: "danger",
+                    alertText: "There was a problem updating permissions."
+                });
+            }
+        }
+    }
+
     protected async saveSettings() {
         try {
             let { data } = await axios.post(
@@ -266,18 +322,19 @@ export default class Administration extends Vue {
             );
             if (this.userPageNum === 1) {
                 this.userPages = data.pages;
-                this.users = data.users;
-            } else {
-                const users = data.users as Array<{
-                    username: string;
-                    email: string;
-                    postCount: number;
-                    commentCount: number;
-                    permissionLevel: string;
-                }>;
-                for (let user of users) {
-                    this.users.push(user);
-                }
+                this.users = [];
+            }
+            let users = data.users as Array<{
+                username: string;
+                email: string;
+                postCount: number;
+                commentCount: number;
+                permissionLevel: string;
+                initialPermissionLevel: string | undefined;
+            }>;
+            for (let user of users) {
+                user.initialPermissionLevel = user.permissionLevel;
+                this.users.push(user);
             }
         } catch (err) {
             this.$store.dispatch("addAlert", {
@@ -289,7 +346,7 @@ export default class Administration extends Vue {
 }
 </script>
 
-<style lang="sass" scoped>
+<style lang="sass">
 .user
     padding: 10px
     margin: 10px
@@ -309,6 +366,8 @@ export default class Administration extends Vue {
     .ifield
         background-color: white
 .dark
+    .dropdown-menu
+        background-color: black 
     .user
         background-color: #2a2c39
     .user:hover
