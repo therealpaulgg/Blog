@@ -131,7 +131,7 @@
                             v-if="commentLimit"
                         >/ {{commentLimitVal}}</span>
                     </p>
-                    <div class="row">
+                    <div class="row" style="padding-bottom: 15px">
                         <div class="col">
                             <Editor
                                 v-if="postingComment"
@@ -145,7 +145,7 @@
                             <Preview v-if="postingComment" :content="commentContent" />
                         </div>
                     </div>
-                    <div v-if="postingComment" style="position: relative padding-top: 15px">
+                    <div v-if="postingComment">
                         <a class="button" :class="theme" @click="postComment">Submit Comment</a>
                     </div>
                     <hr />

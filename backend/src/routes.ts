@@ -516,7 +516,7 @@ router.get("/resetpassword/:token", (req, res) => {
     let token = req.params.token
     if (token != null) {
         try {
-            let contents: any = jwt.verify(token, "VERYSECRETKEY")
+            let contents: any = jwt.verify(token, process.env.SECRET_KEY)
             if (contents != null) {
                 res.send({
                     username: contents.username,
@@ -714,7 +714,7 @@ router.post("/resetpassword/:token", async (req, res) => {
     if (token != null) {
         if (password != null) {
             try {
-                let contents: any = jwt.verify(token, "VERYSECRETKEY")
+                let contents: any = jwt.verify(token, process.env.SECRET_KEY)
                 if (contents != null) {
                     try {
                         let username = contents.username
@@ -769,7 +769,7 @@ router.post("/resetpasswordreq", async (req, res) => {
                 let token = jwt.sign({
                     username: user.username,
                     email: user.email,
-                }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
+                }, process.env.SECRET_KEY, { expiresIn: 60 * 30 })
                 Mail.message =
                     `<p>Hello ${user.username},</p>
                 <p>Someone has requested a reset to your password.</p>
@@ -1137,7 +1137,7 @@ router.post("/login", async (req, res) => {
         try {
             let user = await getConnection().manager.findOne(User, { username }, { relations: ["permissionBlock"] })
             if (await argon2.verify(user.password_hash, password)) {
-                let token = jwt.sign({ username }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
+                let token = jwt.sign({ username }, process.env.SECRET_KEY, { expiresIn: 60 * 30 })
                 let age = 30 * 60 * 1000
                 res.cookie("auth", token, { maxAge: age, domain: domainStr })
                 let date = new Date(new Date().getTime() + age).getTime()
@@ -1169,7 +1169,7 @@ router.post("/login", async (req, res) => {
 })
 
 router.post("/renew-jwt", checkAuth, (req, res) => {
-    let token = jwt.sign({ username: res.locals.user }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
+    let token = jwt.sign({ username: res.locals.user }, process.env.SECRET_KEY, { expiresIn: 60 * 30 })
     let age = 30 * 60 * 1000
     res.cookie("auth", token, { maxAge: age, domain: domainStr })
     let date = new Date(new Date().getTime() + age).getTime()
@@ -1182,7 +1182,7 @@ router.post("/renew-jwt", checkAuth, (req, res) => {
 // Middleware function
 async function checkAuth(req, res, next) {
     try {
-        let token: any = jwt.verify(req.cookies["auth"], "VERYSECRETKEY")
+        let token: any = jwt.verify(req.cookies["auth"], process.env.SECRET_KEY)
         let user = await getConnection().manager.findOne(User, { username: token.username })
         if (user) {
             res.locals.user = token.username
@@ -1201,7 +1201,7 @@ async function checkAuth(req, res, next) {
 
 async function checkAuthLevel(req, res, next) {
     try {
-        let token: any = jwt.verify(req.cookies["auth"], "VERYSECRETKEY")
+        let token: any = jwt.verify(req.cookies["auth"], process.env.SECRET_KEY)
         let user = await getConnection().manager.findOne(User, { username: token.username }, { relations: ["permissionBlock"] })
         if (user) {
             res.locals.permLevel = user.permissionBlock.permissionLevel
