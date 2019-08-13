@@ -16,8 +16,10 @@ import { SettingsService } from "./services/settings"
 let settings: SettingsService | null = null
 
 let domainStr = ""
-if (process.env.ENVIRONMENT === "staging" || process.env.ENVIRONMENT === "prod") {
-    domainStr = "paulgellai.dev"
+if (process.env.ENVIRONMENT === "prod") {
+    domainStr = "blog.paulgellai.dev"
+} else if (process.env.ENVIRONMENT === "staging") {
+    domainStr = "test.blog.paulgellai.dev"
 } else {
     domainStr = "localhost"
 }
