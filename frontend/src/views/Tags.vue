@@ -21,6 +21,7 @@ import { Component, Vue } from "vue-property-decorator";
 import PostBlock from "@/components/PostBlock.vue"; // @ is an alias to /src
 import axios from "axios";
 import { State } from "vuex-class";
+import config from "../config";
 
 @Component
 export default class Tags extends Vue {
@@ -59,7 +60,7 @@ export default class Tags extends Vue {
     protected async getData() {
         try {
             let { data } = await axios.get(
-                `http://localhost:3000/tags/${this.currentPage}`
+                `${config.apiUrl}/tags/${this.currentPage}`
             );
             this.pages = data.pages;
             if (this.currentPage === 1) {

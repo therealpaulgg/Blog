@@ -27,6 +27,7 @@
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import axios from "axios";
+import config from "../config";
 import { Action } from "vuex-class";
 
 @Component
@@ -45,7 +46,7 @@ export default class ResetPassword extends Vue {
         if (this.email.length > 0) {
             try {
                 let { data } = await axios.post(
-                    "http://localhost:3000/resetpasswordreq",
+                    `${config.apiUrl}/resetpasswordreq`,
                     { email: this.email }
                 );
                 this.$store.dispatch("addAlert", {

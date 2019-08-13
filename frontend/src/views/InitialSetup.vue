@@ -34,6 +34,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import axios from "axios";
+import config from "../config";
 import { State, Action } from "vuex-class";
 
 @Component
@@ -60,7 +61,7 @@ export default class InitialSetup extends Vue {
     protected async setup() {
         try {
             await axios.post(
-                "http://localhost:3000/initialsetup",
+                `${config.apiUrl}/initialsetup`,
                 {
                     username: this.username,
                     email: this.email,
@@ -69,7 +70,7 @@ export default class InitialSetup extends Vue {
                 { withCredentials: true }
             );
             let { data } = await axios.post(
-                "http://localhost:3000/login",
+                `${config.apiUrl}/login`,
                 { username: this.username, password: this.password },
                 { withCredentials: true }
             );

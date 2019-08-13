@@ -244,7 +244,6 @@ router.get("/cansetup", async (req, res) => {
             error: "Something went wrong."
         })
     }
-
 })
 
 // Checks to see if user is able to post 
@@ -728,7 +727,7 @@ router.post("/resetpasswordreq", async (req, res) => {
                     `<p>Hello ${user.username},</p>
                 <p>Someone has requested a reset to your password.</p>
                 <p>If this was you, click on the following link or copy it into your browser:</p>
-                <p><a href='http://localhost:8080/resetpassword/${token}'>http://localhost:3000/resetpassword/${token}</a></p>
+                <p><a href='http://localhost:8080/resetpassword/${token}'>${config.apiUrl}/resetpassword/${token}</a></p>
                 <p>This token will expire in 30 minutes.</p>
                 
                 <p>If this was not you, you can ignore this email.</p>

@@ -41,6 +41,7 @@ import axios from "axios";
 import { PostModel } from "../models/post";
 import { md } from "../mdparser";
 import Editor from "../components/Editor.vue";
+import config from "../config";
 import Preview from "../components/Preview.vue";
 
 @Component({
@@ -146,7 +147,7 @@ export default class NewPost extends Vue {
     protected post() {
         axios
             .post(
-                "http://localhost:3000/newpost",
+                `${config.apiUrl}/newpost`,
                 { title: this.title, content: this.content, tags: this.tags },
                 { withCredentials: true }
             )

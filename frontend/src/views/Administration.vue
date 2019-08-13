@@ -148,6 +148,7 @@ import PostBlock from "@/components/PostBlock.vue"; // @ is an alias to /src
 import axios from "axios";
 import { State } from "vuex-class";
 import { ToggleButton } from "vue-js-toggle-button";
+import config from "../config";
 
 @Component({
     components: {
@@ -194,7 +195,7 @@ export default class Administration extends Vue {
     protected async deleteUser(user) {
         try {
             let { data } = await axios.post(
-                `http://localhost:3000/admindeleteuser/${user.username}`,
+                `${config.apiUrl}/admindeleteuser/${user.username}`,
                 {},
                 { withCredentials: true }
             );
@@ -236,7 +237,7 @@ export default class Administration extends Vue {
         console.log("mememem")
         try {
             let { data } = await axios.post(
-                "http://localhost:3000/setuserpermissions",
+                `${config.apiUrl}/setuserpermissions`,
                 {
                     username: user.username,
                     permissionLevel: user.permissionLevel
@@ -266,7 +267,7 @@ export default class Administration extends Vue {
     protected async saveSettings() {
         try {
             let { data } = await axios.post(
-                "http://localhost:3000/settingdata",
+                `${config.apiUrl}/settingdata`,
                 {
                     limitCommentLength: this.limitCommentLength,
                     commentMaxLength: this.commentMaxLength,
@@ -298,7 +299,7 @@ export default class Administration extends Vue {
     protected async getSettings() {
         try {
             let { data } = await axios.get(
-                "http://localhost:3000/settingdata",
+                `${config.apiUrl}/settingdata`,
                 { withCredentials: true }
             );
             this.limitCommentLength = data.limitCommentLength;
@@ -317,7 +318,7 @@ export default class Administration extends Vue {
     protected async getUsers() {
         try {
             let { data } = await axios.get(
-                `http://localhost:3000/administration/${this.userPageNum}`,
+                `${config.apiUrl}/administration/${this.userPageNum}`,
                 { withCredentials: true }
             );
             if (this.userPageNum === 1) {

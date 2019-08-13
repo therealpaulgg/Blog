@@ -178,6 +178,7 @@ import PostBlock from "../components/PostBlock.vue";
 import Comment from "../components/Comment.vue";
 import { PostModel } from "../models/post";
 import { CommentModel } from "../models/comment";
+import config from "../config";
 
 @Component({
     components: {
@@ -272,7 +273,7 @@ export default class Profile extends Vue {
         try {
             console.log("fach")
             const { data } = await axios.post(
-                "http://localhost:3000/changeemail",
+                `${config.apiUrl}/changeemail`,
                 { email: this.email },
                 { withCredentials: true }
             );
@@ -300,7 +301,7 @@ export default class Profile extends Vue {
         if (this.password === this.confirmPassword) {
             try {
                 const { data } = await axios.post(
-                    "http://localhost:3000/changepassword",
+                    `${config.apiUrl}/changepassword`,
                     {
                         username: this.username,
                         password: this.password,
@@ -337,7 +338,7 @@ export default class Profile extends Vue {
     protected async submitBio() {
         try {
             const { data } = await axios.post(
-                "http://localhost:3000/updatebio",
+                `${config.apiUrl}/updatebio`,
                 {
                     bio: this.bio,
                     username: this.username
@@ -375,7 +376,7 @@ export default class Profile extends Vue {
     protected async postData() {
         try {
             const { data } = await axios.get(
-                `http://localhost:3000/userposts/${this.user}/${this.postPage}`
+                `${config.apiUrl}/userposts/${this.user}/${this.postPage}`
             );
             if (this.postPage === 1) {
                 this.postPages = data.pages;
@@ -395,7 +396,7 @@ export default class Profile extends Vue {
     protected async commentData() {
         try {
             const { data } = await axios.get(
-                `http://localhost:3000/usercomments/${this.user}/${this.postPage}`
+                `${config.apiUrl}/usercomments/${this.user}/${this.postPage}`
             );
             if (this.commentPage === 1) {
                 this.commentPages = data.pages;
@@ -417,7 +418,7 @@ export default class Profile extends Vue {
                 this.user = this.username;
             }
             const { data } = await axios.get(
-                `http://localhost:3000/profile/${this.user}`
+                `${config.apiUrl}/profile/${this.user}`
             );
             this.user = data.username;
             this.gravatarUrl = data.gravatarUrl;

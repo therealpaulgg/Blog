@@ -38,6 +38,8 @@ import { Component, Vue, Prop } from "vue-property-decorator";
 import axios from "axios";
 import { Action } from "vuex-class";
 
+import config from "../config";
+
 @Component
 export default class ResetPassword extends Vue {
     @Prop() token: string;
@@ -66,7 +68,7 @@ export default class ResetPassword extends Vue {
         if (this.token != null) {
             try {
                 let { data } = await axios.get(
-                    `http://localhost:3000/resetpassword/${this.token}`
+                    `${config.apiUrl}/resetpassword/${this.token}`
                 );
                 this.username = data.username;
                 this.email = data.email;
@@ -93,7 +95,7 @@ export default class ResetPassword extends Vue {
         if (this.password === this.confirmPassword) {
             try {
                 let { data } = await axios.post(
-                    `http://localhost:3000/resetpassword/${this.token}`,
+                    `${config.apiUrl}/resetpassword/${this.token}`,
                     { password: this.password }
                 );
                 this.$store.dispatch("addAlert", {

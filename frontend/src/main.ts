@@ -5,6 +5,7 @@ import store from "./store/store";
 import BootstrapVue from "bootstrap-vue";
 import VueShortkey from "vue-shortkey";
 import axios from "axios";
+import config from "./config";
 
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -139,7 +140,7 @@ router.beforeEach(async (to, from, next) => {
         }
     } else if (to.matched.some((record) => record.meta.initialSetup)) {
         try {
-            const { data } = await axios.get("http://localhost:3000/cansetup");
+            const { data } = await axios.get(`${config.apiUrl}/cansetup`);
             const canSetup = data.canSetup;
             if (!canSetup) {
                 next("/");
@@ -151,7 +152,7 @@ router.beforeEach(async (to, from, next) => {
         }
     } else if (to.matched.some((record) => record.meta.canPost)) {
         try {
-            const { data } = await axios.get("http://localhost:3000/canpost", { withCredentials: true });
+            const { data } = await axios.get(`${config.apiUrl}/canpost`, { withCredentials: true });
             const canPost = data.canPost;
             if (!canPost) {
                 next("/");
@@ -163,7 +164,7 @@ router.beforeEach(async (to, from, next) => {
         }
     } else if (to.matched.some((record) => record.meta.isAdmin)) {
         try {
-            const { data } = await axios.get("http://localhost:3000/isadmin", { withCredentials: true });
+            const { data } = await axios.get(`${config.apiUrl}/isadmin`, { withCredentials: true });
             const isAdmin = data.isAdmin;
             if (!isAdmin) {
                 next("/");

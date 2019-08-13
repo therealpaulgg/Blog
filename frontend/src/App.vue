@@ -66,6 +66,7 @@ import { Component, Vue } from "vue-property-decorator";
 import Cookies from "js-cookie";
 import BootstrapVue from "bootstrap-vue";
 import axios from "axios";
+import config from "./config";
 
 @Component
 export default class App extends Vue {
@@ -124,7 +125,7 @@ export default class App extends Vue {
                     setTimeout(async () => {
                         try {
                             await axios.post(
-                                "http://localhost:3000/renew-jwt",
+                                `${config.apiUrl}/renew-jwt`,
                                 {},
                                 { withCredentials: true }
                             );
@@ -143,7 +144,7 @@ export default class App extends Vue {
                     }, timeout - delay);
                 } else {
                     await axios.post(
-                        "http://localhost:3000/renew-jwt",
+                        `${config.apiUrl}/renew-jwt`,
                         {},
                         { withCredentials: true }
                     );

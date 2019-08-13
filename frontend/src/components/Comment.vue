@@ -36,6 +36,7 @@ import { CommentModel } from "../models/comment";
 import moment from "moment";
 import { md } from "../mdparser";
 import axios from "axios";
+import config from "../config";
 
 @Component
 export default class Comment extends Vue {
@@ -77,7 +78,7 @@ export default class Comment extends Vue {
     protected async deleteComment() {
         try {
             let { data } = await axios.post(
-                "http://localhost:3000/deletecomment",
+                `${config.apiUrl}/deletecomment`,
                 { id: this.comment.id },
                 { withCredentials: true }
             );

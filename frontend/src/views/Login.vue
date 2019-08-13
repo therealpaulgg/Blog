@@ -34,6 +34,7 @@ import { Component, Vue } from "vue-property-decorator";
 import PostBlock from "@/components/PostBlock.vue"; // @ is an alias to /src
 import axios from "axios";
 import { Action } from "vuex-class";
+import config from "../config";
 // import GSigninButton from "vue-google-signin-button";
 
 @Component
@@ -82,7 +83,7 @@ export default class Home extends Vue {
     protected authenticate() {
         axios
             .post(
-                "http://localhost:3000/login",
+                `${config.apiUrl}/login`,
                 { username: this.username, password: this.password },
                 { withCredentials: true }
             )

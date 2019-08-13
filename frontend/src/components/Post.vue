@@ -168,6 +168,7 @@ import Comment from "./Comment.vue";
 import Editor from "./Editor.vue";
 import Preview from "./Preview.vue";
 import { md } from "../mdparser";
+import config from "../config";
 
 @Component({
     components: {
@@ -239,7 +240,7 @@ export default class Post extends Vue {
     protected del() {
         axios
             .post(
-                "http://localhost:3000/deletepost",
+                `${config.apiUrl}/deletepost`,
                 { id: this.id },
                 { withCredentials: true }
             )
@@ -329,7 +330,7 @@ export default class Post extends Vue {
     protected async makeEdits() {
         try {
             const { data } = await axios.post(
-                "http://localhost:3000/editpost",
+                `${config.apiUrl}/editpost`,
                 {
                     id: this.id,
                     urlTitle: this.title,
@@ -372,7 +373,7 @@ export default class Post extends Vue {
     protected async postComment() {
         try {
             await axios.post(
-                "http://localhost:3000/comment",
+                `${config.apiUrl}/comment`,
                 { urlTitle: this.title, content: this.commentContent },
                 { withCredentials: true }
             );
@@ -415,13 +416,13 @@ export default class Post extends Vue {
 
     protected async loadComments() {
         const { data }: { data: PostModel } = await axios.get(
-            `http://localhost:3000/post/${this.id}/${this.title}/${this.currentPage}`
+            `${config.apiUrl}/post/${this.id}/${this.title}/${this.currentPage}`
         );
         this.commentCount = data.commentCount;
         this.comments = [];
         for (let i = 1; i <= this.currentPage; i++) {
             const comments = (await axios.get(
-                `http://localhost:3000/post/${this.id}/${this.title}/${i}`
+                `${config.apiUrl}/post/${this.id}/${this.title}/${i}`
             )).data.comments;
             for (const comment of comments) {
                 this.comments.push(comment);
@@ -490,7 +491,7 @@ export default class Post extends Vue {
     protected async fetchData() {
         try {
             const { data }: { data: PostModel } = await axios.get(
-                `http://localhost:3000/post/${this.id}/${this.title}/${this.currentPage}`
+                `${config.apiUrl}/post/${this.id}/${this.title}/${this.currentPage}`
             );
             this.header = data.title;
             this.content = data.content;

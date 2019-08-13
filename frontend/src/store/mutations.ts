@@ -2,6 +2,7 @@ import { State } from "@/models/state";
 import axios from "axios";
 import { PostModel } from "@/models/post";
 import { Alert } from "@/models/alert";
+import config from "../config";
 import Cookies from "js-cookie";
 
 export default {
@@ -18,7 +19,7 @@ export default {
         Cookies.remove("expiration", { domain: "localhost" });
     },
     async FETCH_POSTS(state: State, page: number) {
-        const { data } = await axios.get(`http://localhost:3000/posts/${page}`);
+        const { data } = await axios.get(`${config.apiUrl}/posts/${page}`);
         if (page === 1) {
             state.posts = data.posts as PostModel[];
             state.pages = data.pages as number;
@@ -30,7 +31,7 @@ export default {
         }
     },
     async FETCH_TAG_POSTS(state: State, payload: {page: number, tag: string}) {
-        const { data } = await axios.get(`http://localhost:3000/tag/${payload.tag}/${payload.page}`);
+        const { data } = await axios.get(`${config.apiUrl}/tag/${payload.tag}/${payload.page}`);
         if (payload.page === 1) {
             state.tagPosts = data.posts as PostModel[];
             state.tagPages = data.pages as number;
