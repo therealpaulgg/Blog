@@ -32,7 +32,7 @@
                         <font-awesome-icon icon="comments"></font-awesome-icon>
                         {{commentCount}}
                     </span>
-                    <span v-if="isAuthenticated && user === username" style="float: right">
+                    <span v-if="isAuthenticated && (user === username || isAdmin)" style="float: right">
                         <a @click="del" class="delete metaelement" :class="getTheme">Delete</a>
                         <a @click="edit" class="edit metaelement" :class="getTheme">Edit</a>
                     </span>
@@ -281,6 +281,10 @@ export default class Post extends Vue {
         return this.$store.getters.getTheme;
     }
 
+    get isAdmin() {
+        return this.$store.state.isAdmin;
+    }
+
     get username() {
         return this.$store.state.username;
     }
@@ -349,7 +353,7 @@ export default class Post extends Vue {
             });
             this.editing = false;
             this.$router.push(`/posts/${this.id}/${newUrlTitle}`);
-            this.fetchData();
+            // this.fetchData();
         } catch (err) {
             if (err.response.status === 401) {
                 this.$store.dispatch("forceLogout");

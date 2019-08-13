@@ -8,7 +8,6 @@ export default {
     },
     login({ commit, dispatch }: { commit: any, dispatch: any }) {
         commit("LOGIN");
-        dispatch("determineTokenRefreshInterval");
     },
     forceLogout({ commit }: { commit: any }) {
         commit("LOGOUT");

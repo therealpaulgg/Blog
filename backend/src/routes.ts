@@ -11,10 +11,17 @@ import md5 from "md5";
 import { Tag } from "./entity/Tag";
 import Mail from "./services/mail";
 import { Permissions } from "./services/permissions";
-import { encodeXText } from "nodemailer/lib/shared";
 import { SettingsService } from "./services/settings";
 
 let settings: SettingsService | null = null
+
+let domainStr = ""
+if (process.env.ENVIRONMENT === "staging" || process.env.ENVIRONMENT === "prod") {
+    domainStr = "paulgellai.dev"
+} else {
+    domainStr = "localhost"
+}
+console.log(domainStr)
 
 // must be done in same scope as app
 createConnection().then(() => settings = new SettingsService())
@@ -60,17 +67,17 @@ router.get("/tag/:tag/:pageNum", async (req, res) => {
             const postRepo = getConnection().getRepository(Post)
             let data: any[] = await postRepo.query(
                 `
-                select p.id as postId, p.createdAt, p.updatedAt, p.urlTitle, p.title, t.id as tagId, t.tagStr, u.id, u.username
-                from post_tags_tag pt, tag t, user u,
+                select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, t.id as "tagId", t."tagStr", u.id, u.username
+                from post_tags_tag pt, tag t, "user" u,
                     (select p.*
                      from post p, post_tags_tag pt, tag t
-                     where p.id = pt.postid 
-                       and pt.tagid = t.id
-                       and t.tagstr = ?) p
-                where p.id = pt.postid 
-                  and t.id = pt.tagid
-                  and u.id = p.userid
-                ORDER BY p.createdAt DESC;
+                     where p.id = pt."postId" 
+                       and pt."tagId" = t.id
+                       and t."tagStr" = $1) p
+                where p.id = pt."postId" 
+                  and t.id = pt."tagId"
+                  and u.id = p."userId"
+                ORDER BY p."createdAt" DESC;
                 `,
                 [tag]
             )
@@ -107,6 +114,7 @@ router.get("/tag/:tag/:pageNum", async (req, res) => {
             })
         }
     } catch (err) {
+        console.log(err)
         res.status(500).send({
             error: "Something went wrong."
         })
@@ -173,7 +181,7 @@ router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
         const postsPerPage = 10
         const postRepo = getConnection().getRepository(Comment)
         const qb = postRepo.createQueryBuilder("c")
-            .where("c.postId = :postId", { postId })
+            .where("c.\"postId\" = :postId", { postId })
             .leftJoinAndSelect("c.user", "user")
             .orderBy("c.createdAt", "DESC")
             .skip((pageNum - 1) * postsPerPage)
@@ -330,7 +338,7 @@ router.get("/userposts/:username/:page", async (req, res) => {
             let page = req.params.page
             const postRepo = getConnection().getRepository(Post)
             const qb = postRepo.createQueryBuilder("p")
-                .where("p.userId = :userId", { userId: user.id })
+                .where("p.\"userId\" = :userId", { userId: user.id })
                 .leftJoinAndSelect("p.tags", "tag")
                 .orderBy("p.createdAt", "DESC")
                 .skip((page - 1) * postsPerPage)
@@ -363,9 +371,11 @@ router.get("/userposts/:username/:page", async (req, res) => {
             })
         }
 
-    } catch {
+    } catch (err) {
+        console.log(err)
         res.status(500).send({
-            error: "Something went wrong."
+            error: "Something went wrong.",
+            obj: err
         })
     }
 })
@@ -461,7 +471,6 @@ router.get("/administration/:page", checkAuth, checkPermissions, async (req, res
             error: "Invalid page number."
         })
     }
-
 })
 
 router.get("/resetpassword/:token", (req, res) => {
@@ -727,7 +736,7 @@ router.post("/resetpasswordreq", async (req, res) => {
                     `<p>Hello ${user.username},</p>
                 <p>Someone has requested a reset to your password.</p>
                 <p>If this was you, click on the following link or copy it into your browser:</p>
-                <p><a href='http://localhost:8080/resetpassword/${token}'>${config.apiUrl}/resetpassword/${token}</a></p>
+                <p><a href='http://localhost:8080/resetpassword/${token}'>http://localhost:8080/resetpassword/${token}</a></p>
                 <p>This token will expire in 30 minutes.</p>
                 
                 <p>If this was not you, you can ignore this email.</p>
@@ -909,8 +918,8 @@ router.post("/newpost", checkAuth, checkPermissions, async (req, res) => {
 router.post("/editpost", checkAuth, checkPermissions, async (req, res) => {
     let connection = getConnection()
     try {
-        let post = await connection.manager.findOne(Post, { id: req.body.id }, { relations: ["user"] })
-        if (post.user.username === res.locals.user) {
+        let post = await connection.manager.findOne(Post, { id: req.body.id }, { relations: ["user", "user.permissionBlock"] })
+        if (post.user.username === res.locals.user || post.user.permissionBlock.permissionLevel >= 2) {
             let title = req.body.newTitle
             post.title = title
             post.content = req.body.newContent
@@ -1010,8 +1019,8 @@ router.post("/register", async (req, res) => {
 
 router.post("/deletepost", checkAuth, checkPermissions, async (req, res) => {
     let connection = getConnection()
-    connection.manager.findOne(Post, { id: req.body.id }, { relations: ["user", "comments", "tags"] }).then(async (post) => {
-        if (post.user.username === res.locals.user) {
+    connection.manager.findOne(Post, { id: req.body.id }, { relations: ["user", "comments", "tags", "user.permissionBlock"] }).then(async (post) => {
+        if (post.user.username === res.locals.user || post.user.permissionBlock.permissionLevel >= 2) {
             if (post.comments) {
                 await connection.manager.remove(post.comments)
             }
@@ -1069,9 +1078,9 @@ router.post("/login", async (req, res) => {
             if (await argon2.verify(user.password_hash, password)) {
                 let token = jwt.sign({ username }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
                 let age = 30 * 60 * 1000
-                res.cookie("auth", token, { maxAge: age })
+                res.cookie("auth", token, { maxAge: age, domain: domainStr })
                 let date = new Date(new Date().getTime() + age).getTime();
-                res.cookie("expiration", date, { maxAge: age })
+                res.cookie("expiration", date, { maxAge: age, domain: domainStr })
                 let personalizedLoginMsg = user.permissionBlock.permissionLevel >= 3 ? "Welcome, admin :)" : ""
                 res.send({
                     username,
@@ -1101,9 +1110,9 @@ router.post("/login", async (req, res) => {
 router.post("/renew-jwt", checkAuth, (req, res) => {
     let token = jwt.sign({ username: res.locals.user }, "VERYSECRETKEY", { expiresIn: 60 * 30 });
     let age = 30 * 60 * 1000;
-    res.cookie("auth", token, { maxAge: age });
+    res.cookie("auth", token, { maxAge: age, domain: domainStr });
     let date = new Date(new Date().getTime() + age).getTime();
-    res.cookie("expiration", date, { maxAge: age });
+    res.cookie("expiration", date, { maxAge: age, domain: domainStr });
     res.send({
         success: "JWT renewed"
     });
