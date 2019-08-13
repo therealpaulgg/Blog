@@ -421,6 +421,7 @@ export default class Profile extends Vue {
                 `${config.apiUrl}/profile/${this.user}`
             );
             this.user = data.username;
+            document.title = `${this.user} | Blog`
             this.gravatarUrl = data.gravatarUrl;
             this.createdAt = moment
                 .utc(data.createdAt)

@@ -18,4 +18,5 @@ export interface State {
     tags: string;
     tagPosts: PostModel[];
     tagPages: number;
+    title: string;
 }

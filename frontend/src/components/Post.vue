@@ -361,7 +361,11 @@ export default class Post extends Vue {
                 alertText: msg
             });
             this.editing = false;
-            this.$router.push(`/posts/${this.id}/${newUrlTitle}`);
+            if (newUrlTitle === this.title) {
+                this.fetchData()
+            } else {
+                this.$router.push(`/posts/${this.id}/${newUrlTitle}`);
+            }
         } catch (err) {
             if (err.response.status === 401) {
                 this.$store.dispatch("forceLogout");
@@ -513,6 +517,9 @@ export default class Post extends Vue {
                 { withCredentials: true }
             );
             this.header = data.title;
+            document.title = `${this.header} | Blog`;
+            // this.$store.dispatch("updateTitle", this.header);
+            // this.$router.after
             this.content = data.content;
             this.user = data.username;
             this.pages = data.pages;
@@ -521,6 +528,7 @@ export default class Post extends Vue {
             this.commentLimit = data.commentLimit;
             this.commentLimitVal = data.commentLimitVal;
             this.editPerms = data.requiredManagePerms;
+            this.editingTags = "";
             this.tags.forEach(tag => (this.editingTags += `#${tag} `));
             false;
             if (this.currentPage === 1) {
