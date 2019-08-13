@@ -45,7 +45,7 @@ export default class ResetPassword extends Vue {
     protected async sendReset() {
         if (this.email.length > 0) {
             try {
-                let { data } = await axios.post(
+                const { data } = await axios.post(
                     `${config.apiUrl}/resetpasswordreq`,
                     { email: this.email }
                 )

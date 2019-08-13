@@ -42,7 +42,7 @@ import config from "../config"
 
 @Component
 export default class ResetPassword extends Vue {
-    @Prop() token: string
+    @Prop() protected token: string
     protected username: string
     protected email: string
     protected password: string
@@ -67,7 +67,7 @@ export default class ResetPassword extends Vue {
     protected async getResetData() {
         if (this.token != null) {
             try {
-                let { data } = await axios.get(
+                const { data } = await axios.get(
                     `${config.apiUrl}/resetpassword/${this.token}`
                 )
                 this.username = data.username
@@ -94,7 +94,7 @@ export default class ResetPassword extends Vue {
     protected async postResetData() {
         if (this.password === this.confirmPassword) {
             try {
-                let { data } = await axios.post(
+                const { data } = await axios.post(
                     `${config.apiUrl}/resetpassword/${this.token}`,
                     { password: this.password }
                 )

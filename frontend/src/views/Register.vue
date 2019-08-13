@@ -4,20 +4,39 @@
             <b-row>
                 <b-col lg="4">
                     <b-input-group size="sm" prepend="Username">
-                        <b-form-input class="ifield" v-model="username" v-on:keyup.enter="register" />
+                        <b-form-input
+                            class="ifield"
+                            v-model="username"
+                            v-on:keyup.enter="register"
+                        />
                     </b-input-group>
                     <br />
                     <b-input-group size="sm" prepend="Email">
-                        <b-form-input class="ifield" v-model="email" type="email" v-on:keyup.enter="register" />
+                        <b-form-input
+                            class="ifield"
+                            v-model="email"
+                            type="email"
+                            v-on:keyup.enter="register"
+                        />
                     </b-input-group>
                     <br />
                     <b-input-group size="sm" prepend="Password">
-                        <b-form-input class="ifield" v-model="password" type="password" v-on:keyup.enter="register" />
+                        <b-form-input
+                            class="ifield"
+                            v-model="password"
+                            type="password"
+                            v-on:keyup.enter="register"
+                        />
                     </b-input-group>
                     <br />
                     <b-input-group size="sm" prepend="Confirm Password">
-                        <b-form-input class="ifield" v-model="confirmPassword" type="password" v-on:keyup.enter="register" />
-                    </b-input-group>
+                        <b-form-input
+                            class="ifield"
+                            v-model="confirmPassword"
+                            type="password"
+                            v-on:keyup.enter="register"
+                        />
+                    </b-input-group> 
                     <br />
                     <b-input-group size="sm">
                         <b-button :variant="theme" @click="register">Register</b-button>
@@ -68,7 +87,7 @@ export default class Register extends Vue {
                     { withCredentials: true }
                 )
                 try {
-                    let { data } = await axios.post(
+                    const { data } = await axios.post(
                         `${config.apiUrl}/login`,
                         { username: this.username, password: this.password },
                         { withCredentials: true }
@@ -87,7 +106,8 @@ export default class Register extends Vue {
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
                         alertText:
-                            "You have been registered, but there was a problem logging in automatically. Please log in manually."
+                            "You have been registered, but there was " +
+                            "a problem logging in automatically. Please log in manually."
                     })
                 }
             } catch (err) {

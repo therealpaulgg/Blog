@@ -59,7 +59,7 @@ export default class Tags extends Vue {
 
     protected async getData() {
         try {
-            let { data } = await axios.get(
+            const { data } = await axios.get(
                 `${config.apiUrl}/tags/${this.currentPage}`
             )
             this.pages = data.pages
@@ -70,8 +70,18 @@ export default class Tags extends Vue {
                     this.tags.push(tag)
                 }
             }
-        } catch {
-            console.log("f")
+        } catch (err) {
+            if (err.response) {
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: err.response.data.error
+                })
+            } else {
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: "An unknown error occurred."
+                })
+            }
         }
     }
 }

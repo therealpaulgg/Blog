@@ -263,5 +263,5 @@ md.use(markdownItAttrs, {
 md.renderer.rules.emoji = (token, idx) => twemoji.parse(token[idx].content)
 md.use(mentions, {
   parseURL: (username) => `/profile/${username}`,
-  external: true 
+  external: true
 })

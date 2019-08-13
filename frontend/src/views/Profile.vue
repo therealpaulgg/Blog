@@ -271,7 +271,6 @@ export default class Profile extends Vue {
 
     protected async submitEmailChange() {
         try {
-            console.log("fach")
             const { data } = await axios.post(
                 `${config.apiUrl}/changeemail`,
                 { email: this.email },
@@ -383,7 +382,6 @@ export default class Profile extends Vue {
                 this.posts = data.posts
             } else {
                 const posts = data.posts as PostModel[]
-                console.log(this.posts)
                 for (const post of posts) {
                     this.posts.push(post)
                 }

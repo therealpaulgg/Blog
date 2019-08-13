@@ -69,7 +69,7 @@ export default class InitialSetup extends Vue {
                 },
                 { withCredentials: true }
             )
-            let { data } = await axios.post(
+            const { data } = await axios.post(
                 `${config.apiUrl}/login`,
                 { username: this.username, password: this.password },
                 { withCredentials: true }

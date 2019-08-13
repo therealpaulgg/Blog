@@ -30,7 +30,7 @@ import { State } from "vuex-class"
     }
 })
 export default class TagAndPosts extends Vue {
-    @Prop(String) tag: string 
+    @Prop(String) protected tag: string
     protected pageNum: number
 
     constructor() {

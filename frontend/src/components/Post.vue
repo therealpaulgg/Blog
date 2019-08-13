@@ -127,7 +127,9 @@
                         style="padding-top: 15px"
                     >
                         Characters used: {{commentContent.length}}
-                        <span v-if="commentLimit">/ {{commentLimitVal}}</span>
+                        <span
+                            v-if="commentLimit"
+                        >/ {{commentLimitVal}}</span>
                     </p>
                     <div class="row">
                         <div class="col">
@@ -186,8 +188,8 @@ import config from "../config"
 })
 export default class Post extends Vue {
     public $refs: {
-        container: HTMLDivElement
-        eContainer: HTMLDivElement
+        container: HTMLDivElement;
+        eContainer: HTMLDivElement;
     }
     protected header: string | null
     protected content: string | null
@@ -253,7 +255,7 @@ export default class Post extends Vue {
                 { id: this.id },
                 { withCredentials: true }
             )
-            .then(res => {
+            .then((res) => {
                 this.$store.dispatch("fetchPosts", 1)
                 this.$store.dispatch("addAlert", {
                     alertType: "success",
@@ -261,7 +263,7 @@ export default class Post extends Vue {
                 })
                 this.$router.push("/")
             })
-            .catch(err => {
+            .catch((err) => {
                 if (err.response) {
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
@@ -353,8 +355,8 @@ export default class Post extends Vue {
                 },
                 { withCredentials: true }
             )
-            let newUrlTitle = data.newUrlTitle
-            let msg = data.success
+            const newUrlTitle = data.newUrlTitle
+            const msg = data.success
             this.editContent = ""
             this.$store.dispatch("addAlert", {
                 alertType: "success",
@@ -390,7 +392,11 @@ export default class Post extends Vue {
         try {
             await axios.post(
                 `${config.apiUrl}/comment`,
-                { id: this.id, urlTitle: this.title, content: this.commentContent },
+                {
+                    id: this.id,
+                    urlTitle: this.title,
+                    content: this.commentContent
+                },
                 { withCredentials: true }
             )
             this.commentContent = ""
@@ -478,18 +484,20 @@ export default class Post extends Vue {
     }
 
     get parsedTags() {
-        let re = /(^|\s)(#[a-z\d-_]+)/g,
-            match
-        let foo = []
+        const re = /(^|\s)(#[a-z\d-_]+)/g
+        let match
+        const foo = []
         while ((match = re.exec(this.editingTags))) {
-            if (!foo.find(thing => thing === match[2])) foo.push(match[2])
+            if (!foo.find((thing) => thing === match[2])) {
+                foo.push(match[2])
+            }
         }
         return foo
     }
 
     // substring MAGIC
     protected removeTag(tag: string) {
-        let index = (this.editingTags as string).indexOf(tag)
+        const index = (this.editingTags as string).indexOf(tag)
         this.editingTags =
             (this.editingTags as string).substring(0, index) +
             (this.editingTags as string).substring(
@@ -529,8 +537,7 @@ export default class Post extends Vue {
             this.commentLimitVal = data.commentLimitVal
             this.editPerms = data.requiredManagePerms
             this.editingTags = ""
-            this.tags.forEach(tag => (this.editingTags += `#${tag} `))
-            false
+            this.tags.forEach((tag) => (this.editingTags += `#${tag} `))
             if (this.currentPage === 1) {
                 this.comments = []
             }

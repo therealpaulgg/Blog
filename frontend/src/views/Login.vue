@@ -54,17 +54,16 @@ export default class Home extends Vue {
         this.password = ""
     }
 
-    protected gOauthSuccess() {
-        console.log("Success!")
-    }
+    // maybe one day
 
-    protected gOauthError() {
-        console.log("error!")
-    }
+    // protected gOauthSuccess() {
+    // }
 
-    protected onSuccess() {
-        console.log("success?")
-    }
+    // protected gOauthError() {
+    // }
+
+    // protected onSuccess() {
+    // }
 
     protected get theme() {
         return this.$store.getters.getTheme
@@ -98,7 +97,7 @@ export default class Home extends Vue {
                     })
                 this.$router.push("/")
             })
-            .catch(err => {
+            .catch((err) => {
                 if (err.response != null) {
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",

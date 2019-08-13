@@ -1,3 +1,4 @@
 {
-    "sqltools.connections": []
+    "vetur.format.defaultFormatter.ts": "prettier-tslint",
+    "vetur.format.options.tabSize": 4
 }

@@ -4,7 +4,7 @@
         :class="{'light': getTheme === 'light', 'dark': getTheme === 'dark', 'condensed': condensed}"
         @click="goToPost"
     >
-        <div class="lessnoticed" >
+        <div class="lessnoticed">
             <span v-if="!condensed">
                 by
                 <b v-if="username === author">
@@ -40,6 +40,18 @@ import moment from "moment"
 
 @Component
 export default class PostBlock extends Vue {
+
+    get date() {
+        return `${moment
+            .utc(this.createdAt)
+            .local()
+            .format("MM/DD/YYYY, HH:mm")}, ${moment.utc(this.createdAt).fromNow()}`
+    }
+
+    get username() {
+        return this.$store.state.username
+    }
+    @Prop() public condensed: boolean
     @Prop(Number) protected readonly id!: number
     @Prop(String) protected readonly title!: string
     @Prop(String) protected readonly content!: string
@@ -48,21 +60,7 @@ export default class PostBlock extends Vue {
     @Prop(String) protected readonly createdAt: string
     @Prop(String) protected readonly updatedAt: string
     @Prop() protected readonly tags: string[]
-    @Prop() condensed: boolean
     @Getter("getTheme") private getTheme: string
-
-    get date() {
-        return `${moment
-            .utc(this.createdAt)
-            .local()
-            .format("MM/DD/YYYY, HH:mm")}, ${moment
-            .utc(this.createdAt)
-            .fromNow()}`
-    }
-
-    get username() {
-        return this.$store.state.username
-    }
 
     protected fooBar(tag) {
         this.$router.push(`/tag/${tag}`)

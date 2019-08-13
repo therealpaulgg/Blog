@@ -1,5 +1,10 @@
 <template>
-    <div class="comment" :class="{'light': getTheme === 'light', 'dark': getTheme === 'dark', 'condensed': condensed}" v-if="alive" @click="gotoPost(comment.postId, comment.postUrlTitle)">
+    <div
+        class="comment"
+        :class="{'light': getTheme === 'light', 'dark': getTheme === 'dark', 'condensed': condensed}"
+        v-if="alive"
+        @click="gotoPost(comment.postId, comment.postUrlTitle)"
+    >
         <div class="metadata">
             <span class="metaelement" v-if="comment != null && !condensed">
                 By:
@@ -40,70 +45,69 @@ import config from "../config"
 
 @Component
 export default class Comment extends Vue {
-    @Prop() protected comment: CommentModel
-    @Prop() protected ownsPost: boolean
-    @Prop() protected condensed: boolean
-    @Prop() protected editPerms: boolean
-    protected alive: boolean
-    protected renderedContent: string
-    protected repliesCount: number | null
-    @Getter("getTheme") private getTheme: string
+  @Prop() protected comment: CommentModel
+  @Prop() protected ownsPost: boolean
+  @Prop() protected condensed: boolean
+  @Prop() protected editPerms: boolean
+  protected alive: boolean
+  protected renderedContent: string
+  protected repliesCount: number | null
+  @Getter("getTheme") private getTheme: string
 
-    constructor() {
-        super()
-        console.log(this.editPerms)
-        this.alive = true
-        this.repliesCount = null
-        this.renderedContent =
-            this.comment != null ? md.render(this.comment.content) : null
-    }
+  constructor() {
+    super()
+    this.alive = true
+    this.repliesCount = null
+    this.renderedContent =
+      this.comment != null ? md.render(this.comment.content) : null
+  }
 
-    get date() {
-        return this.comment
-            ? moment
-                  .utc(this.comment.createdAt)
-                  .local()
-                  .format("MM/DD/YYYY, HH:mm")
-            : null
-    }
+  get date() {
+    return this.comment
+      ? moment
+          .utc(this.comment.createdAt)
+          .local()
+          .format("MM/DD/YYYY, HH:mm")
+      : null
+  }
 
-    get timeSince() {
-        return this.comment ? moment(this.comment.createdAt).fromNow() : null
-    }
+  get timeSince() {
+    return this.comment ? moment(this.comment.createdAt).fromNow() : null
+  }
 
-    protected gotoPost(id, urlTitle) {
-        if (this.condensed) {
-            this.$router.push(`/posts/${id}/${urlTitle}`)
-        }
+  protected gotoPost(id, urlTitle) {
+    if (this.condensed) {
+      this.$router.push(`/posts/${id}/${urlTitle}`)
     }
+  }
 
-    protected async deleteComment() {
-        try {
-            let { data } = await axios.post(
-                `${config.apiUrl}/deletecomment`,
-                { id: this.comment.id },
-                { withCredentials: true }
-            )
-            this.$store.dispatch("addAlert", {
-                alertType: "success",
-                alertText: data.success
-            })
-            this.$emit("deletedComment")
-            this.alive = false
-        } catch (err) {
-            if (err.response) {
-                this.$store.dispatch("addAlert", {
-                    alertType: "danger",
-                    alertText: err.response.data.error
-                })
-            } else {
-                this.$store.dispatch("addAlert", {
-                    alertType: "danger",
-                    alertText: "Something went wrong."
-                })
-            }
-        }
+  protected async deleteComment() {
+    try {
+      const { data } = await axios.post(
+        `${config.apiUrl}/deletecomment`,
+        { id: this.comment.id },
+        { withCredentials: true }
+      )
+      this.$store.dispatch("addAlert", {
+        alertType: "success",
+        alertText: data.success
+      })
+      this.$emit("deletedComment")
+      this.alive = false
+    } catch (err) {
+      if (err.response) {
+        this.$store.dispatch("addAlert", {
+          alertType: "danger",
+          alertText: err.response.data.error
+        })
+      } else {
+        this.$store.dispatch("addAlert", {
+          alertType: "danger",
+          alertText: "Something went wrong."
+        })
+      }
     }
+  }
 }
 </script>
 

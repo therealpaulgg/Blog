@@ -151,199 +151,197 @@ import { ToggleButton } from "vue-js-toggle-button"
 import config from "../config"
 
 @Component({
-    components: {
-        ToggleButton
-    }
+  components: {
+    ToggleButton
+  }
 })
 export default class Administration extends Vue {
-    protected userPages: number | null
-    protected userPageNum: number
-    protected users: any[]
-    protected limitCommentLength: boolean | null
-    protected commentMaxLength: number | null
-    protected limitPostTitleLength: boolean | null
-    protected postTitleMaxLength: number | null
-    protected registrationEnabled: boolean | null
-    constructor() {
-        super()
-        this.userPageNum = 1
-        this.userPages = null
+  protected userPages: number | null
+  protected userPageNum: number
+  protected users: any[]
+  protected limitCommentLength: boolean | null
+  protected commentMaxLength: number | null
+  protected limitPostTitleLength: boolean | null
+  protected postTitleMaxLength: number | null
+  protected registrationEnabled: boolean | null
+  constructor() {
+    super()
+    this.userPageNum = 1
+    this.userPages = null
+    this.users = []
+    this.limitCommentLength = null
+    this.commentMaxLength = null
+    this.limitPostTitleLength = null
+    this.postTitleMaxLength = null
+    this.registrationEnabled = null
+  }
+
+  protected mounted() {
+    this.getAdminData()
+  }
+
+  get showUserButton() {
+    return this.userPages < this.userPageNum
+  }
+
+  get theme() {
+    return this.$store.getters.getTheme
+  }
+
+  get username() {
+    return this.$store.state.username
+  }
+
+  protected async deleteUser(user) {
+    try {
+      const { data } = await axios.post(
+        `${config.apiUrl}/admindeleteuser/${user.username}`,
+        {},
+        { withCredentials: true }
+      )
+      const index = this.users.findIndex(
+        (looking) => looking.username === user.username
+      )
+      if (index) {
+        this.users.splice(index, 1)
+      }
+      this.$store.dispatch("addAlert", {
+        alerType: "success",
+        alertText: data.success
+      })
+    } catch (err) {
+      if (err.response) {
+        this.$store.dispatch("addAlert", {
+          alerType: "danger",
+          alertText: err.response.data.error
+        })
+      } else {
+        this.$store.dispatch("addAlert", {
+          alerType: "danger",
+          alertText: "There was a problem performing this action."
+        })
+      }
+    }
+  }
+
+  protected gotoUser(username) {
+    this.$router.push(`/profile/${username}`)
+  }
+
+  protected getAdminData() {
+    this.getUsers()
+    this.getSettings()
+  }
+
+  protected async updatePerms(user) {
+    try {
+      const { data } = await axios.post(
+        `${config.apiUrl}/setuserpermissions`,
+        {
+          username: user.username,
+          permissionLevel: user.permissionLevel
+        },
+        { withCredentials: true }
+      )
+      this.$store.dispatch("addAlert", {
+        alerType: "success",
+        alertText: data.success
+      })
+      user.initialPermissionLevel = user.permissionLevel
+    } catch (err) {
+      if (err.response) {
+        this.$store.dispatch("addAlert", {
+          alerType: "danger",
+          alertText: err.response.data.error
+        })
+      } else {
+        this.$store.dispatch("addAlert", {
+          alerType: "danger",
+          alertText: "There was a problem updating permissions."
+        })
+      }
+    }
+  }
+
+  protected async saveSettings() {
+    try {
+      const { data } = await axios.post(
+        `${config.apiUrl}/settingdata`,
+        {
+          limitCommentLength: this.limitCommentLength,
+          commentMaxLength: this.commentMaxLength,
+          limitPostTitleLength: this.limitPostTitleLength,
+          postTitleMaxLength: this.postTitleMaxLength,
+          registrationEnabled: this.registrationEnabled
+        },
+        { withCredentials: true }
+      )
+      this.$store.dispatch("addAlert", {
+        alerType: "success",
+        alertText: data.success
+      })
+    } catch (err) {
+      if (err.response) {
+        this.$store.dispatch("addAlert", {
+          alerType: "danger",
+          alertText: err.response.data.error
+        })
+      } else {
+        this.$store.dispatch("addAlert", {
+          alerType: "danger",
+          alertText: "There was a problem saving your settings."
+        })
+      }
+    }
+  }
+
+  protected async getSettings() {
+    try {
+      const { data } = await axios.get(`${config.apiUrl}/settingdata`, {
+        withCredentials: true
+      })
+      this.limitCommentLength = data.limitCommentLength
+      this.commentMaxLength = data.commentMaxLength
+      this.limitPostTitleLength = data.limitPostTitleLength
+      this.postTitleMaxLength = data.postTitleMaxLength
+      this.registrationEnabled = data.registrationEnabled
+    } catch (err) {
+      this.$store.dispatch("addAlert", {
+        alerType: "danger",
+        alertText: "There was a problem getting some admin data."
+      })
+    }
+  }
+
+  protected async getUsers() {
+    try {
+      const { data } = await axios.get(
+        `${config.apiUrl}/administration/${this.userPageNum}`,
+        { withCredentials: true }
+      )
+      if (this.userPageNum === 1) {
+        this.userPages = data.pages
         this.users = []
-        this.limitCommentLength = null
-        this.commentMaxLength = null
-        this.limitPostTitleLength = null
-        this.postTitleMaxLength = null
-        this.registrationEnabled = null
+      }
+      const users = data.users as Array<{
+        username: string;
+        email: string;
+        postCount: number;
+        commentCount: number;
+        permissionLevel: string;
+        initialPermissionLevel: string | undefined;
+      }>
+      for (const user of users) {
+        user.initialPermissionLevel = user.permissionLevel
+        this.users.push(user)
+      }
+    } catch (err) {
+      this.$store.dispatch("addAlert", {
+        alerType: "danger",
+        alertText: "There was a problem getting some admin data."
+      })
     }
-
-    protected mounted() {
-        this.getAdminData()
-    }
-
-    get showUserButton() {
-        return this.userPages < this.userPageNum
-    }
-
-    get theme() {
-        return this.$store.getters.getTheme
-    }
-
-    get username() {
-        return this.$store.state.username
-    }
-
-    protected async deleteUser(user) {
-        try {
-            let { data } = await axios.post(
-                `${config.apiUrl}/admindeleteuser/${user.username}`,
-                {},
-                { withCredentials: true }
-            )
-            let index = this.users.findIndex(
-                looking => looking.username === user.username
-            )
-            if (index) {
-                this.users.splice(index, 1)
-            }
-            this.$store.dispatch("addAlert", {
-                alerType: "success",
-                alertText: data.success
-            })
-        } catch (err) {
-            if (err.response) {
-                this.$store.dispatch("addAlert", {
-                    alerType: "danger",
-                    alertText: err.response.data.error
-                })
-            } else {
-                this.$store.dispatch("addAlert", {
-                    alerType: "danger",
-                    alertText: "There was a problem performing this action."
-                })
-            }
-        }
-    }
-
-    protected gotoUser(username) {
-        this.$router.push(`/profile/${username}`)
-    }
-
-    protected getAdminData() {
-        this.getUsers()
-        this.getSettings()
-    }
-
-    protected async updatePerms(user) {
-        console.log("mememem")
-        try {
-            let { data } = await axios.post(
-                `${config.apiUrl}/setuserpermissions`,
-                {
-                    username: user.username,
-                    permissionLevel: user.permissionLevel
-                },
-                { withCredentials: true }
-            )
-            this.$store.dispatch("addAlert", {
-                alerType: "success",
-                alertText: data.success
-            })
-            user.initialPermissionLevel = user.permissionLevel
-        } catch (err) {
-            if (err.response) {
-                this.$store.dispatch("addAlert", {
-                    alerType: "danger",
-                    alertText: err.response.data.error
-                })
-            } else {
-                this.$store.dispatch("addAlert", {
-                    alerType: "danger",
-                    alertText: "There was a problem updating permissions."
-                })
-            }
-        }
-    }
-
-    protected async saveSettings() {
-        try {
-            let { data } = await axios.post(
-                `${config.apiUrl}/settingdata`,
-                {
-                    limitCommentLength: this.limitCommentLength,
-                    commentMaxLength: this.commentMaxLength,
-                    limitPostTitleLength: this.limitPostTitleLength,
-                    postTitleMaxLength: this.postTitleMaxLength,
-                    registrationEnabled: this.registrationEnabled
-                },
-                { withCredentials: true }
-            )
-            this.$store.dispatch("addAlert", {
-                alerType: "success",
-                alertText: data.success
-            })
-        } catch (err) {
-            if (err.response) {
-                this.$store.dispatch("addAlert", {
-                    alerType: "danger",
-                    alertText: err.response.data.error
-                })
-            } else {
-                this.$store.dispatch("addAlert", {
-                    alerType: "danger",
-                    alertText: "There was a problem saving your settings."
-                })
-            }
-        }
-    }
-
-    protected async getSettings() {
-        try {
-            let { data } = await axios.get(
-                `${config.apiUrl}/settingdata`,
-                { withCredentials: true }
-            )
-            this.limitCommentLength = data.limitCommentLength
-            this.commentMaxLength = data.commentMaxLength
-            this.limitPostTitleLength = data.limitPostTitleLength
-            this.postTitleMaxLength = data.postTitleMaxLength
-            this.registrationEnabled = data.registrationEnabled
-        } catch (err) {
-            this.$store.dispatch("addAlert", {
-                alerType: "danger",
-                alertText: "There was a problem getting some admin data."
-            })
-        }
-    }
-
-    protected async getUsers() {
-        try {
-            let { data } = await axios.get(
-                `${config.apiUrl}/administration/${this.userPageNum}`,
-                { withCredentials: true }
-            )
-            if (this.userPageNum === 1) {
-                this.userPages = data.pages
-                this.users = []
-            }
-            let users = data.users as Array<{
-                username: string
-                email: string
-                postCount: number
-                commentCount: number
-                permissionLevel: string
-                initialPermissionLevel: string | undefined
-            }>
-            for (let user of users) {
-                user.initialPermissionLevel = user.permissionLevel
-                this.users.push(user)
-            }
-        } catch (err) {
-            this.$store.dispatch("addAlert", {
-                alerType: "danger",
-                alertText: "There was a problem getting some admin data."
-            })
-        }
-    }
+  }
 }
 </script>
 

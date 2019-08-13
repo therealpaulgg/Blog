@@ -7,7 +7,20 @@
         <br />
         <label>Tags (please input tags as hashtags like this: '#mypost #specialcategory')</label>
         <div style="position: relative">
-            <div style="display: inline-block" v-for="(tag, index) in parsedTags" :key="index" :class="theme" class="hashtag">{{tag}}<font-awesome-icon @click="removeTag(tag)" icon="times-circle" style="font-size: 12px margin-left: 4pxfloat: right position: absolute cursor: pointer"/></div>
+            <div
+                style="display: inline-block"
+                v-for="(tag, index) in parsedTags"
+                :key="index"
+                :class="theme"
+                class="hashtag"
+            >
+                {{tag}}
+                <font-awesome-icon
+                    @click="removeTag(tag)"
+                    icon="times-circle"
+                    style="font-size: 12px margin-left: 4pxfloat: right position: absolute cursor: pointer"
+                />
+            </div>
         </div>
         <br />
         <input type="text" :class="theme" style="width: 100%" class="title" v-model="tags" />
@@ -79,9 +92,11 @@ export default class NewPost extends Vue {
             this.width = this.$refs.editcol.clientWidth
             this.height = this.$refs.editcol.clientHeight
         } else {
-            window.removeEventListener("resize", this.updateDimensions.bind(this))
+            window.removeEventListener(
+                "resize",
+                this.updateDimensions.bind(this)
+            )
         }
-        
     }
 
     protected mounted() {
@@ -124,19 +139,24 @@ export default class NewPost extends Vue {
     }
 
     get parsedTags() {
-        let re = /(^|\s)(#[a-z\d-_]+)/g,
-            match
-        let foo = []
+        const re = /(^|\s)(#[a-z\d-_]+)/g
+        let match
+        const foo = []
         while ((match = re.exec(this.tags))) {
-            if (!foo.find(thing => thing === match[2])) foo.push(match[2])
+            if (!foo.find((thing) => thing === match[2])) { foo.push(match[2]) }
         }
         return foo
     }
 
     // substring MAGIC
     protected removeTag(tag: string) {
-        let index = (this.tags as string).indexOf(tag)
-        this.tags = (this.tags as string).substring(0, index) + (this.tags as string).substring(index + tag.length + 1, this.tags.length)
+        const index = (this.tags as string).indexOf(tag)
+        this.tags =
+            (this.tags as string).substring(0, index) +
+            (this.tags as string).substring(
+                index + tag.length + 1,
+                this.tags.length
+            )
     }
 
     get vsTheme() {
@@ -151,7 +171,7 @@ export default class NewPost extends Vue {
                 { title: this.title, content: this.content, tags: this.tags },
                 { withCredentials: true }
             )
-            .then(res => {
+            .then((res) => {
                 this.title = ""
                 this.content = ""
                 this.$store.dispatch("fetchPosts", 1)
@@ -161,13 +181,12 @@ export default class NewPost extends Vue {
                     alertText: res.data.success
                 })
             })
-            .catch(err => {
+            .catch((err) => {
                 if (err.response.status === 401) {
                     this.$store.dispatch("forceLogout")
                     this.$router.push("/login")
                 }
                 if (err.response.data) {
-                    console.log(err.response)
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
                         alertText: err.response.data.error
