@@ -15,6 +15,9 @@ import { SettingsService } from "./services/settings"
 
 let settings: SettingsService | null = null
 
+// 30 minutes
+const COOKIE_EXPIRE_TIME = 60 * 30
+
 let domainStr = ""
 if (process.env.ENVIRONMENT === "prod") {
     domainStr = "blog.paulgellai.dev"
@@ -771,7 +774,7 @@ router.post("/resetpasswordreq", async (req, res) => {
                 let token = jwt.sign({
                     username: user.username,
                     email: user.email,
-                }, process.env.SECRET_KEY, { expiresIn: 60 * 30 })
+                }, process.env.SECRET_KEY, { expiresIn: COOKIE_EXPIRE_TIME })
                 Mail.message =
                     `<p>Hello ${user.username},</p>
                 <p>Someone has requested a reset to your password.</p>
@@ -1139,8 +1142,8 @@ router.post("/login", async (req, res) => {
         try {
             let user = await getConnection().manager.findOne(User, { username }, { relations: ["permissionBlock"] })
             if (await argon2.verify(user.password_hash, password)) {
-                let token = jwt.sign({ username }, process.env.SECRET_KEY, { expiresIn: 60 * 30 })
-                let age = 30 * 60 * 1000
+                let token = jwt.sign({ username }, process.env.SECRET_KEY, { expiresIn: COOKIE_EXPIRE_TIME })
+                let age = COOKIE_EXPIRE_TIME * 1000
                 res.cookie("auth", token, { maxAge: age, domain: domainStr })
                 let date = new Date(new Date().getTime() + age).getTime()
                 res.cookie("expiration", date, { maxAge: age, domain: domainStr })
@@ -1171,8 +1174,8 @@ router.post("/login", async (req, res) => {
 })
 
 router.post("/renew-jwt", checkAuth, (req, res) => {
-    let token = jwt.sign({ username: res.locals.user }, process.env.SECRET_KEY, { expiresIn: 60 * 30 })
-    let age = 30 * 60 * 1000
+    let token = jwt.sign({ username: res.locals.user }, process.env.SECRET_KEY, { expiresIn: COOKIE_EXPIRE_TIME })
+    let age = COOKIE_EXPIRE_TIME * 1000
     res.cookie("auth", token, { maxAge: age, domain: domainStr })
     let date = new Date(new Date().getTime() + age).getTime()
     res.cookie("expiration", date, { maxAge: age, domain: domainStr })

@@ -63,10 +63,9 @@
 <script <script lang="ts">
 import { State, Getter, Action } from "vuex-class"
 import { Component, Vue } from "vue-property-decorator"
-import Cookies from "js-cookie"
 import BootstrapVue from "bootstrap-vue"
-import axios from "axios"
 import config from "./config"
+import { determineTokenRefreshInterval } from "./loginfunc"
 
 @Component
 export default class App extends Vue {
@@ -102,62 +101,7 @@ export default class App extends Vue {
 
     protected mounted() {
         if (this.isAuthenticated) {
-            this.determineTokenRefreshInterval()
-        }
-    }
-
-    protected async determineTokenRefreshInterval() {
-        try {
-            const expiry = parseInt(Cookies.get("expiration"), 10)
-            const authCookie = Cookies.get("auth")
-            if (isNaN(expiry) || authCookie == null) {
-                this.$store.commit("LOGOUT")
-                this.$router.push("/login")
-                this.$store.dispatch("addAlert", {
-                    alertType: "danger",
-                    alertText:
-                        "Your login session has expired. Please log in again."
-                })
-            } else {
-                const timeout = expiry - new Date().getTime()
-                const delay = 10000
-                if (timeout - delay > 0) {
-                    setTimeout(async () => {
-                        try {
-                            await axios.post(
-                                `${config.apiUrl}/renew-jwt`,
-                                {},
-                                { withCredentials: true }
-                            )
-                            this.determineTokenRefreshInterval()
-                        } catch {
-                            if (this.isAuthenticated) {
-                                this.$store.commit("LOGOUT")
-                                this.$router.push("/login")
-                                this.$store.dispatch("addAlert", {
-                                    alertType: "danger",
-                                    alertText:
-                                        "Your login session has expired, please log in again."
-                                })
-                            }
-                        }
-                    }, timeout - delay)
-                } else {
-                    await axios.post(
-                        `${config.apiUrl}/renew-jwt`,
-                        {},
-                        { withCredentials: true }
-                    )
-                    this.determineTokenRefreshInterval()
-                }
-            }
-        } catch (err) {
-            this.$store.commit("LOGOUT")
-            this.$store.dispatch("addAlert", {
-                alertType: "danger",
-                alertText:
-                    "Your login session has expired, please log in again."
-            })
+            determineTokenRefreshInterval()
         }
     }
 

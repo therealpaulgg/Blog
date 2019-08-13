@@ -35,6 +35,7 @@ import PostBlock from "@/components/PostBlock.vue" // @ is an alias to /src
 import axios from "axios"
 import { Action } from "vuex-class"
 import config from "../config"
+import { determineTokenRefreshInterval } from "../loginfunc"
 // import GSigninButton from "vue-google-signin-button"
 
 @Component
@@ -95,6 +96,7 @@ export default class Home extends Vue {
                         alertType: "success",
                         alertText: res.data.success
                     })
+                determineTokenRefreshInterval()
                 this.$router.push("/")
             })
             .catch((err) => {
