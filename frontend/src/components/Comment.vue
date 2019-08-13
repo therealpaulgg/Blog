@@ -19,7 +19,7 @@
                 {{repliesCount}}
             </span>
             <span
-                v-if="comment != null && !condensed && ($store.state.username === comment.user || $store.getters.isAdmin || ownsPost)"
+                v-if="comment != null && !condensed && ($store.state.username === comment.user || editPerms || ownsPost)"
                 style="float: right"
             >
                 <a @click="deleteComment" class="delete metaelement">Delete</a>
@@ -43,6 +43,7 @@ export default class Comment extends Vue {
     @Prop() protected comment: CommentModel;
     @Prop() protected ownsPost: boolean;
     @Prop() protected condensed: boolean;
+    @Prop() protected editPerms: boolean;
     protected alive: boolean;
     protected renderedContent: string;
     protected repliesCount: number | null;
@@ -50,6 +51,7 @@ export default class Comment extends Vue {
 
     constructor() {
         super();
+        console.log(this.editPerms)
         this.alive = true;
         this.repliesCount = null;
         this.renderedContent =

@@ -32,7 +32,10 @@
                         <font-awesome-icon icon="comments"></font-awesome-icon>
                         {{commentCount}}
                     </span>
-                    <span v-if="isAuthenticated && (user === username || isAdmin)" style="float: right">
+                    <span
+                        v-if="isAuthenticated && (user === username || editPerms)"
+                        style="float: right"
+                    >
                         <a @click="del" class="delete metaelement" :class="getTheme">Delete</a>
                         <a @click="edit" class="edit metaelement" :class="getTheme">Edit</a>
                     </span>
@@ -89,7 +92,7 @@
                         v-model="editingTags"
                     />
                     <br />
-                    <br>
+                    <br />
                     <div class="row">
                         <div class="col">
                             <Editor
@@ -122,7 +125,10 @@
                         v-if="postingComment"
                         v-bind:class="{danger: commentLimit && commentContent.length > commentLimitVal}"
                         style="padding-top: 15px;"
-                    >Characters used: {{commentContent.length}}<span v-if="commentLimit"> / {{commentLimitVal}}</span></p>
+                    >
+                        Characters used: {{commentContent.length}}
+                        <span v-if="commentLimit">/ {{commentLimitVal}}</span>
+                    </p>
                     <div class="row">
                         <div class="col">
                             <Editor
@@ -147,6 +153,7 @@
                         :comment="comment"
                         :ownsPost="user === $store.state.username"
                         @deletedComment="updateCommentsOnDelete"
+                        :editPerms="editPerms"
                     />
                     <b-button v-if="show" @click="load" :variant="theme">Load More Comments</b-button>
                     <p v-else-if="comments.length === 0">No comments found.</p>
@@ -200,7 +207,8 @@ export default class Post extends Vue {
     protected tags: string[] | null;
     protected editingTags: string | null;
     protected commentLimit: boolean | null;
-    protected commentLimitVal: number | null; 
+    protected commentLimitVal: number | null;
+    protected editPerms: boolean | null;
     @Prop(String) protected readonly title!: string;
     @Prop(String) protected readonly id!: string;
     @Getter("getTheme") private getTheme: string;
@@ -226,6 +234,7 @@ export default class Post extends Vue {
         this.editingTags = "";
         this.commentLimit = null;
         this.commentLimitVal = null;
+        this.editPerms = null;
     }
 
     @Watch("content")
@@ -353,7 +362,6 @@ export default class Post extends Vue {
             });
             this.editing = false;
             this.$router.push(`/posts/${this.id}/${newUrlTitle}`);
-            // this.fetchData();
         } catch (err) {
             if (err.response.status === 401) {
                 this.$store.dispatch("forceLogout");
@@ -378,7 +386,7 @@ export default class Post extends Vue {
         try {
             await axios.post(
                 `${config.apiUrl}/comment`,
-                { urlTitle: this.title, content: this.commentContent },
+                { id: this.id, urlTitle: this.title, content: this.commentContent },
                 { withCredentials: true }
             );
             this.commentContent = "";
@@ -420,7 +428,8 @@ export default class Post extends Vue {
 
     protected async loadComments() {
         const { data }: { data: PostModel } = await axios.get(
-            `${config.apiUrl}/post/${this.id}/${this.title}/${this.currentPage}`
+            `${config.apiUrl}/post/${this.id}/${this.title}/${this.currentPage}`,
+            { withCredentials: true }
         );
         this.commentCount = data.commentCount;
         this.comments = [];
@@ -476,8 +485,13 @@ export default class Post extends Vue {
 
     // substring MAGIC
     protected removeTag(tag: string) {
-        let index = (this.editingTags as string).indexOf(tag)
-        this.editingTags = (this.editingTags as string).substring(0, index) + (this.editingTags as string).substring(index + tag.length + 1, this.editingTags.length)
+        let index = (this.editingTags as string).indexOf(tag);
+        this.editingTags =
+            (this.editingTags as string).substring(0, index) +
+            (this.editingTags as string).substring(
+                index + tag.length + 1,
+                this.editingTags.length
+            );
     }
 
     protected get sinceUpdate() {
@@ -495,7 +509,8 @@ export default class Post extends Vue {
     protected async fetchData() {
         try {
             const { data }: { data: PostModel } = await axios.get(
-                `${config.apiUrl}/post/${this.id}/${this.title}/${this.currentPage}`
+                `${config.apiUrl}/post/${this.id}/${this.title}/${this.currentPage}`,
+                { withCredentials: true }
             );
             this.header = data.title;
             this.content = data.content;
@@ -505,7 +520,8 @@ export default class Post extends Vue {
             this.tags = data.tags;
             this.commentLimit = data.commentLimit;
             this.commentLimitVal = data.commentLimitVal;
-            this.tags.forEach(tag => this.editingTags += `#${tag} `)
+            this.editPerms = data.requiredManagePerms;
+            this.tags.forEach(tag => (this.editingTags += `#${tag} `));
             false;
             if (this.currentPage === 1) {
                 this.comments = [];

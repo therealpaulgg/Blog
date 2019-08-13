@@ -21,7 +21,6 @@ if (process.env.ENVIRONMENT === "staging" || process.env.ENVIRONMENT === "prod")
 } else {
     domainStr = "localhost"
 }
-console.log(domainStr)
 
 // must be done in same scope as app
 createConnection().then(() => settings = new SettingsService())
@@ -173,7 +172,7 @@ router.get("/posts/:page", async (req, res) => {
 })
 
 // Gets a post with comments, paginated
-router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
+router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) => {
     let pageNum = parseInt(req.params.pageNum)
     let postId = parseInt(req.params.postId)
     let urlTitle = req.params.urlTitle
@@ -202,7 +201,7 @@ router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
             let count = await qb.getCount()
             const pages = Math.ceil(count / postsPerPage)
 
-            getConnection().manager.findOne(Post, { id: postId, urlTitle }, { relations: ["user", "tags"] }).then(result => {
+            getConnection().manager.findOne(Post, { id: postId, urlTitle }, { relations: ["user", "tags", "user.permissionBlock"] }).then(result => {
                 let tags = []
                 result.tags.forEach(tag => tags.push(tag.tagStr))
                 let formattedData = {
@@ -218,7 +217,8 @@ router.get("/post/:postId/:urlTitle/:pageNum", async (req, res) => {
                     commentCount: count,
                     tags,
                     commentLimit: settings.limitCommentLength,
-                    commentLimitVal: settings.commentMaxLength
+                    commentLimitVal: settings.commentMaxLength,
+                    requiredManagePerms: res.locals.permLevel >= 2 && res.locals.permLevel >= result.user.permissionBlock.permissionLevel
                 }
                 res.send(formattedData)
             }).catch(err => res.status(404).send({ error: "No post found. :(" }))
@@ -293,15 +293,54 @@ router.get("/isadmin", checkAuth, async (req, res) => {
     }
 })
 
+router.get("/permissionlevel", checkAuth, async (req, res) => {
+    try {
+        let connection = getConnection();
+        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] });
+        let level = ""
+        switch (user.permissionBlock.permissionLevel) {
+            case 3:
+                level = "superadmin";
+                break;
+            case 2:
+                level = "moderator";
+                break;
+            case 1:
+                level = "author";
+                break;
+            case 0:
+                level = "normal"
+                break;
+            default:
+                level = "normal";
+                break;
+        }
+        res.send({
+            level
+        })
+    } catch {
+        res.status(500).send({
+            error: "Something went wrong."
+        })
+    }
+})
+
 // if user has all permission fields, should return the highest one
-function getPermStr(pBlock: PermissionBlock) {
-    switch (pBlock.permissionLevel) {
+function getPermStr(perm: PermissionBlock | number) {
+    let thing = 0;
+    if (perm instanceof PermissionBlock) {
+        thing = perm.permissionLevel
+    } else {
+        thing = perm
+    }
+    switch (thing) {
         case 3: return "superadmin"
         case 2: return "moderator"
         case 1: return "author"
         case 0: return "normal"
         default: return "normal"
     }
+
 }
 
 router.get("/profile/:username", async (req, res) => {
@@ -459,7 +498,7 @@ router.get("/administration/:page", checkAuth, checkPermissions, async (req, res
             res.send({
                 users,
                 pages,
-                
+
             })
         } catch (err) {
             res.status(500).send({
@@ -502,7 +541,6 @@ router.get("/resetpassword/:token", (req, res) => {
 
 router.get("/settingdata", checkAuth, checkPermissions, async (req, res) => {
     settings.reloadSettings()
-    console.log(settings)
     res.send({
         limitCommentLength: settings.limitCommentLength,
         commentMaxLength: settings.commentMaxLength,
@@ -534,17 +572,17 @@ router.post("/setuserpermissions", checkAuth, checkPermissions, async (req, res)
     let permissionLevel = req.body.permissionLevel
     if (username != null && permissionLevel != null && res.locals.user !== username) {
         let connection = getConnection()
-        let user = await connection.manager.findOne(User, {username}, { relations: ["permissionBlock"]})
+        let user = await connection.manager.findOne(User, { username }, { relations: ["permissionBlock"] })
         if (user != null) {
             let newPerms: number | null = null;
             switch (permissionLevel) {
-                case "superadmin": 
+                case "superadmin":
                     newPerms = 3;
                     break;
                 case "moderator":
                     newPerms = 2;
                     break;
-                case "author": 
+                case "author":
                     newPerms = 1;
                     break;
                 case "normal":
@@ -826,30 +864,37 @@ router.post("/initialsetup", async (req, res) => {
 // Posts a comment (anyone can do this, need to use recaptcha in future or disable registration)
 router.post("/comment", checkAuth, checkPermissions, async (req, res) => {
     // Data should be sent through body
-    let connection = getConnection()
-    let post = await connection.manager.findOne(Post, { urlTitle: req.body.urlTitle })
-    let user = await connection.manager.findOne(User, { username: res.locals.user })
-    if (post && user) {
-        let content: string = req.body.content
-        if (content != null && content.length > 0 && ((!settings.limitCommentLength) || (content.length <= settings.commentMaxLength && settings.limitCommentLength))) {
-            let comment = new Comment()
-            comment.post = post
-            comment.content = content
-            comment.user = user
-            await connection.manager.save(comment)
-            res.send({
-                success: "Comment posted."
-            })
+    try {
+        let connection = getConnection()
+        let post = await connection.manager.findOne(Post, { id: req.body.id, urlTitle: req.body.urlTitle })
+        let user = await connection.manager.findOne(User, { username: res.locals.user })
+        if (post && user) {
+            let content: string = req.body.content
+            if (content != null && content.length > 0 && ((!settings.limitCommentLength) || (content.length <= settings.commentMaxLength && settings.limitCommentLength))) {
+                let comment = new Comment()
+                comment.post = post
+                comment.content = content
+                comment.user = user
+                await connection.manager.save(comment)
+                res.send({
+                    success: "Comment posted."
+                })
+            } else {
+                res.status(400).send({
+                    error: `Comment content body format invalid (nonexistent, empty, or longer than ${settings.commentMaxLength} chars)`
+                })
+            }
         } else {
-            res.status(400).send({
-                error: `Comment content body format invalid (nonexistent, empty, or longer than ${settings.commentMaxLength} chars)`
+            res.status(404).send({
+                error: "Post not found or user not found."
             })
         }
-    } else {
-        res.status(404).send({
-            error: "Post not found or user not found."
+    } catch {
+        res.status(40).send({
+            error: "Malformed request."
         })
     }
+    
 })
 
 async function parseTags(tags: string) {
@@ -919,7 +964,8 @@ router.post("/editpost", checkAuth, checkPermissions, async (req, res) => {
     let connection = getConnection()
     try {
         let post = await connection.manager.findOne(Post, { id: req.body.id }, { relations: ["user", "user.permissionBlock"] })
-        if (post.user.username === res.locals.user || post.user.permissionBlock.permissionLevel >= 2) {
+        let editingUser = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
+        if (post.user.username === res.locals.user || (editingUser.permissionBlock.permissionLevel >= 2 && editingUser.permissionBlock.permissionLevel >= post.user.permissionBlock.permissionLevel)) {
             let title = req.body.newTitle
             post.title = title
             post.content = req.body.newContent
@@ -1020,22 +1066,29 @@ router.post("/register", async (req, res) => {
 router.post("/deletepost", checkAuth, checkPermissions, async (req, res) => {
     let connection = getConnection()
     connection.manager.findOne(Post, { id: req.body.id }, { relations: ["user", "comments", "tags", "user.permissionBlock"] }).then(async (post) => {
-        if (post.user.username === res.locals.user || post.user.permissionBlock.permissionLevel >= 2) {
-            if (post.comments) {
-                await connection.manager.remove(post.comments)
-            }
-            for (let tag of post.tags) {
-                if (tag.posts.length === 1 && tag.posts[0].id === post.id) {
-                    await connection.manager.remove(tag)
+        try {
+            let deletingUser = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
+            if (post.user.username === res.locals.user || (deletingUser.permissionBlock.permissionLevel >= 2 && deletingUser.permissionBlock.permissionLevel >= post.user.permissionBlock.permissionLevel)) {
+                if (post.comments) {
+                    await connection.manager.remove(post.comments)
                 }
+                for (let tag of post.tags) {
+                    if (tag.posts.length === 1 && tag.posts[0].id === post.id) {
+                        await connection.manager.remove(tag)
+                    }
+                }
+                await connection.manager.remove(post)
+                res.send({
+                    success: "Post successfully deleted."
+                })
+            } else {
+                res.status(401).send({
+                    error: "You are not the owner of this post or you are unauthorized to delete this post."
+                })
             }
-            await connection.manager.remove(post)
-            res.send({
-                success: "Post successfully deleted."
-            })
-        } else {
-            res.status(401).send({
-                error: "You are not the owner of this post."
+        } catch {
+            res.status(500).send({
+                error: "Something went wrong."
             })
         }
     }).catch((err) => {
@@ -1135,6 +1188,25 @@ async function checkAuth(req, res, next) {
         res.status(401).send({
             error: "Authorization failed. Please log in again."
         })
+    }
+}
+
+async function checkAuthLevel(req, res, next) {
+    try {
+        let token: any = jwt.verify(req.cookies["auth"], "VERYSECRETKEY")
+        let user = await getConnection().manager.findOne(User, { username: token.username }, { relations: ["permissionBlock"] })
+        if (user) {
+            res.locals.permLevel = user.permissionBlock.permissionLevel;
+        } else {
+            res.locals.permLevel = 0
+        }
+        next()
+    } catch {
+        // res.status(500).send({
+        //     error: "Something went wrong on our end."
+        // })
+        res.locals.permLevel = 0
+        next()
     }
 }
 

@@ -14,4 +14,5 @@ export interface PostModel {
     tags: string[];
     commentLimit: boolean;
     commentLimitVal: number;
+    requiredManagePerms: boolean;
 }
