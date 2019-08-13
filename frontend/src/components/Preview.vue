@@ -6,41 +6,41 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch, Prop } from "vue-property-decorator";
-import { md } from "../mdparser";
+import { Component, Vue, Watch, Prop } from "vue-property-decorator"
+import { md } from "../mdparser"
 
 @Component
 export default class Preview extends Vue {
-    protected renderedContent: string;
-    protected renderedTitle: string;
-    @Prop(String) protected content: string;
-    protected localContent: string;
-    @Prop(String) private title: string;
+    protected renderedContent: string
+    protected renderedTitle: string
+    @Prop(String) protected content: string
+    protected localContent: string
+    @Prop(String) private title: string
 
     constructor() {
-        super();
-        this.renderedContent = "";
-        this.renderedTitle = this.title ? this.title : "";
+        super()
+        this.renderedContent = ""
+        this.renderedTitle = this.title ? this.title : ""
         if (this.content) {
-            this.localContent = this.content;
-            this.renderedContent = md.render(this.localContent);
+            this.localContent = this.content
+            this.renderedContent = md.render(this.localContent)
         } else {
-            this.localContent = "";
+            this.localContent = ""
         }
     }
 
     @Watch("title")
     protected renderTitle() {
-        this.renderedTitle = this.title ? this.title : "";
+        this.renderedTitle = this.title ? this.title : ""
     }
 
     @Watch("content")
     protected test(val: string, oldVal: string) {
         try {
-            this.renderedContent = md.render(val);
+            this.renderedContent = md.render(val)
         } catch (err) {
             // TODO: error handling
-            // console.error(err);
+            // console.error(err)
         }
     }
 }

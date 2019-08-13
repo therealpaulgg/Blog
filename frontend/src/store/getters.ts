@@ -1,37 +1,37 @@
-import { State } from "@/models/state";
+import { State } from "@/models/state"
 
 export default {
     getTheme(state: State) {
-        return state.theme;
+        return state.theme
     },
     isAuthenticated(state: State) {
-        return state.authenticated;
+        return state.authenticated
     },
     getContent(state: State) {
-        return state.content;
+        return state.content
     },
     getCommentContent(state: State) {
-        return state.commentContent;
+        return state.commentContent
     },
     getPostTitle(state: State) {
-        return state.postTitle;
+        return state.postTitle
     },
     getEditContent(state: State) {
-        return state.editContent;
+        return state.editContent
     },
     getEditTitle(state: State) {
-        return state.editPostTitle;
+        return state.editPostTitle
     },
     isAdmin(state: State) {
-        return state.isAdmin;
+        return state.isAdmin
     },
     canPost(state: State) {
-        return state.canPost;
+        return state.canPost
     },
     getAlert(state: State) {
-        return state.alert;
+        return state.alert
     },
     getTags(state: State) {
-        return state.tags;
+        return state.tags
     }
-};
+}

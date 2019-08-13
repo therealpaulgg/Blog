@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from "typeorm";
-import { Post } from "./Post";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from "typeorm"
+import { Post } from "./Post"
 
 @Entity()
 export class Tag {
@@ -11,10 +11,10 @@ export class Tag {
     updatedAt: string
 
     @PrimaryGeneratedColumn()
-    id: number;
+    id: number
 
     @Column()
-    tagStr: string;
+    tagStr: string
 
     @ManyToMany(type => Post, post => post.tags, {
         eager: true

@@ -1,20 +1,20 @@
-import Vue from "vue";
-import Router from "vue-router";
-import Home from "./views/Home.vue";
-import Post from "./components/Post.vue";
-import NewPost from "./views/NewPost.vue";
-import Login from "./views/Login.vue";
-import Register from "./views/Register.vue";
-import InitialSetup from "./views/InitialSetup.vue";
-import Administration from "./views/Administration.vue";
-import Profile from "./views/Profile.vue";
-import TagAndPosts from "./views/TagAndPosts.vue";
-import Tags from "./views/Tags.vue";
-import Notifications from "./views/Notifications.vue";
-import ResetPassword from "./views/ResetPassword.vue";
-import ResetPasswordRequest from "./views/ResetPasswordRequest.vue";
+import Vue from "vue"
+import Router from "vue-router"
+import Home from "./views/Home.vue"
+import Post from "./components/Post.vue"
+import NewPost from "./views/NewPost.vue"
+import Login from "./views/Login.vue"
+import Register from "./views/Register.vue"
+import InitialSetup from "./views/InitialSetup.vue"
+import Administration from "./views/Administration.vue"
+import Profile from "./views/Profile.vue"
+import TagAndPosts from "./views/TagAndPosts.vue"
+import Tags from "./views/Tags.vue"
+import Notifications from "./views/Notifications.vue"
+import ResetPassword from "./views/ResetPassword.vue"
+import ResetPasswordRequest from "./views/ResetPasswordRequest.vue"
 
-Vue.use(Router);
+Vue.use(Router)
 
 export default new Router({
     mode: "history",
@@ -144,4 +144,4 @@ export default new Router({
             }
         }
     ],
-});
+})

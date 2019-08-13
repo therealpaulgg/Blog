@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import nodemailer from "nodemailer"
 import P from "bluebird"
 
 class Mail {
@@ -36,4 +36,4 @@ class Mail {
     }
 }
 
-export default new Mail;
+export default new Mail

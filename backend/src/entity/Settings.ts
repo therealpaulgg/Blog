@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm"
 
 @Entity()
 export class Settings {
@@ -10,20 +10,20 @@ export class Settings {
     updatedAt: string
 
     @PrimaryGeneratedColumn()
-    id: number;
+    id: number
 
     @Column({default: false})
-    limitPostTitleLength: boolean;
+    limitPostTitleLength: boolean
 
     @Column({ default: 100 })
-    postTitleMaxLength: number;
+    postTitleMaxLength: number
 
     @Column({default: true})
-    registrationEnabled: boolean;
+    registrationEnabled: boolean
 
     @Column({default: true})
-    limitCommentLength: boolean;
+    limitCommentLength: boolean
 
     @Column({ default: 2000 })
-    commentMaxLength: number;
+    commentMaxLength: number
 }

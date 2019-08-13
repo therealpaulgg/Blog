@@ -19,10 +19,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import PostBlock from "@/components/PostBlock.vue"; // @ is an alias to /src
-import axios from "axios";
-import { State } from "vuex-class";
+import { Component, Vue, Prop } from "vue-property-decorator"
+import PostBlock from "@/components/PostBlock.vue" // @ is an alias to /src
+import axios from "axios"
+import { State } from "vuex-class"
 
 @Component({
     components: {
@@ -35,28 +35,28 @@ export default class TagAndPosts extends Vue {
 
     constructor() {
         super()
-        this.pageNum = 1;
+        this.pageNum = 1
     }
 
     get show() {
-        return this.$store.state.tagPages > this.pageNum;
+        return this.$store.state.tagPages > this.pageNum
     }
 
     get posts() {
-        return this.$store.state.tagPosts;
+        return this.$store.state.tagPosts
     }
 
     get theme() {
-        return this.$store.getters.getTheme;
+        return this.$store.getters.getTheme
     }
 
     protected mounted() {
-        this.$store.dispatch("fetchTagPosts", {page: this.pageNum, tag: this.tag});
+        this.$store.dispatch("fetchTagPosts", {page: this.pageNum, tag: this.tag})
     }
 
     protected load() {
-        this.pageNum += 1;
-        this.$store.dispatch("fetchTagPosts", {page: this.pageNum, tag: this.tag});
+        this.pageNum += 1
+        this.$store.dispatch("fetchTagPosts", {page: this.pageNum, tag: this.tag})
     }
 }
 </script>

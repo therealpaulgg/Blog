@@ -1,18 +1,18 @@
-import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne} from "typeorm";
-import { User } from "./User";
+import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne} from "typeorm"
+import { User } from "./User"
 
 @Entity()
 export class PermissionBlock {
 
     @PrimaryGeneratedColumn()
-    id: number;
+    id: number
 
     @Column({default: 0})
-    permissionLevel: number;
+    permissionLevel: number
 
     @Column('boolean', { default: true })
-    verified: boolean;
+    verified: boolean
 
     @OneToOne(type => User, user => user.permissionBlock)
-    user: User;
+    user: User
 }

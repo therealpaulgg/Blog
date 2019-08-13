@@ -19,11 +19,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import PostBlock from "@/components/PostBlock.vue"; // @ is an alias to /src
-import axios from "axios";
-import { PostModel } from "../models/post";
-import { State } from "vuex-class";
+import { Component, Vue } from "vue-property-decorator"
+import PostBlock from "@/components/PostBlock.vue" // @ is an alias to /src
+import axios from "axios"
+import { PostModel } from "../models/post"
+import { State } from "vuex-class"
 
 @Component({
     components: {
@@ -32,32 +32,32 @@ import { State } from "vuex-class";
 })
 export default class Home extends Vue {
 
-    protected pageNum: number;
+    protected pageNum: number
 
     constructor() {
-        super();
-        this.pageNum = 1;
+        super()
+        this.pageNum = 1
     }
 
     protected mounted() {
-        this.$store.dispatch("fetchPosts", this.pageNum);
+        this.$store.dispatch("fetchPosts", this.pageNum)
     }
 
     protected load() {
-        this.pageNum += 1;
-        this.$store.dispatch("fetchPosts", this.pageNum);
+        this.pageNum += 1
+        this.$store.dispatch("fetchPosts", this.pageNum)
     }
 
     get show() {
-        return this.$store.state.pages > this.pageNum;
+        return this.$store.state.pages > this.pageNum
     }
 
     get posts() {
-        return this.$store.state.posts;
+        return this.$store.state.posts
     }
 
     get theme() {
-        return this.$store.getters.getTheme;
+        return this.$store.getters.getTheme
     }
 }
 </script>

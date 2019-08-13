@@ -1,6 +1,6 @@
-import {Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, OneToMany, JoinColumn} from "typeorm";
-import { User } from "./User";
-import { Post } from "./Post";
+import {Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, OneToMany, JoinColumn} from "typeorm"
+import { User } from "./User"
+import { Post } from "./Post"
 
 @Entity()
 export class Comment {
@@ -12,14 +12,14 @@ export class Comment {
     updatedAt: string
 
     @PrimaryGeneratedColumn()
-    id: number;
+    id: number
 
     @Column()
-    content: string;
+    content: string
 
     @ManyToOne(type => User, user => user.comments)
     @JoinColumn({ name: "userid"})
-    user: User;
+    user: User
 
     @ManyToOne(type => Post, post => post.comments)
     post: Post

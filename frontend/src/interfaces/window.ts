@@ -1,3 +1,3 @@
 export interface MonacoWindow extends Window {
-    monaco?: any;
+    monaco?: any
 }

@@ -30,53 +30,53 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import PostBlock from "@/components/PostBlock.vue"; // @ is an alias to /src
-import axios from "axios";
-import { Action } from "vuex-class";
-import config from "../config";
-// import GSigninButton from "vue-google-signin-button";
+import { Component, Vue } from "vue-property-decorator"
+import PostBlock from "@/components/PostBlock.vue" // @ is an alias to /src
+import axios from "axios"
+import { Action } from "vuex-class"
+import config from "../config"
+// import GSigninButton from "vue-google-signin-button"
 
 @Component
 export default class Home extends Vue {
-    @Action("login") protected login: any;
-    @Action("logout") protected logout: any;
-    protected username: string;
-    protected password: string;
+    @Action("login") protected login: any
+    @Action("logout") protected logout: any
+    protected username: string
+    protected password: string
     protected googleSignInParams = {
         client_id:
             "270164016094-hu9876dvd5e3bkjq0lhpp6ne4uhmf6d8.apps.googleusercontent.com"
-    };
+    }
 
     constructor() {
-        super();
-        this.username = "";
-        this.password = "";
+        super()
+        this.username = ""
+        this.password = ""
     }
 
     protected gOauthSuccess() {
-        console.log("Success!");
+        console.log("Success!")
     }
 
     protected gOauthError() {
-        console.log("error!");
+        console.log("error!")
     }
 
     protected onSuccess() {
-        console.log("success?");
+        console.log("success?")
     }
 
     protected get theme() {
-        return this.$store.getters.getTheme;
+        return this.$store.getters.getTheme
     }
 
     protected get isAuthenticated() {
-        return this.$store.getters.isAuthenticated;
+        return this.$store.getters.isAuthenticated
     }
 
     protected mounted() {
         if (this.isAuthenticated) {
-            this.$router.push("/");
+            this.$router.push("/")
         }
     }
 
@@ -88,29 +88,29 @@ export default class Home extends Vue {
                 { withCredentials: true }
             )
             .then((res: any) => {
-                this.$store.dispatch("setUsername", res.data.username);
-                this.$store.dispatch("setAdmin", res.data.admin);
-                this.$store.dispatch("setCanPost", res.data.canPost);
-                this.login();
+                this.$store.dispatch("setUsername", res.data.username)
+                this.$store.dispatch("setAdmin", res.data.admin)
+                this.$store.dispatch("setCanPost", res.data.canPost)
+                this.login()
                 this.$store.dispatch("addAlert", {
                         alertType: "success",
                         alertText: res.data.success
-                    });
-                this.$router.push("/");
+                    })
+                this.$router.push("/")
             })
             .catch(err => {
                 if (err.response != null) {
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
                         alertText: err.response.data.error
-                    });
+                    })
                 } else {
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
                         alertText: "Incorrect username or password."
-                    });
+                    })
                 }
-            });
+            })
     }
 }
 </script>

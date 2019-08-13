@@ -30,32 +30,32 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import { Getter } from "vuex-class";
-import { CommentModel } from "../models/comment";
-import moment from "moment";
-import { md } from "../mdparser";
-import axios from "axios";
-import config from "../config";
+import { Component, Prop, Vue } from "vue-property-decorator"
+import { Getter } from "vuex-class"
+import { CommentModel } from "../models/comment"
+import moment from "moment"
+import { md } from "../mdparser"
+import axios from "axios"
+import config from "../config"
 
 @Component
 export default class Comment extends Vue {
-    @Prop() protected comment: CommentModel;
-    @Prop() protected ownsPost: boolean;
-    @Prop() protected condensed: boolean;
-    @Prop() protected editPerms: boolean;
-    protected alive: boolean;
-    protected renderedContent: string;
-    protected repliesCount: number | null;
-    @Getter("getTheme") private getTheme: string;
+    @Prop() protected comment: CommentModel
+    @Prop() protected ownsPost: boolean
+    @Prop() protected condensed: boolean
+    @Prop() protected editPerms: boolean
+    protected alive: boolean
+    protected renderedContent: string
+    protected repliesCount: number | null
+    @Getter("getTheme") private getTheme: string
 
     constructor() {
-        super();
+        super()
         console.log(this.editPerms)
-        this.alive = true;
-        this.repliesCount = null;
+        this.alive = true
+        this.repliesCount = null
         this.renderedContent =
-            this.comment != null ? md.render(this.comment.content) : null;
+            this.comment != null ? md.render(this.comment.content) : null
     }
 
     get date() {
@@ -64,11 +64,11 @@ export default class Comment extends Vue {
                   .utc(this.comment.createdAt)
                   .local()
                   .format("MM/DD/YYYY, HH:mm")
-            : null;
+            : null
     }
 
     get timeSince() {
-        return this.comment ? moment(this.comment.createdAt).fromNow() : null;
+        return this.comment ? moment(this.comment.createdAt).fromNow() : null
     }
 
     protected gotoPost(id, urlTitle) {
@@ -83,24 +83,24 @@ export default class Comment extends Vue {
                 `${config.apiUrl}/deletecomment`,
                 { id: this.comment.id },
                 { withCredentials: true }
-            );
+            )
             this.$store.dispatch("addAlert", {
                 alertType: "success",
                 alertText: data.success
-            });
-            this.$emit("deletedComment");
-            this.alive = false;
+            })
+            this.$emit("deletedComment")
+            this.alive = false
         } catch (err) {
             if (err.response) {
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: err.response.data.error
-                });
+                })
             } else {
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: "Something went wrong."
-                });
+                })
             }
         }
     }

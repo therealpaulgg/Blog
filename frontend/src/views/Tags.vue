@@ -2,7 +2,7 @@
     <div class="tags">
         <div style="position: relative">
             <div
-                style="display: inline-block;"
+                style="display: inline-block"
                 v-for="(tag, index) in tags"
                 :key="index"
                 class="hashtag"
@@ -17,31 +17,31 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import PostBlock from "@/components/PostBlock.vue"; // @ is an alias to /src
-import axios from "axios";
-import { State } from "vuex-class";
-import config from "../config";
+import { Component, Vue } from "vue-property-decorator"
+import PostBlock from "@/components/PostBlock.vue" // @ is an alias to /src
+import axios from "axios"
+import { State } from "vuex-class"
+import config from "../config"
 
 @Component
 export default class Tags extends Vue {
-    protected currentPage: number;
-    protected pages: number | null;
-    protected tags: string[];
+    protected currentPage: number
+    protected pages: number | null
+    protected tags: string[]
 
     constructor() {
-        super();
-        this.currentPage = 1;
-        this.tags = [];
-        this.pages = null;
+        super()
+        this.currentPage = 1
+        this.tags = []
+        this.pages = null
     }
 
     get show() {
-        return this.pages > this.currentPage;
+        return this.pages > this.currentPage
     }
 
     protected mounted() {
-        this.getData();
+        this.getData()
     }
 
     protected fooBar(tag) {
@@ -49,29 +49,29 @@ export default class Tags extends Vue {
     }
 
     get theme() {
-        return this.$store.getters.getTheme;
+        return this.$store.getters.getTheme
     }
 
     protected load() {
-        this.currentPage += 1;
-        this.getData();
+        this.currentPage += 1
+        this.getData()
     }
 
     protected async getData() {
         try {
             let { data } = await axios.get(
                 `${config.apiUrl}/tags/${this.currentPage}`
-            );
-            this.pages = data.pages;
+            )
+            this.pages = data.pages
             if (this.currentPage === 1) {
-                this.tags = data.tags;
+                this.tags = data.tags
             } else {
                 for (const tag of data.tags) {
-                    this.tags.push(tag);
+                    this.tags.push(tag)
                 }
             }
         } catch {
-            console.log("f");
+            console.log("f")
         }
     }
 }

@@ -41,7 +41,7 @@
                     </span>
                     <div>
                         <div
-                            style="display: inline-block;"
+                            style="display: inline-block"
                             v-for="(tag, index) in tags"
                             :key="index"
                             class="hashtag"
@@ -69,7 +69,7 @@
                     <label>Tags (please input tags as hashtags like this: '#mypost #specialcategory')</label>
                     <div style="position: relative">
                         <div
-                            style="display: inline-block;"
+                            style="display: inline-block"
                             v-for="(tag, index) in parsedTags"
                             :key="index"
                             :class="theme"
@@ -79,7 +79,7 @@
                             <font-awesome-icon
                                 @click="removeTag(tag)"
                                 icon="times-circle"
-                                style="font-size: 12px; margin-left: 4px;float: right; position: absolute; cursor: pointer"
+                                style="font-size: 12px margin-left: 4pxfloat: right position: absolute cursor: pointer"
                             />
                         </div>
                     </div>
@@ -124,7 +124,7 @@
                     <p
                         v-if="postingComment"
                         v-bind:class="{danger: commentLimit && commentContent.length > commentLimitVal}"
-                        style="padding-top: 15px;"
+                        style="padding-top: 15px"
                     >
                         Characters used: {{commentContent.length}}
                         <span v-if="commentLimit">/ {{commentLimitVal}}</span>
@@ -143,7 +143,7 @@
                             <Preview v-if="postingComment" :content="commentContent" />
                         </div>
                     </div>
-                    <div v-if="postingComment" style="position: relative; padding-top: 15px">
+                    <div v-if="postingComment" style="position: relative padding-top: 15px">
                         <a class="button" :class="theme" @click="postComment">Submit Comment</a>
                     </div>
                     <hr />
@@ -165,17 +165,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import axios from "axios";
-import { Getter } from "vuex-class";
-import moment from "moment";
-import { PostModel } from "../models/post";
-import { CommentModel } from "../models/comment";
-import Comment from "./Comment.vue";
-import Editor from "./Editor.vue";
-import Preview from "./Preview.vue";
-import { md } from "../mdparser";
-import config from "../config";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator"
+import axios from "axios"
+import { Getter } from "vuex-class"
+import moment from "moment"
+import { PostModel } from "../models/post"
+import { CommentModel } from "../models/comment"
+import Comment from "./Comment.vue"
+import Editor from "./Editor.vue"
+import Preview from "./Preview.vue"
+import { md } from "../mdparser"
+import config from "../config"
 
 @Component({
     components: {
@@ -186,64 +186,64 @@ import config from "../config";
 })
 export default class Post extends Vue {
     public $refs: {
-        container: HTMLDivElement;
-        eContainer: HTMLDivElement;
-    };
-    protected header: string | null;
-    protected content: string | null;
-    protected renderedContent: string | null;
-    protected user: string | null;
-    protected createdAt: any;
-    protected updatedAt: any;
-    protected comments: CommentModel[] | null;
-    protected width: number | null;
-    protected height: number | null;
-    protected postingComment: boolean;
-    protected editing = false;
-    protected pages: number;
-    protected currentPage: number;
-    protected commentCount: number | null;
-    protected notFound: boolean | null;
-    protected tags: string[] | null;
-    protected editingTags: string | null;
-    protected commentLimit: boolean | null;
-    protected commentLimitVal: number | null;
-    protected editPerms: boolean | null;
-    @Prop(String) protected readonly title!: string;
-    @Prop(String) protected readonly id!: string;
-    @Getter("getTheme") private getTheme: string;
-    @Getter("isAuthenticated") private isAuthenticated: boolean;
+        container: HTMLDivElement
+        eContainer: HTMLDivElement
+    }
+    protected header: string | null
+    protected content: string | null
+    protected renderedContent: string | null
+    protected user: string | null
+    protected createdAt: any
+    protected updatedAt: any
+    protected comments: CommentModel[] | null
+    protected width: number | null
+    protected height: number | null
+    protected postingComment: boolean
+    protected editing = false
+    protected pages: number
+    protected currentPage: number
+    protected commentCount: number | null
+    protected notFound: boolean | null
+    protected tags: string[] | null
+    protected editingTags: string | null
+    protected commentLimit: boolean | null
+    protected commentLimitVal: number | null
+    protected editPerms: boolean | null
+    @Prop(String) protected readonly title!: string
+    @Prop(String) protected readonly id!: string
+    @Getter("getTheme") private getTheme: string
+    @Getter("isAuthenticated") private isAuthenticated: boolean
 
     constructor() {
-        super();
-        this.header = null;
-        this.content = null;
-        this.renderedContent = null;
-        this.user = null;
-        this.createdAt = null;
-        this.updatedAt = null;
-        this.comments = [];
-        this.width = null;
-        this.height = null;
-        this.postingComment = false;
-        this.commentCount = null;
-        this.pages = 1;
-        this.currentPage = 1;
-        this.tags = null;
-        this.notFound = false;
-        this.editingTags = "";
-        this.commentLimit = null;
-        this.commentLimitVal = null;
-        this.editPerms = null;
+        super()
+        this.header = null
+        this.content = null
+        this.renderedContent = null
+        this.user = null
+        this.createdAt = null
+        this.updatedAt = null
+        this.comments = []
+        this.width = null
+        this.height = null
+        this.postingComment = false
+        this.commentCount = null
+        this.pages = 1
+        this.currentPage = 1
+        this.tags = null
+        this.notFound = false
+        this.editingTags = ""
+        this.commentLimit = null
+        this.commentLimitVal = null
+        this.editPerms = null
     }
 
     @Watch("content")
     protected renderContent() {
-        this.renderedContent = md.render(this.content);
+        this.renderedContent = md.render(this.content)
     }
 
     protected showCommentPost() {
-        this.postingComment = !this.postingComment;
+        this.postingComment = !this.postingComment
     }
 
     protected del() {
@@ -254,90 +254,90 @@ export default class Post extends Vue {
                 { withCredentials: true }
             )
             .then(res => {
-                this.$store.dispatch("fetchPosts", 1);
+                this.$store.dispatch("fetchPosts", 1)
                 this.$store.dispatch("addAlert", {
                     alertType: "success",
                     alertText: res.data.success
-                });
-                this.$router.push("/");
+                })
+                this.$router.push("/")
             })
             .catch(err => {
                 if (err.response) {
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
                         alertText: err.response.data.error
-                    });
+                    })
                 } else {
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
                         alertText: "Something went wrong."
-                    });
+                    })
                 }
-                this.$router.push("/");
-            });
+                this.$router.push("/")
+            })
     }
 
     protected load() {
-        this.currentPage += 1;
-        this.fetchData();
+        this.currentPage += 1
+        this.fetchData()
     }
 
     get show() {
-        return this.pages > this.currentPage;
+        return this.pages > this.currentPage
     }
 
     get theme() {
-        return this.$store.getters.getTheme;
+        return this.$store.getters.getTheme
     }
 
     get isAdmin() {
-        return this.$store.state.isAdmin;
+        return this.$store.state.isAdmin
     }
 
     get username() {
-        return this.$store.state.username;
+        return this.$store.state.username
     }
 
     get commentContent() {
-        return this.$store.getters.getCommentContent;
+        return this.$store.getters.getCommentContent
     }
     set commentContent(val) {
-        this.$store.dispatch("editCommentContent", val);
+        this.$store.dispatch("editCommentContent", val)
     }
 
     get editContent() {
-        return this.$store.getters.getEditContent;
+        return this.$store.getters.getEditContent
     }
     set editContent(val) {
-        this.$store.dispatch("editEditContent", val);
+        this.$store.dispatch("editEditContent", val)
     }
 
     get editTitle() {
-        return this.$store.getters.getEditTitle;
+        return this.$store.getters.getEditTitle
     }
     set editTitle(val) {
-        this.$store.dispatch("editEditTitle", val);
+        this.$store.dispatch("editEditTitle", val)
     }
 
     protected edit() {
         if (!this.editing) {
-            this.editContent = this.content;
-            this.editTitle = this.header;
-            this.editing = true;
+            this.editContent = this.content
+            this.editTitle = this.header
+            this.editing = true
         } else {
-            this.editing = false;
+            this.editing = false
         }
     }
 
     protected updateDimensions() {
         if (this.$refs.container) {
-            this.width = this.$refs.container.clientWidth;
+            this.width = this.$refs.container.clientWidth
         } else if (this.$refs.eContainer) {
-            this.width = this.$refs.eContainer.clientWidth;
+            this.width = this.$refs.eContainer.clientWidth
         } else {
-            this.width = null;
+            this.width = null
         }
-        this.height = 300;
+        this.height = 300
     }
 
     protected async makeEdits() {
@@ -352,36 +352,36 @@ export default class Post extends Vue {
                     tags: this.editingTags
                 },
                 { withCredentials: true }
-            );
-            let newUrlTitle = data.newUrlTitle;
-            let msg = data.success;
-            this.editContent = "";
+            )
+            let newUrlTitle = data.newUrlTitle
+            let msg = data.success
+            this.editContent = ""
             this.$store.dispatch("addAlert", {
                 alertType: "success",
                 alertText: msg
-            });
-            this.editing = false;
+            })
+            this.editing = false
             if (newUrlTitle === this.title) {
                 this.fetchData()
             } else {
-                this.$router.push(`/posts/${this.id}/${newUrlTitle}`);
+                this.$router.push(`/posts/${this.id}/${newUrlTitle}`)
             }
         } catch (err) {
             if (err.response.status === 401) {
-                this.$store.dispatch("forceLogout");
-                this.$router.push("/login");
-                this.editing = false;
+                this.$store.dispatch("forceLogout")
+                this.$router.push("/login")
+                this.editing = false
             }
             if (err.response.data) {
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: err.response.data.error
-                });
+                })
             } else {
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: "Something went wrong."
-                });
+                })
             }
         }
     }
@@ -392,57 +392,57 @@ export default class Post extends Vue {
                 `${config.apiUrl}/comment`,
                 { id: this.id, urlTitle: this.title, content: this.commentContent },
                 { withCredentials: true }
-            );
-            this.commentContent = "";
+            )
+            this.commentContent = ""
             this.$store.dispatch("addAlert", {
                 alertType: "success",
                 alertText: "Comment successfully created."
-            });
-            this.postingComment = false;
-            await this.loadComments();
+            })
+            this.postingComment = false
+            await this.loadComments()
         } catch (err) {
             if (err.response.status === 401) {
-                this.$store.dispatch("forceLogout");
-                this.$router.push("/login");
-                this.postingComment = false;
+                this.$store.dispatch("forceLogout")
+                this.$router.push("/login")
+                this.postingComment = false
             }
             if (err.response.data) {
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: err.response.data.error
-                });
+                })
             } else {
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: "Something went wrong."
-                });
+                })
             }
         }
     }
 
     protected updateCommentsOnDelete() {
-        this.loadComments();
+        this.loadComments()
     }
 
     protected mounted() {
-        window.addEventListener("resize", this.updateDimensions.bind(this));
-        this.fetchData();
-        this.updateDimensions();
+        window.addEventListener("resize", this.updateDimensions.bind(this))
+        this.fetchData()
+        this.updateDimensions()
     }
 
     protected async loadComments() {
         const { data }: { data: PostModel } = await axios.get(
             `${config.apiUrl}/post/${this.id}/${this.title}/${this.currentPage}`,
             { withCredentials: true }
-        );
-        this.commentCount = data.commentCount;
-        this.comments = [];
+        )
+        this.commentCount = data.commentCount
+        this.comments = []
         for (let i = 1; i <= this.currentPage; i++) {
             const comments = (await axios.get(
                 `${config.apiUrl}/post/${this.id}/${this.title}/${i}`
-            )).data.comments;
+            )).data.comments
             for (const comment of comments) {
-                this.comments.push(comment);
+                this.comments.push(comment)
             }
         }
     }
@@ -452,9 +452,9 @@ export default class Post extends Vue {
             return moment
                 .utc(this.createdAt)
                 .local()
-                .format("MM/DD/YYYY, HH:mm");
+                .format("MM/DD/YYYY, HH:mm")
         } else {
-            return null;
+            return null
         }
     }
 
@@ -463,51 +463,51 @@ export default class Post extends Vue {
             return moment
                 .utc(this.updatedAt)
                 .local()
-                .format("MM/DD/YYYY, HH:mm");
+                .format("MM/DD/YYYY, HH:mm")
         } else {
-            return null;
+            return null
         }
     }
 
     protected get sinceCreation() {
         if (this.createdAt) {
-            return moment(this.createdAt).fromNow();
+            return moment(this.createdAt).fromNow()
         } else {
-            return null;
+            return null
         }
     }
 
     get parsedTags() {
         let re = /(^|\s)(#[a-z\d-_]+)/g,
-            match;
-        let foo = [];
+            match
+        let foo = []
         while ((match = re.exec(this.editingTags))) {
-            if (!foo.find(thing => thing === match[2])) foo.push(match[2]);
+            if (!foo.find(thing => thing === match[2])) foo.push(match[2])
         }
-        return foo;
+        return foo
     }
 
     // substring MAGIC
     protected removeTag(tag: string) {
-        let index = (this.editingTags as string).indexOf(tag);
+        let index = (this.editingTags as string).indexOf(tag)
         this.editingTags =
             (this.editingTags as string).substring(0, index) +
             (this.editingTags as string).substring(
                 index + tag.length + 1,
                 this.editingTags.length
-            );
+            )
     }
 
     protected get sinceUpdate() {
         if (this.updatedAt) {
-            return moment(this.updatedAt).fromNow();
+            return moment(this.updatedAt).fromNow()
         } else {
-            return null;
+            return null
         }
     }
 
     protected fooBar(tag) {
-        this.$router.push(`/tag/${tag}`);
+        this.$router.push(`/tag/${tag}`)
     }
 
     protected async fetchData() {
@@ -515,42 +515,42 @@ export default class Post extends Vue {
             const { data }: { data: PostModel } = await axios.get(
                 `${config.apiUrl}/post/${this.id}/${this.title}/${this.currentPage}`,
                 { withCredentials: true }
-            );
-            this.header = data.title;
-            document.title = `${this.header} | Blog`;
-            // this.$store.dispatch("updateTitle", this.header);
+            )
+            this.header = data.title
+            document.title = `${this.header} | Blog`
+            // this.$store.dispatch("updateTitle", this.header)
             // this.$router.after
-            this.content = data.content;
-            this.user = data.username;
-            this.pages = data.pages;
-            this.commentCount = data.commentCount;
-            this.tags = data.tags;
-            this.commentLimit = data.commentLimit;
-            this.commentLimitVal = data.commentLimitVal;
-            this.editPerms = data.requiredManagePerms;
-            this.editingTags = "";
-            this.tags.forEach(tag => (this.editingTags += `#${tag} `));
-            false;
+            this.content = data.content
+            this.user = data.username
+            this.pages = data.pages
+            this.commentCount = data.commentCount
+            this.tags = data.tags
+            this.commentLimit = data.commentLimit
+            this.commentLimitVal = data.commentLimitVal
+            this.editPerms = data.requiredManagePerms
+            this.editingTags = ""
+            this.tags.forEach(tag => (this.editingTags += `#${tag} `))
+            false
             if (this.currentPage === 1) {
-                this.comments = [];
+                this.comments = []
             }
             for (const comment of data.comments) {
-                this.comments.push(comment);
+                this.comments.push(comment)
             }
-            this.createdAt = data.createdAt;
-            this.updatedAt = data.updatedAt;
+            this.createdAt = data.createdAt
+            this.updatedAt = data.updatedAt
         } catch (err) {
-            this.notFound = true;
+            this.notFound = true
             if (err.response.data) {
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: err.response.data.error
-                });
+                })
             } else {
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: "Something went wrong."
-                });
+                })
             }
         }
     }

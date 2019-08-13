@@ -1,4 +1,4 @@
-import {MigrationInterface, QueryRunner} from "typeorm";
+import {MigrationInterface, QueryRunner} from "typeorm"
 
 export class settings1565646831594 implements MigrationInterface {
 

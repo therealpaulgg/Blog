@@ -1,12 +1,12 @@
-import { getConnection } from "typeorm";
-import { Settings } from "../entity/Settings";
+import { getConnection } from "typeorm"
+import { Settings } from "../entity/Settings"
 
 export class SettingsService {
-    limitPostTitleLength: boolean;
-    postTitleMaxLength: number;
-    registrationEnabled: boolean;
-    limitCommentLength: boolean;
-    commentMaxLength: number;
+    limitPostTitleLength: boolean
+    postTitleMaxLength: number
+    registrationEnabled: boolean
+    limitCommentLength: boolean
+    commentMaxLength: number
 
     constructor() {
         // Any route which has not explicitly set permissions will be assumed to be 'normal'.
@@ -15,7 +15,7 @@ export class SettingsService {
     }
 
     private async asyncConstruct() {
-        let connection = getConnection();
+        let connection = getConnection()
         let settings = await connection.manager.findOne(Settings)
         if (settings == null) {
             settings = new Settings()
@@ -29,7 +29,7 @@ export class SettingsService {
     }   // add getter and setter methods
 
     public reloadSettings() {
-        this.asyncConstruct();
+        this.asyncConstruct()
     }
 
     public async newSettings(settingsObj) {

@@ -17,13 +17,13 @@
             </span>
             {{date}}
         </div>
-        <div style="position: relative; word-wrap: break-word;">
+        <div style="position: relative word-wrap: break-word">
             <h2 v-if="!condensed">{{title}}</h2>
             <h3 v-else>{{title}}</h3>
         </div>
         <div style="position: relative" v-if="!condensed">
             <div
-                style="display: inline-block;"
+                style="display: inline-block"
                 v-for="(tag, index) in tags"
                 :key="index"
                 class="hashtag"
@@ -34,22 +34,22 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import { Getter } from "vuex-class";
-import moment from "moment";
+import { Component, Prop, Vue } from "vue-property-decorator"
+import { Getter } from "vuex-class"
+import moment from "moment"
 
 @Component
 export default class PostBlock extends Vue {
-    @Prop(Number) protected readonly id!: number;
-    @Prop(String) protected readonly title!: string;
-    @Prop(String) protected readonly content!: string;
-    @Prop(String) protected readonly author!: string;
-    @Prop(String) protected readonly urlTitle!: string;
-    @Prop(String) protected readonly createdAt: string;
-    @Prop(String) protected readonly updatedAt: string;
-    @Prop() protected readonly tags: string[];
-    @Prop() condensed: boolean;
-    @Getter("getTheme") private getTheme: string;
+    @Prop(Number) protected readonly id!: number
+    @Prop(String) protected readonly title!: string
+    @Prop(String) protected readonly content!: string
+    @Prop(String) protected readonly author!: string
+    @Prop(String) protected readonly urlTitle!: string
+    @Prop(String) protected readonly createdAt: string
+    @Prop(String) protected readonly updatedAt: string
+    @Prop() protected readonly tags: string[]
+    @Prop() condensed: boolean
+    @Getter("getTheme") private getTheme: string
 
     get date() {
         return `${moment
@@ -57,23 +57,23 @@ export default class PostBlock extends Vue {
             .local()
             .format("MM/DD/YYYY, HH:mm")}, ${moment
             .utc(this.createdAt)
-            .fromNow()}`;
+            .fromNow()}`
     }
 
     get username() {
-        return this.$store.state.username;
+        return this.$store.state.username
     }
 
     protected fooBar(tag) {
-        this.$router.push(`/tag/${tag}`);
+        this.$router.push(`/tag/${tag}`)
     }
 
     protected goToPost() {
-        this.$router.push(`/posts/${this.id}/${this.urlTitle}`);
+        this.$router.push(`/posts/${this.id}/${this.urlTitle}`)
     }
 
     protected gotoUser(user) {
-        this.$router.push(`/profile/${user}`);
+        this.$router.push(`/profile/${user}`)
     }
 }
 </script>

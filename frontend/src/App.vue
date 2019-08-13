@@ -61,66 +61,66 @@
 </template>
 
 <script <script lang="ts">
-import { State, Getter, Action } from "vuex-class";
-import { Component, Vue } from "vue-property-decorator";
-import Cookies from "js-cookie";
-import BootstrapVue from "bootstrap-vue";
-import axios from "axios";
-import config from "./config";
+import { State, Getter, Action } from "vuex-class"
+import { Component, Vue } from "vue-property-decorator"
+import Cookies from "js-cookie"
+import BootstrapVue from "bootstrap-vue"
+import axios from "axios"
+import config from "./config"
 
 @Component
 export default class App extends Vue {
-    @Action("setTheme") protected setTheme: any;
-    @Action("logout") protected logoutAction: any;
-    @Getter("isAuthenticated") protected isAuthenticated: boolean;
-    @Getter("canPost") protected canPost: boolean;
-    @Getter("isAdmin") protected isAdmin: boolean;
-    @Getter("getTheme") private getTheme: string;
+    @Action("setTheme") protected setTheme: any
+    @Action("logout") protected logoutAction: any
+    @Getter("isAuthenticated") protected isAuthenticated: boolean
+    @Getter("canPost") protected canPost: boolean
+    @Getter("isAdmin") protected isAdmin: boolean
+    @Getter("getTheme") private getTheme: string
 
     protected changeTheme() {
         this.getTheme === "light"
             ? this.setTheme("dark")
-            : this.setTheme("light");
+            : this.setTheme("light")
     }
 
     get icon() {
-        return this.getTheme === "light" ? "sun" : "moon";
+        return this.getTheme === "light" ? "sun" : "moon"
     }
 
     get cssUrl() {
         return this.getTheme === "light"
             ? "https://cdn.jsdelivr.net/gh/PrismJS/prism-themes/themes/prism-base16-ateliersulphurpool.light.css"
-            : "https://cdn.jsdelivr.net/gh/dracula/prism/css/dracula-prism.css";
+            : "https://cdn.jsdelivr.net/gh/dracula/prism/css/dracula-prism.css"
     }
 
     get alert() {
-        return this.$store.state.alert;
+        return this.$store.state.alert
     }
     set alert(val) {
-        this.$store.dispatch("addAlert", null);
+        this.$store.dispatch("addAlert", null)
     }
 
     protected mounted() {
         if (this.isAuthenticated) {
-            this.determineTokenRefreshInterval();
+            this.determineTokenRefreshInterval()
         }
     }
 
     protected async determineTokenRefreshInterval() {
         try {
-            const expiry = parseInt(Cookies.get("expiration"), 10);
-            const authCookie = Cookies.get("auth");
+            const expiry = parseInt(Cookies.get("expiration"), 10)
+            const authCookie = Cookies.get("auth")
             if (isNaN(expiry) || authCookie == null) {
-                this.$store.commit("LOGOUT");
-                this.$router.push("/login");
+                this.$store.commit("LOGOUT")
+                this.$router.push("/login")
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText:
                         "Your login session has expired. Please log in again."
-                });
+                })
             } else {
-                const timeout = expiry - new Date().getTime();
-                const delay = 10000;
+                const timeout = expiry - new Date().getTime()
+                const delay = 10000
                 if (timeout - delay > 0) {
                     setTimeout(async () => {
                         try {
@@ -128,46 +128,46 @@ export default class App extends Vue {
                                 `${config.apiUrl}/renew-jwt`,
                                 {},
                                 { withCredentials: true }
-                            );
-                            this.determineTokenRefreshInterval();
+                            )
+                            this.determineTokenRefreshInterval()
                         } catch {
                             if (this.isAuthenticated) {
-                                this.$store.commit("LOGOUT");
-                                this.$router.push("/login");
+                                this.$store.commit("LOGOUT")
+                                this.$router.push("/login")
                                 this.$store.dispatch("addAlert", {
                                     alertType: "danger",
                                     alertText:
                                         "Your login session has expired, please log in again."
-                                });
+                                })
                             }
                         }
-                    }, timeout - delay);
+                    }, timeout - delay)
                 } else {
                     await axios.post(
                         `${config.apiUrl}/renew-jwt`,
                         {},
                         { withCredentials: true }
-                    );
-                    this.determineTokenRefreshInterval();
+                    )
+                    this.determineTokenRefreshInterval()
                 }
             }
         } catch (err) {
-            this.$store.commit("LOGOUT");
+            this.$store.commit("LOGOUT")
             this.$store.dispatch("addAlert", {
                 alertType: "danger",
                 alertText:
                     "Your login session has expired, please log in again."
-            });
+            })
         }
     }
 
     protected gotoNotifications() {
-        this.$router.push("/notifications");
+        this.$router.push("/notifications")
     }
 
     protected logout() {
-        this.logoutAction();
-        this.$router.push("/");
+        this.logoutAction()
+        this.$router.push("/")
     }
 }
 </script>

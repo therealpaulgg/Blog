@@ -74,11 +74,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import { Picker } from "emoji-mart-vue-fast";
-import "../assets/css/emoji-mart.css";
-import monaco from "monaco-editor";
-import { MonacoWindow } from "../interfaces/window";
+import { Component, Prop, Vue } from "vue-property-decorator"
+import { Picker } from "emoji-mart-vue-fast"
+import "../assets/css/emoji-mart.css"
+import monaco from "monaco-editor"
+import { MonacoWindow } from "../interfaces/window"
 
 @Component({
     components: {
@@ -86,13 +86,13 @@ import { MonacoWindow } from "../interfaces/window";
     }
 })
 export default class PostToolbar extends Vue {
-    @Prop() protected editor: any;
-    protected popups: boolean[];
-    protected functions: Array<{ function: (...args) => any; args: any[] }>;
-    protected POPUP_NUM = 9;
-    protected url: string;
-    protected name: string;
-    protected language: string;
+    @Prop() protected editor: any
+    protected popups: boolean[]
+    protected functions: Array<{ function: (...args) => any; args: any[] }>
+    protected POPUP_NUM = 9
+    protected url: string
+    protected name: string
+    protected language: string
     protected refs = [
         "linkbtn",
         "emojibtn",
@@ -102,14 +102,14 @@ export default class PostToolbar extends Vue {
         "italicbtn",
         "underlinebtn",
         "quotebtn"
-    ];
+    ]
 
     constructor() {
-        super();
-        this.url = "";
-        this.name = "";
-        this.language = "";
-        this.popups = [];
+        super()
+        this.url = ""
+        this.name = ""
+        this.language = ""
+        this.popups = []
         this.functions = [
             { function: this.makeLink, args: [] },
             null,
@@ -120,52 +120,52 @@ export default class PostToolbar extends Vue {
             { function: this.styleText, args: ["<u>", "</u>"] },
             { function: this.styleText, args: ["> ", ""] },
             { function: this.styleText, args: ["$", "$"] }
-        ];
+        ]
         for (let i = 0; i < this.POPUP_NUM; i++) {
-            Vue.set(this.popups, i, false);
+            Vue.set(this.popups, i, false)
         }
     }
 
     public closeAll() {
         for (let i = 0; i < this.POPUP_NUM; i++) {
-            Vue.set(this.popups, i, false);
+            Vue.set(this.popups, i, false)
         }
     }
 
     protected toggle(index) {
         for (let i = 0; i < this.POPUP_NUM; i++) {
             if (i === index) {
-                Vue.set(this.popups, i, !this.popups[i]);
+                Vue.set(this.popups, i, !this.popups[i])
                 if (this.functions[i] != null) {
-                    const fn = this.functions[i].function;
-                    const args = this.functions[i].args;
-                    this.insertMonaco(fn, args);
+                    const fn = this.functions[i].function
+                    const args = this.functions[i].args
+                    this.insertMonaco(fn, args)
                 }
             } else {
-                Vue.set(this.popups, i, false);
+                Vue.set(this.popups, i, false)
             }
         }
     }
 
     protected insertMonaco(fn: (...args) => any, args: any[]) {
-        const line = this.editor.getEditor().getSelection();
-        const extWindow: MonacoWindow = window;
+        const line = this.editor.getEditor().getSelection()
+        const extWindow: MonacoWindow = window
         const range = new extWindow.monaco.Range(
             line.startLineNumber,
             line.startColumn,
             line.endLineNumber,
             line.endColumn
-        );
-        const id = { major: 1, minor: 1 };
-        const text = fn(...args, line);
+        )
+        const id = { major: 1, minor: 1 }
+        const text = fn(...args, line)
         if (text) {
             const op = {
                 identifier: id,
                 range,
                 text,
                 forceMoveMarkers: true
-            };
-            this.editor.getEditor().executeEdits("lol", [op]);
+            }
+            this.editor.getEditor().executeEdits("lol", [op])
         }
     }
 
@@ -176,68 +176,68 @@ export default class PostToolbar extends Vue {
             .getValueInRange(line)}](${this.editor
             .getEditor()
             .getModel()
-            .getValueInRange(line)})`;
+            .getValueInRange(line)})`
     }
 
     protected styleText(prefix: string, suffix: string, line) {
-        const prefixLen = prefix.length;
-        const suffixLen = suffix.length;
+        const prefixLen = prefix.length
+        const suffixLen = suffix.length
         const val: string = this.editor
             .getEditor()
             .getModel()
-            .getValueInRange(line);
+            .getValueInRange(line)
         // Cool code that makes it so that if the selected text has identical prefixes/suffixes
         // (i.e bolded already), it removes the selected styling.
-        const preSubstr = val.substring(0, prefixLen);
-        const sufSubstr = val.substring(val.length - suffixLen, val.length);
+        const preSubstr = val.substring(0, prefixLen)
+        const sufSubstr = val.substring(val.length - suffixLen, val.length)
         if (preSubstr === prefix && sufSubstr === suffix) {
-            return val.substring(prefixLen, val.length - suffixLen);
+            return val.substring(prefixLen, val.length - suffixLen)
         } else {
-            return `${prefix}${val}${suffix}`;
+            return `${prefix}${val}${suffix}`
         }
     }
 
     protected get getStyle() {
         return this.$store.getters.getTheme === "dark"
             ? { "background-color": "#20212B", "color": "white" }
-            : {};
+            : {}
     }
 
     protected insertMonacoNoFunc(text) {
-        const line = this.editor.getEditor().getSelection();
-        const extWindow: MonacoWindow = window;
+        const line = this.editor.getEditor().getSelection()
+        const extWindow: MonacoWindow = window
         const range = new extWindow.monaco.Range(
             line.startLineNumber,
             line.startColumn,
             line.endLineNumber,
             line.endColumn
-        );
-        const id = { major: 1, minor: 1 };
+        )
+        const id = { major: 1, minor: 1 }
         if (text) {
             const op = {
                 identifier: id,
                 range,
                 text,
                 forceMoveMarkers: true
-            };
-            this.editor.getEditor().executeEdits("lol", [op]);
+            }
+            this.editor.getEditor().executeEdits("lol", [op])
         }
     }
 
     protected addEmoji(emoji) {
-        this.insertMonacoNoFunc(emoji.colons);
-        this.closeAll();
+        this.insertMonacoNoFunc(emoji.colons)
+        this.closeAll()
     }
 
     protected addCode(code) {
-        let str = "";
+        let str = ""
         if (this.$store.getters.getContent !== "") {
-            str = "\n";
+            str = "\n"
         }
         this.insertMonacoNoFunc(
             `${str}\`\`\`${this.language.toLowerCase()}\nCODE HERE\n\`\`\``
-        );
-        this.closeAll();
+        )
+        this.closeAll()
     }
 }
 </script>

@@ -1,13 +1,13 @@
-import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn} from "typeorm";
-import { Post } from "./Post";
-import { Comment } from "./Comment";
-import { PermissionBlock } from "./PermissionBlock";
+import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn} from "typeorm"
+import { Post } from "./Post"
+import { Comment } from "./Comment"
+import { PermissionBlock } from "./PermissionBlock"
 
 @Entity()
 export class User {
 
     @PrimaryGeneratedColumn()
-    id: number;
+    id: number
 
     @CreateDateColumn()
     createdAt: string
@@ -16,16 +16,16 @@ export class User {
     updatedAt: string
 
     @Column()
-    username: string;
+    username: string
 
     @Column()
-    email: string;
+    email: string
 
     @Column()
-    password_hash: string;
+    password_hash: string
 
     @Column()
-    gravatarUrl: string;
+    gravatarUrl: string
 
     @Column({nullable: true})
     bio: string
@@ -42,6 +42,6 @@ export class User {
 
     addPost(post: Post) {
         if (!this.posts) this.posts = []
-        this.posts.push(post);
+        this.posts.push(post)
     }
 }

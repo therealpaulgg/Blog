@@ -1,17 +1,17 @@
 import express, { Response, Request } from "express"
-import { createConnection, getConnection } from "typeorm";
-import jwt from "jsonwebtoken";
+import { createConnection, getConnection } from "typeorm"
+import jwt from "jsonwebtoken"
 import argon2 from "argon2"
-import { Post } from "./entity/Post";
-import { User } from "./entity/User";
-import { Comment } from "./entity/Comment";
-import { PermissionBlock } from "./entity/PermissionBlock";
-import validator from "validator";
-import md5 from "md5";
-import { Tag } from "./entity/Tag";
-import Mail from "./services/mail";
-import { Permissions } from "./services/permissions";
-import { SettingsService } from "./services/settings";
+import { Post } from "./entity/Post"
+import { User } from "./entity/User"
+import { Comment } from "./entity/Comment"
+import { PermissionBlock } from "./entity/PermissionBlock"
+import validator from "validator"
+import md5 from "md5"
+import { Tag } from "./entity/Tag"
+import Mail from "./services/mail"
+import { Permissions } from "./services/permissions"
+import { SettingsService } from "./services/settings"
 
 let settings: SettingsService | null = null
 
@@ -76,7 +76,7 @@ router.get("/tag/:tag/:pageNum", async (req, res) => {
                 where p.id = pt."postId" 
                   and t.id = pt."tagId"
                   and u.id = p."userId"
-                ORDER BY p."createdAt" DESC;
+                ORDER BY p."createdAt" DESC
                 `,
                 [tag]
             )
@@ -242,10 +242,10 @@ router.get("/cansetup", async (req, res) => {
             canSetup: false
         }
         if (!admin) {
-            foo.canSetup = true;
-            res.send(foo);
+            foo.canSetup = true
+            res.send(foo)
         } else {
-            res.send(foo);
+            res.send(foo)
         }
     } catch {
         res.status(500).send({
@@ -257,14 +257,14 @@ router.get("/cansetup", async (req, res) => {
 // Checks to see if user is able to post 
 router.get("/canpost", checkAuth, async (req, res) => {
     try {
-        let connection = getConnection();
-        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] });
+        let connection = getConnection()
+        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
         let foo = {
             canPost: false
         }
         // 1 represents the author permission level.
         if (user.permissionBlock.permissionLevel >= 1) {
-            foo.canPost = true;
+            foo.canPost = true
         }
         res.send(foo)
     } catch {
@@ -277,13 +277,13 @@ router.get("/canpost", checkAuth, async (req, res) => {
 // Explicitly checks if user is admin (if conditions for posting are changed)
 router.get("/isadmin", checkAuth, async (req, res) => {
     try {
-        let connection = getConnection();
-        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] });
+        let connection = getConnection()
+        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
         let foo = {
             isAdmin: false
         }
         if (user.permissionBlock.permissionLevel >= 3) {
-            foo.isAdmin = true;
+            foo.isAdmin = true
         }
         res.send(foo)
     } catch {
@@ -295,25 +295,25 @@ router.get("/isadmin", checkAuth, async (req, res) => {
 
 router.get("/permissionlevel", checkAuth, async (req, res) => {
     try {
-        let connection = getConnection();
-        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] });
+        let connection = getConnection()
+        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
         let level = ""
         switch (user.permissionBlock.permissionLevel) {
             case 3:
-                level = "superadmin";
-                break;
+                level = "superadmin"
+                break
             case 2:
-                level = "moderator";
-                break;
+                level = "moderator"
+                break
             case 1:
-                level = "author";
-                break;
+                level = "author"
+                break
             case 0:
                 level = "normal"
-                break;
+                break
             default:
-                level = "normal";
-                break;
+                level = "normal"
+                break
         }
         res.send({
             level
@@ -327,7 +327,7 @@ router.get("/permissionlevel", checkAuth, async (req, res) => {
 
 // if user has all permission fields, should return the highest one
 function getPermStr(perm: PermissionBlock | number) {
-    let thing = 0;
+    let thing = 0
     if (perm instanceof PermissionBlock) {
         thing = perm.permissionLevel
     } else {
@@ -345,8 +345,8 @@ function getPermStr(perm: PermissionBlock | number) {
 
 router.get("/profile/:username", async (req, res) => {
     try {
-        let connection = getConnection();
-        let user = await connection.manager.findOne(User, { username: req.params.username }, { relations: ["permissionBlock", "posts", "comments"] });
+        let connection = getConnection()
+        let user = await connection.manager.findOne(User, { username: req.params.username }, { relations: ["permissionBlock", "posts", "comments"] })
         if (user) {
             let permissionLevel = getPermStr(user.permissionBlock)
             res.send({
@@ -568,29 +568,29 @@ router.post("/settingdata", checkAuth, checkPermissions, async (req, res) => {
 })
 
 router.post("/setuserpermissions", checkAuth, checkPermissions, async (req, res) => {
-    let username = req.body.username;
+    let username = req.body.username
     let permissionLevel = req.body.permissionLevel
     if (username != null && permissionLevel != null && res.locals.user !== username) {
         let connection = getConnection()
         let user = await connection.manager.findOne(User, { username }, { relations: ["permissionBlock"] })
         if (user != null) {
-            let newPerms: number | null = null;
+            let newPerms: number | null = null
             switch (permissionLevel) {
                 case "superadmin":
-                    newPerms = 3;
-                    break;
+                    newPerms = 3
+                    break
                 case "moderator":
-                    newPerms = 2;
-                    break;
+                    newPerms = 2
+                    break
                 case "author":
-                    newPerms = 1;
-                    break;
+                    newPerms = 1
+                    break
                 case "normal":
-                    newPerms = 0;
-                    break;
+                    newPerms = 0
+                    break
                 default:
-                    newPerms = 0;
-                    break;
+                    newPerms = 0
+                    break
             }
             user.permissionBlock.permissionLevel = newPerms
             await connection.manager.save(user.permissionBlock)
@@ -618,7 +618,7 @@ router.post("/changepassword", checkAuth, async (req, res) => {
         let connection = getConnection()
         let user = await connection.manager.findOne(User, { username })
         if (await argon2.verify(user.password_hash, oldPassword)) {
-            user.password_hash = await argon2.hash(password);
+            user.password_hash = await argon2.hash(password)
             try {
                 await connection.manager.save(user)
                 res.send({
@@ -760,7 +760,7 @@ router.post("/resetpassword/:token", async (req, res) => {
 })
 
 router.post("/resetpasswordreq", async (req, res) => {
-    let email = req.body.email;
+    let email = req.body.email
     if (email != null) {
         try {
             let user = await getConnection().manager.findOne(User, { email: req.body.email })
@@ -779,7 +779,7 @@ router.post("/resetpasswordreq", async (req, res) => {
                 
                 <p>If this was not you, you can ignore this email.</p>
                 `
-                let success = await Mail.sendMail();
+                let success = await Mail.sendMail()
                 res.send({
                     success
                 })
@@ -832,7 +832,7 @@ router.post("/updatebio", checkAuth, async (req, res) => {
 
 // Registers a superadmin as long as initial setup is still possible.
 router.post("/initialsetup", async (req, res) => {
-    let connection = getConnection();
+    let connection = getConnection()
     let admin = await connection.manager.findOne(PermissionBlock, { permissionLevel: 3 })
     if (admin) {
         res.status(401).send({
@@ -840,10 +840,10 @@ router.post("/initialsetup", async (req, res) => {
         })
     } else {
         try {
-            let permissionBlock = new PermissionBlock();
-            permissionBlock.permissionLevel = 3;
-            let username = req.body.username;
-            let email = req.body.email;
+            let permissionBlock = new PermissionBlock()
+            permissionBlock.permissionLevel = 3
+            let username = req.body.username
+            let email = req.body.email
             let password = req.body.password
             if (username != null && email != null && password != null) {
                 registerUser(permissionBlock, username, email, password, res)
@@ -902,7 +902,7 @@ async function parseTags(tags: string): Promise<Tag[]> {
     let re = /(^|\s)#([a-z\d-_]+)/g, match
     let foo = []
     while (match = re.exec(tags)) {
-        if (!foo.find(thing => thing === match[2])) foo.push(match[2]);
+        if (!foo.find(thing => thing === match[2])) foo.push(match[2])
     }
     let returnVal = []
     let connection = getConnection()
@@ -974,7 +974,7 @@ async function registerUser(permissionBlock: PermissionBlock, username, email, p
             if (usernameCheck != null) {
                 if (validator.isEmail(email)) {
                     let gravatarUrl = `https://www.gravatar.com/avatar/${md5(email)}?s=200`
-                    await connection.manager.save(permissionBlock);
+                    await connection.manager.save(permissionBlock)
                     await connection.manager.save(User, {
                         username,
                         email,
@@ -1017,9 +1017,9 @@ async function registerUser(permissionBlock: PermissionBlock, username, email, p
 // TODO: password requirements
 router.post("/register", async (req, res) => {
     if (settings.registrationEnabled) {
-        let permissionBlock = new PermissionBlock();
-        let username: string = req.body.username;
-        let email = req.body.email;
+        let permissionBlock = new PermissionBlock()
+        let username: string = req.body.username
+        let email = req.body.email
         let password = req.body.password
         if (username != null && email != null && password != null) {
             registerUser(permissionBlock, username, email, password, res)
@@ -1102,19 +1102,19 @@ router.post("/deletepost", checkAuth, checkPermissions, async (req, res) => {
     }).catch((err) => {
         res.status(404).send({
             error: "Post does not exist."
-        }); console.log(err)
+        })
     })
 })
 
 router.post("/deletecomment", checkAuth, checkPermissions, async (req, res) => {
-    let connection = getConnection();
+    let connection = getConnection()
     let id = req.body.id
     try {
         let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
         let comment = await connection.manager.findOne(Comment, { id: id }, { relations: ["post", "user", "post.user", "user.permissionBlock"] })
-        let commentUser = comment.user;
+        let commentUser = comment.user
         if (res.locals.user === commentUser.username || comment.post.user.username === res.locals.user || (user.permissionBlock.permissionLevel >= 3 || (user.permissionBlock.permissionLevel >= 2 && comment.user.permissionBlock.permissionLevel < 3))) {
-            await connection.manager.remove(comment);
+            await connection.manager.remove(comment)
             res.send({
                 success: "Comment successfully deleted."
             })
@@ -1140,7 +1140,7 @@ router.post("/login", async (req, res) => {
                 let token = jwt.sign({ username }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
                 let age = 30 * 60 * 1000
                 res.cookie("auth", token, { maxAge: age, domain: domainStr })
-                let date = new Date(new Date().getTime() + age).getTime();
+                let date = new Date(new Date().getTime() + age).getTime()
                 res.cookie("expiration", date, { maxAge: age, domain: domainStr })
                 let personalizedLoginMsg = user.permissionBlock.permissionLevel >= 3 ? "Welcome, admin :)" : ""
                 res.send({
@@ -1169,14 +1169,14 @@ router.post("/login", async (req, res) => {
 })
 
 router.post("/renew-jwt", checkAuth, (req, res) => {
-    let token = jwt.sign({ username: res.locals.user }, "VERYSECRETKEY", { expiresIn: 60 * 30 });
-    let age = 30 * 60 * 1000;
-    res.cookie("auth", token, { maxAge: age, domain: domainStr });
-    let date = new Date(new Date().getTime() + age).getTime();
-    res.cookie("expiration", date, { maxAge: age, domain: domainStr });
+    let token = jwt.sign({ username: res.locals.user }, "VERYSECRETKEY", { expiresIn: 60 * 30 })
+    let age = 30 * 60 * 1000
+    res.cookie("auth", token, { maxAge: age, domain: domainStr })
+    let date = new Date(new Date().getTime() + age).getTime()
+    res.cookie("expiration", date, { maxAge: age, domain: domainStr })
     res.send({
         success: "JWT renewed"
-    });
+    })
 })
 
 // Middleware function
@@ -1204,7 +1204,7 @@ async function checkAuthLevel(req, res, next) {
         let token: any = jwt.verify(req.cookies["auth"], "VERYSECRETKEY")
         let user = await getConnection().manager.findOne(User, { username: token.username }, { relations: ["permissionBlock"] })
         if (user) {
-            res.locals.permLevel = user.permissionBlock.permissionLevel;
+            res.locals.permLevel = user.permissionBlock.permissionLevel
         } else {
             res.locals.permLevel = 0
         }

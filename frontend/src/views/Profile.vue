@@ -170,15 +170,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import axios from "axios";
-import { State } from "vuex-class";
-import moment from "moment";
-import PostBlock from "../components/PostBlock.vue";
-import Comment from "../components/Comment.vue";
-import { PostModel } from "../models/post";
-import { CommentModel } from "../models/comment";
-import config from "../config";
+import { Component, Vue, Prop } from "vue-property-decorator"
+import axios from "axios"
+import { State } from "vuex-class"
+import moment from "moment"
+import PostBlock from "../components/PostBlock.vue"
+import Comment from "../components/Comment.vue"
+import { PostModel } from "../models/post"
+import { CommentModel } from "../models/comment"
+import config from "../config"
 
 @Component({
     components: {
@@ -187,85 +187,85 @@ import config from "../config";
     }
 })
 export default class Profile extends Vue {
-    @Prop(String) protected passedUser: string | null;
-    protected user: string | null;
-    protected gravatarUrl: string | null;
-    protected createdAt: string | null;
-    protected permissionLevel: string | null;
-    protected age: string | null;
-    protected bio: string | null;
-    protected notFound: boolean = false;
-    protected editing: boolean = false;
-    protected postPage: number = 1;
-    protected commentPage: number = 1;
-    protected posts: PostModel[];
-    protected comments: CommentModel[];
-    protected postPages: number | null;
-    protected commentPages: number | null;
-    protected changingPassword: boolean = false;
-    protected changingEmail: boolean = false;
-    protected password: string = "";
-    protected confirmPassword: string = "";
-    protected email: string = "";
-    protected oldPassword: string = "";
+    @Prop(String) protected passedUser: string | null
+    protected user: string | null
+    protected gravatarUrl: string | null
+    protected createdAt: string | null
+    protected permissionLevel: string | null
+    protected age: string | null
+    protected bio: string | null
+    protected notFound: boolean = false
+    protected editing: boolean = false
+    protected postPage: number = 1
+    protected commentPage: number = 1
+    protected posts: PostModel[]
+    protected comments: CommentModel[]
+    protected postPages: number | null
+    protected commentPages: number | null
+    protected changingPassword: boolean = false
+    protected changingEmail: boolean = false
+    protected password: string = ""
+    protected confirmPassword: string = ""
+    protected email: string = ""
+    protected oldPassword: string = ""
 
     constructor() {
-        super();
-        this.user = this.passedUser != null ? this.passedUser : null;
-        this.gravatarUrl = null;
-        this.createdAt = null;
-        this.permissionLevel = null;
-        this.age = null;
-        this.bio = null;
-        this.posts = [];
-        this.comments = [];
-        this.postPages = null;
-        this.commentPages = null;
+        super()
+        this.user = this.passedUser != null ? this.passedUser : null
+        this.gravatarUrl = null
+        this.createdAt = null
+        this.permissionLevel = null
+        this.age = null
+        this.bio = null
+        this.posts = []
+        this.comments = []
+        this.postPages = null
+        this.commentPages = null
     }
 
     protected editBio() {
-        this.editing = !this.editing;
+        this.editing = !this.editing
     }
 
     get theme() {
-        return this.$store.getters.getTheme;
+        return this.$store.getters.getTheme
     }
 
     get username() {
-        return this.$store.state.username;
+        return this.$store.state.username
     }
 
     get showPostBtn() {
-        return this.postPages > this.postPage;
+        return this.postPages > this.postPage
     }
 
     get showCommentBtn() {
-        return this.commentPages > this.commentPage;
+        return this.commentPages > this.commentPage
     }
 
     protected loadPosts() {
-        this.postPage += 1;
-        this.postData();
+        this.postPage += 1
+        this.postData()
     }
 
     protected loadComments() {
-        this.commentPage += 1;
-        this.commentData();
+        this.commentPage += 1
+        this.commentData()
     }
 
     protected changePassword() {
-        this.changingPassword = true;
+        this.changingPassword = true
     }
 
     protected changeEmail() {
-        this.changingEmail = true;
+        this.changingEmail = true
     }
 
     protected cancel() {
         if (this.changingEmail) {
-            this.changingEmail = false;
+            this.changingEmail = false
         } else if (this.changingPassword) {
-            this.changingPassword = false;
+            this.changingPassword = false
         }
     }
 
@@ -276,23 +276,23 @@ export default class Profile extends Vue {
                 `${config.apiUrl}/changeemail`,
                 { email: this.email },
                 { withCredentials: true }
-            );
+            )
             this.$store.dispatch("addAlert", {
                 alertType: "success",
                 alertText: data.success
-            });
-            this.changingEmail = false;
+            })
+            this.changingEmail = false
         } catch (err) {
             if (err.response) {
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: err.response.data.error
-                });
+                })
             } else {
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: "Something went wrong."
-                });
+                })
             }
         }
     }
@@ -308,30 +308,30 @@ export default class Profile extends Vue {
                         oldPassword: this.oldPassword
                     },
                     { withCredentials: true }
-                );
+                )
                 this.$store.dispatch("addAlert", {
                     alertType: "success",
                     alertText: data.success
-                });
-                this.changingPassword = false;
+                })
+                this.changingPassword = false
             } catch (err) {
                 if (err.response) {
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
                         alertText: err.response.data.error
-                    });
+                    })
                 } else {
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
                         alertText: "Something went wrong."
-                    });
+                    })
                 }
             }
         } else {
             this.$store.dispatch("addAlert", {
                 alertType: "danger",
                 alertText: "Your passwords do not match."
-            });
+            })
         }
     }
 
@@ -344,32 +344,32 @@ export default class Profile extends Vue {
                     username: this.username
                 },
                 { withCredentials: true }
-            );
-            this.editing = false;
+            )
+            this.editing = false
             this.$store.dispatch("addAlert", {
                 alertType: "success",
                 alertText: data.success
-            });
+            })
         } catch (err) {
             if (err.response) {
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: err.response.data.error
-                });
+                })
             } else {
                 this.$store.dispatch("addAlert", {
                     alertType: "danger",
                     alertText: "Something went wrong."
-                });
+                })
             }
         }
     }
 
     protected async mounted() {
-        await this.profileData();
+        await this.profileData()
         if (!this.notFound) {
-            this.postData();
-            this.commentData();
+            this.postData()
+            this.commentData()
         }
     }
 
@@ -377,19 +377,19 @@ export default class Profile extends Vue {
         try {
             const { data } = await axios.get(
                 `${config.apiUrl}/userposts/${this.user}/${this.postPage}`
-            );
+            )
             if (this.postPage === 1) {
-                this.postPages = data.pages;
-                this.posts = data.posts;
+                this.postPages = data.pages
+                this.posts = data.posts
             } else {
-                const posts = data.posts as PostModel[];
-                console.log(this.posts);
+                const posts = data.posts as PostModel[]
+                console.log(this.posts)
                 for (const post of posts) {
-                    this.posts.push(post);
+                    this.posts.push(post)
                 }
             }
         } catch {
-            this.notFound = true;
+            this.notFound = true
         }
     }
 
@@ -397,41 +397,41 @@ export default class Profile extends Vue {
         try {
             const { data } = await axios.get(
                 `${config.apiUrl}/usercomments/${this.user}/${this.postPage}`
-            );
+            )
             if (this.commentPage === 1) {
-                this.commentPages = data.pages;
-                this.comments = data.comments;
+                this.commentPages = data.pages
+                this.comments = data.comments
             } else {
-                const comments = data.comments as CommentModel[];
+                const comments = data.comments as CommentModel[]
                 for (const comment of comments) {
-                    this.comments.push(comment);
+                    this.comments.push(comment)
                 }
             }
         } catch {
-            this.notFound = true;
+            this.notFound = true
         }
     }
 
     protected async profileData() {
         try {
             if (this.user == null) {
-                this.user = this.username;
+                this.user = this.username
             }
             const { data } = await axios.get(
                 `${config.apiUrl}/profile/${this.user}`
-            );
-            this.user = data.username;
+            )
+            this.user = data.username
             document.title = `${this.user} | Blog`
-            this.gravatarUrl = data.gravatarUrl;
+            this.gravatarUrl = data.gravatarUrl
             this.createdAt = moment
                 .utc(data.createdAt)
                 .local()
-                .format("MM/DD/YYYY, HH:mm");
-            this.permissionLevel = data.permissionLevel;
-            this.age = moment(data.createdAt).fromNow();
-            this.bio = data.bio;
+                .format("MM/DD/YYYY, HH:mm")
+            this.permissionLevel = data.permissionLevel
+            this.age = moment(data.createdAt).fromNow()
+            this.bio = data.bio
         } catch {
-            this.notFound = true;
+            this.notFound = true
         }
     }
 }

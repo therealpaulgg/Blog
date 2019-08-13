@@ -32,30 +32,30 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import axios from "axios";
-import config from "../config";
-import { State, Action } from "vuex-class";
+import { Component, Vue } from "vue-property-decorator"
+import axios from "axios"
+import config from "../config"
+import { State, Action } from "vuex-class"
 
 @Component
 export default class InitialSetup extends Vue {
-    @Action("login") protected login: any;
-    @Action("logout") protected logout: any;
-    protected username: string;
-    protected email: string;
-    protected password: string;
-    protected confirmPassword: string;
+    @Action("login") protected login: any
+    @Action("logout") protected logout: any
+    protected username: string
+    protected email: string
+    protected password: string
+    protected confirmPassword: string
 
     constructor() {
-        super();
-        this.username = "";
-        this.email = "";
-        this.password = "";
-        this.confirmPassword = "";
+        super()
+        this.username = ""
+        this.email = ""
+        this.password = ""
+        this.confirmPassword = ""
     }
 
     protected get theme() {
-        return this.$store.getters.getTheme;
+        return this.$store.getters.getTheme
     }
 
     protected async setup() {
@@ -68,22 +68,22 @@ export default class InitialSetup extends Vue {
                     password: this.password
                 },
                 { withCredentials: true }
-            );
+            )
             let { data } = await axios.post(
                 `${config.apiUrl}/login`,
                 { username: this.username, password: this.password },
                 { withCredentials: true }
-            );
-            this.$store.dispatch("setUsername", data.username);
-            this.$store.dispatch("setAdmin", data.admin);
-            this.$store.dispatch("setCanPost", data.canPost);
-            this.login(true);
-            this.$router.push("/");
+            )
+            this.$store.dispatch("setUsername", data.username)
+            this.$store.dispatch("setAdmin", data.admin)
+            this.$store.dispatch("setCanPost", data.canPost)
+            this.login(true)
+            this.$router.push("/")
         } catch (err) {
             this.$store.dispatch("addAlert", {
                 alertType: "danger",
                 alertText: "Something went wrong."
-            });
+            })
         }
     }
 }

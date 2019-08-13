@@ -34,34 +34,34 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import axios from "axios";
-import { Action } from "vuex-class";
+import { Component, Vue, Prop } from "vue-property-decorator"
+import axios from "axios"
+import { Action } from "vuex-class"
 
-import config from "../config";
+import config from "../config"
 
 @Component
 export default class ResetPassword extends Vue {
-    @Prop() token: string;
-    protected username: string;
-    protected email: string;
-    protected password: string;
-    protected confirmPassword: string;
-    protected tokenExists: boolean;
-    protected validToken: boolean;
+    @Prop() token: string
+    protected username: string
+    protected email: string
+    protected password: string
+    protected confirmPassword: string
+    protected tokenExists: boolean
+    protected validToken: boolean
     constructor() {
-        super();
-        this.username = "";
-        this.email = "";
-        this.password = "";
-        this.confirmPassword = "";
-        this.tokenExists = this.token != null;
-        this.validToken = false;
-        this.getResetData();
+        super()
+        this.username = ""
+        this.email = ""
+        this.password = ""
+        this.confirmPassword = ""
+        this.tokenExists = this.token != null
+        this.validToken = false
+        this.getResetData()
     }
 
     protected get theme() {
-        return this.$store.getters.getTheme;
+        return this.$store.getters.getTheme
     }
 
     protected async getResetData() {
@@ -69,17 +69,17 @@ export default class ResetPassword extends Vue {
             try {
                 let { data } = await axios.get(
                     `${config.apiUrl}/resetpassword/${this.token}`
-                );
-                this.username = data.username;
-                this.email = data.email;
-                this.validToken = true;
+                )
+                this.username = data.username
+                this.email = data.email
+                this.validToken = true
             } catch (err) {
                 if (err.response) {
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
                         alertText: err.response.data.error
-                    });
-                    this.validToken = false;
+                    })
+                    this.validToken = false
                 }
             }
         } else {
@@ -87,7 +87,7 @@ export default class ResetPassword extends Vue {
                 alertType: "danger",
                 alertText:
                     "No token included. Please include a token in your request."
-            });
+            })
         }
     }
 
@@ -97,26 +97,26 @@ export default class ResetPassword extends Vue {
                 let { data } = await axios.post(
                     `${config.apiUrl}/resetpassword/${this.token}`,
                     { password: this.password }
-                );
+                )
                 this.$store.dispatch("addAlert", {
                     alertType: "success",
                     alertText: data.success
-                });
+                })
                 this.$router.push("/login")
             } catch (err) {
                 if (err.response) {
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
                         alertText: err.response.data.error
-                    });
-                    this.validToken = false;
+                    })
+                    this.validToken = false
                 }
             }
         } else {
             this.$store.dispatch("addAlert", {
                 alertType: "warning",
                 alertText: "Your passwords do not match. Please try again."
-            });
+            })
         }
     }
 }

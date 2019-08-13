@@ -25,21 +25,21 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import axios from "axios";
-import config from "../config";
-import { Action } from "vuex-class";
+import { Component, Vue, Prop } from "vue-property-decorator"
+import axios from "axios"
+import config from "../config"
+import { Action } from "vuex-class"
 
 @Component
 export default class ResetPassword extends Vue {
-    protected email: string;
+    protected email: string
     constructor() {
-        super();
-        this.email = "";
+        super()
+        this.email = ""
     }
 
     protected get theme() {
-        return this.$store.getters.getTheme;
+        return this.$store.getters.getTheme
     }
 
     protected async sendReset() {
@@ -48,29 +48,29 @@ export default class ResetPassword extends Vue {
                 let { data } = await axios.post(
                     `${config.apiUrl}/resetpasswordreq`,
                     { email: this.email }
-                );
+                )
                 this.$store.dispatch("addAlert", {
                         alertType: "success",
                         alertText: data.success
-                    });
+                    })
             } catch (err) {
                 if (err.response) {
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
                         alertText: err.response.data.error
-                    });
+                    })
                 } else {
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
                         alertText: "Something went wrong."
-                    });
+                    })
                 }
             }
         } else {
             this.$store.dispatch("addAlert", {
                 alertType: "warning",
                 alertText: "You must include an email in your request."
-            });
+            })
         }
     }
 }

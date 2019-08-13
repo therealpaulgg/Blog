@@ -7,7 +7,7 @@
         <br />
         <label>Tags (please input tags as hashtags like this: '#mypost #specialcategory')</label>
         <div style="position: relative">
-            <div style="display: inline-block;" v-for="(tag, index) in parsedTags" :key="index" :class="theme" class="hashtag">{{tag}}<font-awesome-icon @click="removeTag(tag)" icon="times-circle" style="font-size: 12px; margin-left: 4px;float: right; position: absolute; cursor: pointer"/></div>
+            <div style="display: inline-block" v-for="(tag, index) in parsedTags" :key="index" :class="theme" class="hashtag">{{tag}}<font-awesome-icon @click="removeTag(tag)" icon="times-circle" style="font-size: 12px margin-left: 4pxfloat: right position: absolute cursor: pointer"/></div>
         </div>
         <br />
         <input type="text" :class="theme" style="width: 100%" class="title" v-model="tags" />
@@ -36,13 +36,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
-import axios from "axios";
-import { PostModel } from "../models/post";
-import { md } from "../mdparser";
-import Editor from "../components/Editor.vue";
-import config from "../config";
-import Preview from "../components/Preview.vue";
+import { Component, Vue, Watch } from "vue-property-decorator"
+import axios from "axios"
+import { PostModel } from "../models/post"
+import { md } from "../mdparser"
+import Editor from "../components/Editor.vue"
+import config from "../config"
+import Preview from "../components/Preview.vue"
 
 @Component({
     components: {
@@ -52,32 +52,32 @@ import Preview from "../components/Preview.vue";
 })
 export default class NewPost extends Vue {
     public $refs: {
-        editcol: HTMLDivElement;
-        editor: any;
-    };
-    protected renderedContent: string;
-    protected ready = false;
-    protected editor = null;
-    protected width: number | null;
-    protected height: number | null;
+        editcol: HTMLDivElement
+        editor: any
+    }
+    protected renderedContent: string
+    protected ready = false
+    protected editor = null
+    protected width: number | null
+    protected height: number | null
     private options = {
         fontLigatures: true,
         fontFamily: "Fira Code",
         wordWrap: true,
         minimap: { enabled: false }
-    };
+    }
 
     constructor() {
-        super();
-        this.renderedContent = "";
-        this.width = null;
-        this.height = null;
+        super()
+        this.renderedContent = ""
+        this.width = null
+        this.height = null
     }
 
     protected updateDimensions() {
         if (this.$refs.editcol) {
-            this.width = this.$refs.editcol.clientWidth;
-            this.height = this.$refs.editcol.clientHeight;
+            this.width = this.$refs.editcol.clientWidth
+            this.height = this.$refs.editcol.clientHeight
         } else {
             window.removeEventListener("resize", this.updateDimensions.bind(this))
         }
@@ -86,51 +86,51 @@ export default class NewPost extends Vue {
 
     protected mounted() {
         if (this.isAuthenticated) {
-            window.addEventListener("resize", this.updateDimensions.bind(this));
-            this.width = this.$refs.editcol.clientWidth;
-            this.height = this.$refs.editcol.clientHeight;
+            window.addEventListener("resize", this.updateDimensions.bind(this))
+            this.width = this.$refs.editcol.clientWidth
+            this.height = this.$refs.editcol.clientHeight
         } else {
-            this.$router.push("/");
+            this.$router.push("/")
         }
     }
 
     get isAuthenticated() {
-        return this.$store.getters.isAuthenticated;
+        return this.$store.getters.isAuthenticated
     }
 
     get theme() {
-        return this.$store.getters.getTheme;
+        return this.$store.getters.getTheme
     }
 
     get title() {
-        return this.$store.getters.getPostTitle;
+        return this.$store.getters.getPostTitle
     }
     set title(val) {
-        this.$store.dispatch("editPostTitle", val);
+        this.$store.dispatch("editPostTitle", val)
     }
 
     get content() {
-        return this.$store.getters.getContent;
+        return this.$store.getters.getContent
     }
     set content(val) {
-        this.$store.dispatch("editContent", val);
+        this.$store.dispatch("editContent", val)
     }
 
     get tags() {
-        return this.$store.getters.getTags;
+        return this.$store.getters.getTags
     }
     set tags(val) {
-        this.$store.dispatch("editTags", val);
+        this.$store.dispatch("editTags", val)
     }
 
     get parsedTags() {
         let re = /(^|\s)(#[a-z\d-_]+)/g,
-            match;
-        let foo = [];
+            match
+        let foo = []
         while ((match = re.exec(this.tags))) {
-            if (!foo.find(thing => thing === match[2])) foo.push(match[2]);
+            if (!foo.find(thing => thing === match[2])) foo.push(match[2])
         }
-        return foo;
+        return foo
     }
 
     // substring MAGIC
@@ -140,8 +140,8 @@ export default class NewPost extends Vue {
     }
 
     get vsTheme() {
-        const theme = this.$store.getters.getTheme;
-        return theme === "dark" ? "dracula" : "vs-light";
+        const theme = this.$store.getters.getTheme
+        return theme === "dark" ? "dracula" : "vs-light"
     }
 
     protected post() {
@@ -152,33 +152,33 @@ export default class NewPost extends Vue {
                 { withCredentials: true }
             )
             .then(res => {
-                this.title = "";
-                this.content = "";
-                this.$store.dispatch("fetchPosts", 1);
-                this.$router.push("/");
+                this.title = ""
+                this.content = ""
+                this.$store.dispatch("fetchPosts", 1)
+                this.$router.push("/")
                 this.$store.dispatch("addAlert", {
                     alertType: "success",
                     alertText: res.data.success
-                });
+                })
             })
             .catch(err => {
                 if (err.response.status === 401) {
-                    this.$store.dispatch("forceLogout");
-                    this.$router.push("/login");
+                    this.$store.dispatch("forceLogout")
+                    this.$router.push("/login")
                 }
                 if (err.response.data) {
-                    console.log(err.response);
+                    console.log(err.response)
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
                         alertText: err.response.data.error
-                    });
+                    })
                 } else {
                     this.$store.dispatch("addAlert", {
                         alertType: "danger",
                         alertText: "Something went wrong."
-                    });
+                    })
                 }
-            });
+            })
     }
 }
 </script>
