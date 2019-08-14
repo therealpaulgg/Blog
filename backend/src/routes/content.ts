@@ -37,29 +37,30 @@ router.get("/tags/:pageNum", async (req, res) => {
     }
 })
 
-let tagWithPostsQuery = 
-    `
-    select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, t.id as "tagId", t."tagStr", u.id, u.username
-    from post_tags_tag pt, tag t, "user" u,
-        (select p.*
-            from post p, post_tags_tag pt, tag t
-            where p.id = pt."postId" 
-            and pt."tagId" = t.id
-            and t."tagStr" = $1) p
-    where p.id = pt."postId" 
-        and t.id = pt."tagId"
-        and u.id = p."userId"
-    ORDER BY p."createdAt" DESC
-    `
+let tagPostsQuery = `
+select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, t.id as "tagId", t."tagStr", u.id, u.username
+from post_tags_tag pt, tag t, "user" u,
+    (select p.*
+     from post p, post_tags_tag pt, tag t
+     where p.id = pt."postId" 
+       and pt."tagId" = t.id
+       and t."tagStr" = $1) p
+where p.id = pt."postId" 
+  and t.id = pt."tagId"
+  and u.id = p."userId"
+ORDER BY p."createdAt" DESC
+`
 
 router.get("/tag/:tag/:pageNum", async (req, res) => {
     try {
-        let id = parseInt(req.params.id)
         let tag = req.params.tag
         let pageNum = req.params.pageNum
-        if (!isNaN(id) && tag != null && pageNum != null && pageNum >= 1) {
+        if (tag != null && pageNum != null && pageNum >= 1) {
             const postRepo = getConnection().getRepository(Post)
-            let data: any[] = await postRepo.query(tagWithPostsQuery, [tag])
+            let data: any[] = await postRepo.query(
+                tagPostsQuery,
+                [tag]
+            )
             // most efficient algorithm ever, better time complexity but lower space complexity
             let sending = []
             let seen = {}
