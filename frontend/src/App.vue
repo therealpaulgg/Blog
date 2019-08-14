@@ -7,11 +7,12 @@
                 <hr />
                 <b-alert
                     v-if="alert"
-                    show
+                    :show="dismissCountDown"
                     dismissible
                     fade
                     :variant="alert.alertType"
-                    @dismissed="alert = null"
+                    @dismissed="alert = null; dismissCountDown = 0"
+                    @dismiss-count-down="countDownChanged"
                 >{{alert.alertText}}</b-alert>
                 <div>
                     <b-nav tabs>
@@ -67,6 +68,8 @@ import BootstrapVue from "bootstrap-vue"
 import config from "./config"
 import { determineTokenRefreshInterval } from "./loginfunc"
 
+const alertFadeTime: number = 5
+
 @Component
 export default class App extends Vue {
     @Action("setTheme") protected setTheme: any
@@ -75,11 +78,16 @@ export default class App extends Vue {
     @Getter("canPost") protected canPost: boolean
     @Getter("isAdmin") protected isAdmin: boolean
     @Getter("getTheme") private getTheme: string
+    protected dismissCountDown: number = 0    
 
     protected changeTheme() {
         this.getTheme === "light"
             ? this.setTheme("dark")
             : this.setTheme("light")
+    }
+
+    protected countDownChanged(newCountdown) {
+        this.dismissCountDown = newCountdown
     }
 
     get icon() {
@@ -93,6 +101,7 @@ export default class App extends Vue {
     }
 
     get alert() {
+        this.dismissCountDown = alertFadeTime
         return this.$store.state.alert
     }
     set alert(val) {
@@ -115,7 +124,6 @@ export default class App extends Vue {
     }
 }
 </script>
-
 
 <style lang="sass">
 @import url("https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css")

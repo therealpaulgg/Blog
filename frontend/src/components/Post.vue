@@ -668,7 +668,7 @@ a:hover
     .hashtag:hover
         color: #00ccff
     .hashtag-edit
-        background-color: #e9ecef !important
+        background-color: white 
     .hashtag-edit:hover
         color: #00ccff
 </style>

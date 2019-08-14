@@ -6,9 +6,9 @@ export class Permissions {
         "/settingdata": 3,
         "/setuserpermissions": 3
     }
-    constructor(stack) {
+    constructor() {
         // Any route which has not explicitly set permissions will be assumed to be 'normal'.
         // Not all routes need to be manually set!
-        stack.forEach(layer => this.perms[layer.route.path] = this.perms[layer.route.path] != null ? this.perms[layer.route.path] : 0)
+        // stack.forEach(layer => this.perms[layer.route.path] = this.perms[layer.route.path] != null ? this.perms[layer.route.path] : 0)
     }
 }

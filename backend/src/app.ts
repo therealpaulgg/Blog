@@ -1,7 +1,7 @@
 import dotenv from "dotenv"
 dotenv.config()
 import "reflect-metadata"
-import routes from "./routes"
+import { router } from "./routes"
 import express from "express"
 import cookieParser from "cookie-parser"
 import morgan from "morgan"
@@ -28,7 +28,7 @@ app.use(function (req, res, next) {
 app.use(morgan("combined"))
 app.use(express.json())
 app.use(cookieParser())
-app.use("/", routes)
+app.use("/", router)
 
 // start express server
 app.listen(process.env.PORT, () => console.log(`listening on port ${process.env.PORT}`))
