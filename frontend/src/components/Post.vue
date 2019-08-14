@@ -4,7 +4,7 @@
             <a @click="$router.go(-1)">
                 <font-awesome-icon style="margin-right: 10px" icon="arrow-left"></font-awesome-icon>Back
             </a>
-            <div v-if="!notFound">
+            <div v-if="notFound === false">
                 <hr />
                 <h1 class="bigtitle">{{header}}</h1>
                 <div class="metadata">
@@ -162,6 +162,12 @@
                     <p v-else>All comments loaded.</p>
                 </div>
             </div>
+            <div v-else-if="notFound === null" style="text-align: center">
+                <LoadingAnimation></LoadingAnimation>
+            </div>
+            <div v-else>
+                <h1>No post found.</h1>
+            </div>
         </div>
     </div>
 </template>
@@ -178,12 +184,14 @@ import Editor from "./Editor.vue"
 import Preview from "./Preview.vue"
 import { md } from "../mdparser"
 import config from "../config"
+import LoadingAnimation from "./LoadingAnimation.vue"
 
 @Component({
     components: {
         Comment,
         Editor,
-        Preview
+        Preview,
+        LoadingAnimation
     }
 })
 export default class Post extends Vue {
@@ -232,7 +240,7 @@ export default class Post extends Vue {
         this.pages = 1
         this.currentPage = 1
         this.tags = null
-        this.notFound = false
+        this.notFound = null
         this.editingTags = ""
         this.commentLimit = null
         this.commentLimitVal = null
@@ -520,6 +528,7 @@ export default class Post extends Vue {
 
     protected async fetchData() {
         try {
+            this.notFound = null
             const { data }: { data: PostModel } = await axios.get(
                 `${config.apiUrl}/post/${this.id}/${this.title}/${this.currentPage}`,
                 { withCredentials: true }
@@ -546,6 +555,7 @@ export default class Post extends Vue {
             }
             this.createdAt = data.createdAt
             this.updatedAt = data.updatedAt
+            this.notFound = false
         } catch (err) {
             this.notFound = true
             if (err.response.data) {

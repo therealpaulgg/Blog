@@ -1,18 +1,22 @@
 <template>
     <div class="tags">
-        <div style="position: relative">
-            <div
-                style="display: inline-block"
-                v-for="(tag, index) in tags"
-                :key="index"
-                class="hashtag"
-                @click="fooBar(tag)"
-            >#{{tag}}</div>
+        <div v-if="tags !== null">
+            <div style="position: relative">
+                <div
+                    style="display: inline-block"
+                    v-for="(tag, index) in tags"
+                    :key="index"
+                    class="hashtag"
+                    @click="fooBar(tag)"
+                >#{{tag}}</div>
+            </div>
+            <b-button v-if="show" @click="load" :variant="theme">Load More Tags</b-button>
+            <p v-else-if="tags && tags.length === 0">No tags found.</p>
+            <p v-else>All tags loaded.</p>
         </div>
-        <b-button v-if="show" @click="load" :variant="theme">Load More Tags</b-button>
-        <p v-else-if="tags && tags.length === 0">No tags found.</p>
-        <p v-else>All tags loaded.</p>
-        <!-- I dont really know what to do for this. Maybe show users, posts, etc in paginated format?-->
+        <div v-else>
+            <LoadingAnimation></LoadingAnimation>
+        </div>
     </div>
 </template>
 
@@ -22,8 +26,13 @@ import PostBlock from "@/components/PostBlock.vue" // @ is an alias to /src
 import axios from "axios"
 import { State } from "vuex-class"
 import config from "../config"
+import LoadingAnimation from "../components/LoadingAnimation.vue"
 
-@Component
+@Component({
+    components: {
+        LoadingAnimation
+    }
+})
 export default class Tags extends Vue {
     protected currentPage: number
     protected pages: number | null
@@ -32,7 +41,7 @@ export default class Tags extends Vue {
     constructor() {
         super()
         this.currentPage = 1
-        this.tags = []
+        this.tags = null
         this.pages = null
     }
 

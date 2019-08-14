@@ -1,7 +1,7 @@
 <template>
     <div class="profile">
         <!-- <p>Not implemented yet.</p> -->
-        <div v-if="!notFound">
+        <div v-if="notFound === false">
             <div class="row">
                 <div class="col">
                     <img :src="gravatarUrl" />
@@ -116,41 +116,64 @@
                 </div>
                 <div class="col">
                     <h1 style="text-align: center">Posts</h1>
-                    <PostBlock
-                        v-for="post in posts"
-                        :key="post.postId"
-                        :title="post.title"
-                        :content="post.content"
-                        :urlTitle="post.urlTitle"
-                        :createdAt="post.createdAt"
-                        :updatedAt="post.updatedAt"
-                        :id="post.postId"
-                        :author="post.username"
-                        :tags="post.tags"
-                        :condensed="true"
-                    ></PostBlock>
-                    <b-button v-if="showPostBtn" @click="loadPosts" :variant="theme">Load More Posts</b-button>
-                    <p v-else-if="posts && posts.length === 0">No posts found.</p>
-                    <p v-else>All posts loaded.</p>
+                    <div v-if="posts !== null">
+                        <PostBlock
+                            v-for="post in posts"
+                            :key="post.postId"
+                            :title="post.title"
+                            :content="post.content"
+                            :urlTitle="post.urlTitle"
+                            :createdAt="post.createdAt"
+                            :updatedAt="post.updatedAt"
+                            :id="post.postId"
+                            :author="post.username"
+                            :tags="post.tags"
+                            :condensed="true"
+                        ></PostBlock>
+                        <b-button
+                            v-if="showPostBtn"
+                            @click="loadPosts"
+                            :variant="theme"
+                        >Load More Posts</b-button>
+                        <p v-else-if="posts && posts.length === 0">No posts found.</p>
+                        <p v-else>All posts loaded.</p>
+                    </div>
+                    <div v-else-if="postLoadingFailed">
+                        <p>Posts failed to load.</p>
+                    </div>
+                    <div v-else style="text-align: center">
+                        <LoadingAnimation></LoadingAnimation>
+                    </div>
                 </div>
                 <div class="col">
                     <h1 style="text-align: center">Comments</h1>
-                    <Comment
-                        v-for="comment in comments"
-                        :key="comment.id"
-                        :comment="comment"
-                        :ownsPost="false"
-                        :condensed="true"
-                    />
-                    <b-button
-                        v-if="showCommentBtn"
-                        @click="loadComments"
-                        :variant="theme"
-                    >Load More Comments</b-button>
-                    <p v-else-if="comments && comments.length === 0">No comments found.</p>
-                    <p v-else>All comments loaded.</p>
+                    <div v-if="comments !== null">
+                        <Comment
+                            v-for="comment in comments"
+                            :key="comment.id"
+                            :comment="comment"
+                            :ownsPost="false"
+                            :condensed="true"
+                        />
+                        <b-button
+                            v-if="showCommentBtn"
+                            @click="loadComments"
+                            :variant="theme"
+                        >Load More Comments</b-button>
+                        <p v-else-if="comments && comments.length === 0">No comments found.</p>
+                        <p v-else>All comments loaded.</p>
+                    </div>
+                    <div v-else-if="commentLoadingFailed">
+                        <p>Comments failed to load.</p>
+                    </div>
+                    <div v-else style="text-align: center">
+                        <LoadingAnimation></LoadingAnimation>
+                    </div>
                 </div>
             </div>
+        </div>
+        <div v-else-if="notFound === null" style="text-align: center">
+            <LoadingAnimation></LoadingAnimation>
         </div>
         <div v-else>
             <h1>User '{{user}}' not found.</h1>
@@ -179,11 +202,13 @@ import Comment from "../components/Comment.vue"
 import { PostModel } from "../models/post"
 import { CommentModel } from "../models/comment"
 import config from "../config"
+import LoadingAnimation from "../components/LoadingAnimation.vue"
 
 @Component({
     components: {
         PostBlock,
-        Comment
+        Comment,
+        LoadingAnimation
     }
 })
 export default class Profile extends Vue {
@@ -194,12 +219,14 @@ export default class Profile extends Vue {
     protected permissionLevel: string | null
     protected age: string | null
     protected bio: string | null
-    protected notFound: boolean = false
+    protected notFound: boolean = null
     protected editing: boolean = false
     protected postPage: number = 1
     protected commentPage: number = 1
     protected posts: PostModel[]
+    protected postLoadingFailed: boolean = false
     protected comments: CommentModel[]
+    protected commentLoadingFailed: boolean = false
     protected postPages: number | null
     protected commentPages: number | null
     protected changingPassword: boolean = false
@@ -217,8 +244,8 @@ export default class Profile extends Vue {
         this.permissionLevel = null
         this.age = null
         this.bio = null
-        this.posts = []
-        this.comments = []
+        this.posts = null
+        this.comments = null
         this.postPages = null
         this.commentPages = null
     }
@@ -374,6 +401,7 @@ export default class Profile extends Vue {
 
     protected async postData() {
         try {
+            this.postLoadingFailed = false
             const { data } = await axios.get(
                 `${config.apiUrl}/userposts/${this.user}/${this.postPage}`
             )
@@ -387,12 +415,13 @@ export default class Profile extends Vue {
                 }
             }
         } catch {
-            this.notFound = true
+            this.postLoadingFailed = true
         }
     }
 
     protected async commentData() {
         try {
+            this.commentLoadingFailed = false
             const { data } = await axios.get(
                 `${config.apiUrl}/usercomments/${this.user}/${this.postPage}`
             )
@@ -406,7 +435,7 @@ export default class Profile extends Vue {
                 }
             }
         } catch {
-            this.notFound = true
+            this.commentLoadingFailed = true
         }
     }
 
@@ -428,6 +457,7 @@ export default class Profile extends Vue {
             this.permissionLevel = data.permissionLevel
             this.age = moment(data.createdAt).fromNow()
             this.bio = data.bio
+            this.notFound = false
         } catch {
             this.notFound = true
         }
