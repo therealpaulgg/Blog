@@ -4,7 +4,7 @@
             <a @click="$router.go(-1)">
                 <font-awesome-icon style="margin-right: 10px" icon="arrow-left"></font-awesome-icon>Back
             </a>
-            <div v-if="notFound != null">
+            <div v-if="notFound === false">
                 <hr />
                 <h1 class="bigtitle">{{header}}</h1>
                 <div class="metadata">
@@ -141,7 +141,7 @@
             <div v-else-if="notFound === null" style="text-align: center">
                 <LoadingAnimation></LoadingAnimation>
             </div>
-            <div v-else>
+            <div v-else-if="notFound === true">
                 <h1>No post found.</h1>
             </div>
         </div>

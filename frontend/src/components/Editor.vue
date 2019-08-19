@@ -9,7 +9,6 @@
 <script lang="ts">
 import { Component, Vue, Watch, Prop } from "vue-property-decorator"
 import axios from "axios"
-import { MonacoWindow } from "../interfaces/window"
 import "codemirror/mode/markdown/markdown.js"
 import "codemirror/theme/dracula.css"
 import "codemirror/theme/base16-light.css"
