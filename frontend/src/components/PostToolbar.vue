@@ -7,7 +7,7 @@
             @click="toggle(0)"
             ref="linkbtn"
         ></font-awesome-icon>
-        <img
+        <!-- <img
             class="icon emoji"
             draggable="false"
             alt="😃"
@@ -27,7 +27,7 @@
                 :style="getStyle"
                 color="white"
             />
-        </div>
+        </div> -->
         <font-awesome-icon class="icon" icon="code" ref="codebtn" @click="toggle(2)"></font-awesome-icon>
 
         <div
@@ -75,14 +75,15 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator"
-import { Picker } from "emoji-mart-vue-fast"
-import "../assets/css/emoji-mart.css"
+// import { Picker } from "emoji-mart-vue-fast"
+// import "../assets/css/emoji-mart.css"
 
-@Component({
-    components: {
-        Picker
-    }
-})
+// @Component({
+//     components: {
+//         Picker
+//     }
+// })
+@Component
 export default class PostToolbar extends Vue {
     @Prop() protected editor: any
     protected popups: boolean[]

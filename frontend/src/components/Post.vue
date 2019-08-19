@@ -93,7 +93,7 @@
                     />
                     <br />
                     <br />
-                    <MarkdownEditor height="300px" width="auto" v-model="editContent" :initialContent="editContent" :title="title"/>
+                    <MarkdownEditor height="300px" width="auto" v-model="editContent" :initialContent="editContent" :title="editTitle"/>
                     <div style="padding-top: 15px">
                         <a class="button" style="margin-right: 10px" @click="editing = false">Cancel</a>
                         <a class="button" :class="theme" @click="makeEdits">Submit Edit</a>
@@ -247,7 +247,7 @@ export default class Post extends Vue {
                     alertType: "success",
                     alertText: res.data.success
                 })
-                this.$router.push("/")
+                this.$router.replace("/")
             })
             .catch((err) => {
                 if (err.response) {
@@ -342,7 +342,7 @@ export default class Post extends Vue {
             if (newUrlTitle === this.title) {
                 this.fetchData()
             } else {
-                this.$router.push(`/posts/${this.id}/${newUrlTitle}`)
+                this.$router.replace(`/posts/${this.id}/${newUrlTitle}`)
             }
         } catch (err) {
             if (err.response.status === 401) {

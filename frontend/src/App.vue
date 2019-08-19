@@ -100,6 +100,12 @@ export default class App extends Vue {
         return this.getTheme === "light" ? "sun" : "moon"
     }
 
+    // get cssUrl() {
+    //     return this.getTheme === "light"
+    //         ? "https://cdn.jsdelivr.net/gh/highlightjs/highlight.js/src/styles/atom-one-light.css"
+    //         : "https://cdn.jsdelivr.net/gh/highlightjs/highlight.js/src/styles/dracula.css"
+    // }
+
     get cssUrl() {
         return this.getTheme === "light"
             ? "https://cdn.jsdelivr.net/gh/PrismJS/prism-themes/themes/prism-base16-ateliersulphurpool.light.css"

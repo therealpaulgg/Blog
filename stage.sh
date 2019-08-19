@@ -25,7 +25,7 @@ if [ "$app" = "y" ] ; then
      echo "Compile app before uploading? (y/n)"
     read compileapp
     if [ "$compileapp" = "y" ] ; then
-        echo "Please set the config to the proper blog endpoint before continuing (api.blog.paulgellai.dev)."
+        echo "Please set the config to the proper blog endpoint before continuing (api.test.blog.paulgellai.dev)."
         read -p "Press enter to continue. "
         cd frontend
         yarn build --prod
