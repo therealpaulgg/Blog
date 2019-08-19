@@ -203,12 +203,14 @@ import { PostModel } from "../models/post"
 import { CommentModel } from "../models/comment"
 import config from "../config"
 import LoadingAnimation from "../components/LoadingAnimation.vue"
+import { BButton } from "bootstrap-vue"
 
 @Component({
     components: {
         PostBlock,
         Comment,
-        LoadingAnimation
+        LoadingAnimation,
+        BButton
     }
 })
 export default class Profile extends Vue {

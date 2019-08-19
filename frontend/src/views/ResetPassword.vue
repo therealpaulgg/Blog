@@ -39,8 +39,18 @@ import axios from "axios"
 import { Action } from "vuex-class"
 
 import config from "../config"
+import {BRow, BCol, BContainer, BInputGroup, BFormInput, BButton} from "bootstrap-vue"
 
-@Component
+@Component({
+    components: {
+        BRow,
+        BCol,
+        BContainer,
+        BInputGroup,
+        BFormInput,
+        BButton
+    }
+})
 export default class ResetPassword extends Vue {
     @Prop() protected token: string
     protected username: string

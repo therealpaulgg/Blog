@@ -74,11 +74,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator"
+import { Component, Prop, Vue, Watch } from "vue-property-decorator"
 import { Picker } from "emoji-mart-vue-fast"
 import "../assets/css/emoji-mart.css"
-import monaco from "monaco-editor"
-import { MonacoWindow } from "../interfaces/window"
 
 @Component({
     components: {
@@ -139,7 +137,7 @@ export default class PostToolbar extends Vue {
                 if (this.functions[i] != null) {
                     const fn = this.functions[i].function
                     const args = this.functions[i].args
-                    this.insertMonaco(fn, args)
+                    this.insertIntoEditor(fn, args)
                 }
             } else {
                 Vue.set(this.popups, i, false)
@@ -147,45 +145,32 @@ export default class PostToolbar extends Vue {
         }
     }
 
-    protected insertMonaco(fn: (...args) => any, args: any[]) {
-        const line = this.editor.getEditor().getSelection()
-        const extWindow: MonacoWindow = window
-        const range = new extWindow.monaco.Range(
-            line.startLineNumber,
-            line.startColumn,
-            line.endLineNumber,
-            line.endColumn
-        )
-        const id = { major: 1, minor: 1 }
-        const text = fn(...args, line)
+    @Watch("editor")
+    do() {
+        console.log(this.editor.doc.getSelection())
+    }
+
+    protected insertIntoEditor(fn: (...args) => any, args: any[]) {
+        const range = this.editor.doc.getSelection()
+        const text = fn(...args)
         if (text) {
-            const op = {
-                identifier: id,
-                range,
-                text,
-                forceMoveMarkers: true
-            }
-            this.editor.getEditor().executeEdits("lol", [op])
+            this.editor.replaceSelection(text, range)
         }
     }
 
     protected makeLink(line) {
         return `[${this.editor
-            .getEditor()
-            .getModel()
-            .getValueInRange(line)}](${this.editor
-            .getEditor()
-            .getModel()
-            .getValueInRange(line)})`
+            .doc.getSelection()}]
+            (${this.editor
+                .doc.getSelection()})`
     }
 
     protected styleText(prefix: string, suffix: string, line) {
         const prefixLen = prefix.length
         const suffixLen = suffix.length
         const val: string = this.editor
-            .getEditor()
-            .getModel()
-            .getValueInRange(line)
+            .doc
+            .getSelection()
         // Cool code that makes it so that if the selected text has identical prefixes/suffixes
         // (i.e bolded already), it removes the selected styling.
         const preSubstr = val.substring(0, prefixLen)
@@ -203,29 +188,15 @@ export default class PostToolbar extends Vue {
             : {}
     }
 
-    protected insertMonacoNoFunc(text) {
-        const line = this.editor.getEditor().getSelection()
-        const extWindow: MonacoWindow = window
-        const range = new extWindow.monaco.Range(
-            line.startLineNumber,
-            line.startColumn,
-            line.endLineNumber,
-            line.endColumn
-        )
-        const id = { major: 1, minor: 1 }
+    protected insertIntoEditorNoFunc(text) {
+        const line = this.editor.doc.getSelection()
         if (text) {
-            const op = {
-                identifier: id,
-                range,
-                text,
-                forceMoveMarkers: true
-            }
-            this.editor.getEditor().executeEdits("lol", [op])
+            this.editor.replaceSelection(text, line)
         }
     }
 
     protected addEmoji(emoji) {
-        this.insertMonacoNoFunc(emoji.colons)
+        this.insertIntoEditorNoFunc(emoji.colons)
         this.closeAll()
     }
 
@@ -234,7 +205,7 @@ export default class PostToolbar extends Vue {
         if (this.$store.getters.getContent !== "") {
             str = "\n"
         }
-        this.insertMonacoNoFunc(
+        this.insertIntoEditorNoFunc(
             `${str}\`\`\`${this.language.toLowerCase()}\nCODE HERE\n\`\`\``
         )
         this.closeAll()

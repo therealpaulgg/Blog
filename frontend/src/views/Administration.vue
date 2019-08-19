@@ -171,11 +171,17 @@ import { ToggleButton } from "vue-js-toggle-button"
 import config from "../config"
 import { AdminSettings } from "../models/admin-settings"
 import LoadingAnimation from "../components/LoadingAnimation.vue"
+import { BInputGroup, BButton, BFormInput, BDropdown, BDropdownItem} from "bootstrap-vue"
 
 @Component({
     components: {
         ToggleButton,
-        LoadingAnimation
+        LoadingAnimation,
+        BInputGroup,
+        BButton,
+        BFormInput,
+        BDropdown,
+        BDropdownItem
     }
 })
 export default class Administration extends Vue {

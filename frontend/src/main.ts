@@ -2,7 +2,7 @@ import Vue from "vue"
 import App from "./App.vue"
 import router from "./router"
 import store from "./store/store"
-import BootstrapVue from "bootstrap-vue"
+// import BootstrapVue from "bootstrap-vue"
 import VueShortkey from "vue-shortkey"
 import axios from "axios"
 import config from "./config"
@@ -67,7 +67,7 @@ Vue.component("font-awesome-icon", FontAwesomeIcon)
 
 Vue.config.productionTip = false
 
-Vue.use(BootstrapVue)
+// Vue.use(BootstrapVue)
 Vue.use(VueShortkey)
 
 // Thank you very much for this

@@ -189,7 +189,7 @@ import "prismjs/components/prism-xquery"
 import "prismjs/components/prism-yaml"
 import emoji from "markdown-it-emoji"
 import math from "markdown-it-math"
-import katex from "katex"
+import {renderToString} from "katex"
 import twemoji from "twemoji"
 import markdownItAttrs from "markdown-it-attrs"
 import mentions from "markdown-it-mentions"
@@ -238,7 +238,7 @@ md.use(math, {
   inlineRenderer: (str: string) => {
     let output = ""
     try {
-      output = katex.renderToString(str.trim())
+      output = renderToString(str.trim())
     } catch (err) {
       output = err.message
     }
@@ -247,7 +247,7 @@ md.use(math, {
   blockRenderer: (str: string) => {
     let output = ""
     try {
-      output = katex.renderToString(str.trim(), { displayMode: true })
+      output = renderToString(str.trim(), { displayMode: true })
     } catch (err) {
       output = err.message
     }

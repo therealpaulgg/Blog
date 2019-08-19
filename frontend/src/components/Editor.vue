@@ -1,49 +1,38 @@
 <template>
     <div class="editor">
-        <PostToolbar :editor="this.editor" />
-        <div id="monacoeditor"></div>
-        <MonacoEditor
-            ref="editor"
-            class="editor"
-            language="markdown"
-            v-model="content"
-            :theme="vsTheme"
-            :options="options"
-            :width="width"
-        />
+        <div class="codemirror">
+            <PostToolbar :editor="this.editor"/>
+            <codemirror ref="editor" class="codemirror" v-model="content" :options="cmOption"></codemirror>
+        </div>
     </div>
 </template>
 <script lang="ts">
 import { Component, Vue, Watch, Prop } from "vue-property-decorator"
 import axios from "axios"
-import MonacoEditor from "vue-monaco"
-import dracula from "../assets/Dracula.json"
 import { MonacoWindow } from "../interfaces/window"
-import PostToolbar from "../components/PostToolbar.vue"
+import "codemirror/mode/markdown/markdown.js"
+import "codemirror/theme/dracula.css"
+import "codemirror/theme/base16-light.css"
+import "codemirror/lib/codemirror.css"
+import { codemirror } from "vue-codemirror"
+import PostToolbar from "./PostToolbar.vue"
 
 @Component({
     components: {
-        MonacoEditor,
+        codemirror,
         PostToolbar
     }
 })
-export default class NewPost extends Vue {
-        public $refs: {
-        editcol: HTMLDivElement
+export default class Editor extends Vue {
+    public cmOption: any
+    public $refs: {
         editor: any
     }
-    @Prop(Number) protected height: number
-    @Prop(Number) protected width: number
     @Prop(String) protected initialContent: string
+    @Prop(String) height: string
+    @Prop(String) width: string
     protected content: string
-    protected ready = false
-    protected editor = null
-    private options = {
-        fontLigatures: true,
-        fontFamily: "Fira Code",
-        wordWrap: "on",
-        minimap: { enabled: false }
-    }
+    protected editor: any
 
     constructor() {
         super()
@@ -52,24 +41,16 @@ export default class NewPost extends Vue {
         } else {
             this.content = ""
         }
-    }
-
-    public updateDimensions() {
-        const height = this.height - 46
-        const width = this.width
-        if (this.height && this.width) {
-            this.editor.getEditor().layout({ height, width })
+        this.editor = null
+        this.cmOption = {
+            tabSize: 4,
+            styleActiveLine: true,
+            lineNumbers: true,
+            lineWrapping: true,
+            line: true,
+            mode: 'markdown',
+            theme: this.editorTheme
         }
-    }
-
-    @Watch("width")
-    protected updateWidth() {
-        this.updateDimensions()
-    }
-
-    @Watch("height")
-    protected updateHeight() {
-        this.updateDimensions()
     }
 
     @Watch("content")
@@ -77,32 +58,35 @@ export default class NewPost extends Vue {
         this.$emit("input", this.content)
     }
 
-    // I don't really care if this is inefficient, I've spend like 2 hours on
-    // this stupid issue of persisted state, and all I know is that if I use
-    // this it resets a text box after the properties are cleared properly.
-    @Watch("initialContent")
-    protected foo() {
-        this.content = this.initialContent
+    mounted() {
+        this.$refs.editor.cminstance.setOption("scrollbarStyle", "null")
+        this.$refs.editor.cminstance.setSize(this.width, this.height)
+        this.editor = this.$refs.editor.cminstance
     }
 
-    protected mounted() {
-        const extWindow: MonacoWindow = window
-        extWindow.monaco.editor.defineTheme("dracula", dracula)
-        extWindow.monaco.editor.setTheme(this.vsTheme)
-        this.editor = this.$refs.editor
-        this.updateDimensions()
+    @Watch("editorTheme")
+    protected um(newval, oldval) {
+        if (this.$refs.editor != null) {
+            console.log(this.$refs.editor.cminstance)
+            this.$refs.editor.cminstance.setOption("theme", newval)
+            this.$refs.editor.cminstance.refresh()
+        }
     }
 
     get theme() {
         return this.$store.getters.getTheme
     }
 
-    get vsTheme() {
+    get editorTheme() {
         const theme = this.$store.getters.getTheme
-        return theme === "dark" ? "dracula" : "vs-light"
+        return theme === "dark" ? "dracula" : "base16-light"
     }
 }
 </script>
 
-<style scoped lang="sass">
+<style lang="sass">
+.CodeMirror
+    font-family: "Fira Code", monospace
+    font-size: 14px
+    width: auto
 </style>

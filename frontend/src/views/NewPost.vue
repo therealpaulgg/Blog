@@ -27,21 +27,7 @@
         <br />
         <br />
         <label>Tags not in lowercase or with special characters will not be submitted.</label>
-        <div class="container">
-            <div class="row">
-                <div class="col">
-                    <Editor
-                        :height="height"
-                        :width="width"
-                        v-model="content"
-                        :initialContent="content"
-                    />
-                </div>
-                <div class="col preview" ref="editcol" :class="theme">
-                    <Preview :title="title" :content="content" />
-                </div>
-            </div>
-        </div>
+        <MarkdownEditor height="500px" width="auto" v-model="content" :initialContent="content" :title="title"/>
 
         <br />
         <a class="button" :class="theme" @click="post">Post</a>
@@ -56,11 +42,13 @@ import { md } from "../mdparser"
 import Editor from "../components/Editor.vue"
 import config from "../config"
 import Preview from "../components/Preview.vue"
+import MarkdownEditor from "../components/MarkdownEditor.vue"
 
 @Component({
     components: {
         Editor,
-        Preview
+        Preview,
+        MarkdownEditor
     }
 })
 export default class NewPost extends Vue {
@@ -87,24 +75,8 @@ export default class NewPost extends Vue {
         this.height = null
     }
 
-    protected updateDimensions() {
-        if (this.$refs.editcol) {
-            this.width = this.$refs.editcol.clientWidth
-            this.height = this.$refs.editcol.clientHeight
-        } else {
-            window.removeEventListener(
-                "resize",
-                this.updateDimensions.bind(this)
-            )
-        }
-    }
-
     protected mounted() {
-        if (this.isAuthenticated) {
-            window.addEventListener("resize", this.updateDimensions.bind(this))
-            this.width = this.$refs.editcol.clientWidth
-            this.height = this.$refs.editcol.clientHeight
-        } else {
+        if (!this.isAuthenticated) {
             this.$router.push("/")
         }
     }
@@ -221,10 +193,6 @@ export default class NewPost extends Vue {
     word-wrap: break-word
     margin: 0px
     padding: 20px
-.preview
-    padding: 0px
-    border-radius: 5px
-    overflow-y: auto
 .hashtag
     margin: 10px 
     padding-left: 10px
@@ -233,8 +201,6 @@ export default class NewPost extends Vue {
     padding-bottom: 5px 
     border-radius: 5px
 .dark
-    .preview
-        background-color: #2a2c39 !important
     .button
         background-color: #2a2c39 !important
     .title
@@ -243,8 +209,6 @@ export default class NewPost extends Vue {
     .hashtag
         background-color: black !important
 .light
-    .preview
-        background-color: #FFFFFE !important
     .button
         background-color: white !important
     .title

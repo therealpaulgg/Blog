@@ -64,13 +64,19 @@
 <script <script lang="ts">
 import { State, Getter, Action } from "vuex-class"
 import { Component, Vue } from "vue-property-decorator"
-import BootstrapVue from "bootstrap-vue"
+import { BNav, BNavItem, BAlert } from "bootstrap-vue"
 import config from "./config"
 import { determineTokenRefreshInterval } from "./loginfunc"
 
 const alertFadeTime: number = 5
 
-@Component
+@Component({
+    components: {
+        BNav,
+        BNavItem,
+        BAlert
+    }
+})
 export default class App extends Vue {
     @Action("setTheme") protected setTheme: any
     @Action("logout") protected logoutAction: any
@@ -134,6 +140,8 @@ export default class App extends Vue {
     src: url("https://cdn.jsdelivr.net/gh/tonsky/FiraCode@0.2.1/FiraCode-Regular.otf") format("opentype")
 code
     font-family: "Fira Code" !important
+// .CodeMirror
+//     font-family: "Fira Code" !important
 blockquote 
   margin: 0 auto
   padding: 1em
@@ -217,6 +225,17 @@ html, body
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3)
 
 .preview::-webkit-scrollbar-track
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
+
+
+.CodeMirror-scroll::-webkit-scrollbar
+    width: 10px
+
+.CodeMirror-scroll::-webkit-scrollbar-thumb
+    border-radius: 10px
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3)
+
+.CodeMirror-scroll::-webkit-scrollbar-track
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
 
 thead

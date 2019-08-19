@@ -4,7 +4,7 @@
             <a @click="$router.go(-1)">
                 <font-awesome-icon style="margin-right: 10px" icon="arrow-left"></font-awesome-icon>Back
             </a>
-            <div v-if="notFound === false">
+            <div v-if="notFound != null">
                 <hr />
                 <h1 class="bigtitle">{{header}}</h1>
                 <div class="metadata">
@@ -33,7 +33,7 @@
                         {{commentCount}}
                     </span>
                     <span
-                        v-if="isAuthenticated && (user === username || editPerms)"
+                        v-if="isAuthenticated && (user === username || editPerms) && !postingComment"
                         style="float: right"
                     >
                         <a @click="del" class="delete metaelement" :class="getTheme">Delete</a>
@@ -93,26 +93,14 @@
                     />
                     <br />
                     <br />
-                    <div class="row">
-                        <div class="col">
-                            <Editor
-                                :height="height"
-                                :width="width"
-                                v-model="editContent"
-                                :initialContent="editContent"
-                            />
-                        </div>
-                        <div class="col preview" ref="eContainer" :class="theme">
-                            <Preview :content="editContent" />
-                        </div>
-                    </div>
+                    <MarkdownEditor height="300px" width="auto" v-model="editContent" :initialContent="editContent" :title="title"/>
                     <div style="padding-top: 15px">
                         <a class="button" style="margin-right: 10px" @click="editing = false">Cancel</a>
                         <a class="button" :class="theme" @click="makeEdits">Submit Edit</a>
                     </div>
                 </div>
                 <div v-else>
-                    <div v-html="renderedContent"></div>
+                    <div style="word-wrap: break-word" v-html="renderedContent"></div>
                     <hr />
                     <h1>Comments</h1>
                     <a
@@ -131,21 +119,9 @@
                             v-if="commentLimit"
                         >/ {{commentLimitVal}}</span>
                     </p>
-                    <div class="row" style="padding-bottom: 15px">
-                        <div class="col">
-                            <Editor
-                                v-if="postingComment"
-                                :height="height"
-                                :width="width"
-                                v-model="commentContent"
-                                :initialContent="commentContent"
-                            />
-                        </div>
-                        <div class="col preview" ref="container" :class="theme">
-                            <Preview v-if="postingComment" :content="commentContent" />
-                        </div>
-                    </div>
+                    <MarkdownEditor v-if="postingComment" height="300px" width="auto" style="padding-bottom: 15px" v-model="commentContent" :initialContent="commentContent"/>
                     <div v-if="postingComment">
+                        <a class="button" style="margin-right: 10px" @click="postingComment = false">Cancel</a>
                         <a class="button" :class="theme" @click="postComment">Submit Comment</a>
                     </div>
                     <hr />
@@ -185,13 +161,15 @@ import Preview from "./Preview.vue"
 import { md } from "../mdparser"
 import config from "../config"
 import LoadingAnimation from "./LoadingAnimation.vue"
+import { BButton } from "bootstrap-vue"
+import MarkdownEditor from "./MarkdownEditor.vue"
 
 @Component({
     components: {
         Comment,
-        Editor,
-        Preview,
-        LoadingAnimation
+        LoadingAnimation,
+        BButton, 
+        MarkdownEditor
     }
 })
 export default class Post extends Vue {
@@ -331,23 +309,13 @@ export default class Post extends Vue {
 
     protected edit() {
         if (!this.editing) {
+            this.postingComment = false
             this.editContent = this.content
             this.editTitle = this.header
             this.editing = true
         } else {
             this.editing = false
         }
-    }
-
-    protected updateDimensions() {
-        if (this.$refs.container) {
-            this.width = this.$refs.container.clientWidth
-        } else if (this.$refs.eContainer) {
-            this.width = this.$refs.eContainer.clientWidth
-        } else {
-            this.width = null
-        }
-        this.height = 300
     }
 
     protected async makeEdits() {
@@ -439,9 +407,7 @@ export default class Post extends Vue {
     }
 
     protected mounted() {
-        window.addEventListener("resize", this.updateDimensions.bind(this))
         this.fetchData()
-        this.updateDimensions()
     }
 
     protected async loadComments() {

@@ -6,19 +6,38 @@
                 <b-row>
                     <b-col lg="4">
                         <b-input-group size="sm" prepend="Username">
-                            <b-form-input class="ifield" v-model="username" v-on:keyup.enter="setup"/>
+                            <b-form-input
+                                class="ifield"
+                                v-model="username"
+                                v-on:keyup.enter="setup"
+                            />
                         </b-input-group>
                         <br />
                         <b-input-group size="sm" prepend="Email">
-                            <b-form-input class="ifield" v-model="email" type="email" v-on:keyup.enter="setup"/>
+                            <b-form-input
+                                class="ifield"
+                                v-model="email"
+                                type="email"
+                                v-on:keyup.enter="setup"
+                            />
                         </b-input-group>
                         <br />
                         <b-input-group size="sm" prepend="Password">
-                            <b-form-input class="ifield" v-model="password" type="password" v-on:keyup.enter="setup"/>
+                            <b-form-input
+                                class="ifield"
+                                v-model="password"
+                                type="password"
+                                v-on:keyup.enter="setup"
+                            />
                         </b-input-group>
                         <br />
                         <b-input-group size="sm" prepend="Confirm Password">
-                            <b-form-input class="ifield" v-model="confirmPassword" type="password" v-on:keyup.enter="setup"/>
+                            <b-form-input
+                                class="ifield"
+                                v-model="confirmPassword"
+                                type="password"
+                                v-on:keyup.enter="setup"
+                            />
                         </b-input-group>
                         <br />
                         <b-input-group size="sm">
@@ -36,8 +55,13 @@ import { Component, Vue } from "vue-property-decorator"
 import axios from "axios"
 import config from "../config"
 import { State, Action } from "vuex-class"
+import { BInputGroup, BFormInput, BButton, BCol, BRow, BContainer } from "bootstrap-vue"
 
-@Component
+@Component({
+    components: {
+        BInputGroup, BFormInput, BButton, BCol, BRow, BContainer
+    }
+})
 export default class InitialSetup extends Vue {
     @Action("login") protected login: any
     @Action("logout") protected logout: any
@@ -79,6 +103,10 @@ export default class InitialSetup extends Vue {
             this.$store.dispatch("setCanPost", data.canPost)
             this.login(true)
             this.$router.push("/")
+            this.$store.dispatch("addAlert", {
+                alertType: "success",
+                alertText: "You have registered and have been logged in."
+            })
         } catch (err) {
             this.$store.dispatch("addAlert", {
                 alertType: "danger",

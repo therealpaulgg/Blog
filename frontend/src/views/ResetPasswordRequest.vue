@@ -29,8 +29,18 @@ import { Component, Vue, Prop } from "vue-property-decorator"
 import axios from "axios"
 import config from "../config"
 import { Action } from "vuex-class"
+import {BRow, BCol, BContainer, BInputGroup, BFormInput, BButton} from "bootstrap-vue"
 
-@Component
+@Component({
+    components: {
+        BRow,
+        BCol,
+        BContainer,
+        BInputGroup,
+        BFormInput,
+        BButton
+    }
+})
 export default class ResetPassword extends Vue {
     protected email: string
     constructor() {

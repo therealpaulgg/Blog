@@ -36,9 +36,18 @@ import axios from "axios"
 import { Action } from "vuex-class"
 import config from "../config"
 import { determineTokenRefreshInterval } from "../loginfunc"
-// import GSigninButton from "vue-google-signin-button"
+import {BRow, BCol, BContainer, BInputGroup, BFormInput, BButton} from "bootstrap-vue"
 
-@Component
+@Component({
+    components: {
+        BRow,
+        BCol,
+        BContainer,
+        BInputGroup,
+        BFormInput,
+        BButton
+    }
+})
 export default class Home extends Vue {
     @Action("login") protected login: any
     @Action("logout") protected logout: any

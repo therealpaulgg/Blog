@@ -27,10 +27,12 @@ import axios from "axios"
 import { State } from "vuex-class"
 import config from "../config"
 import LoadingAnimation from "../components/LoadingAnimation.vue"
+import {BButton} from "bootstrap-vue"
 
 @Component({
     components: {
-        LoadingAnimation
+        LoadingAnimation,
+        BButton
     }
 })
 export default class Tags extends Vue {
