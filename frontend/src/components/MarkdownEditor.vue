@@ -4,7 +4,7 @@
             <Editor :height="height" :width="width" v-model="localContent" :initialContent="localContent" />
         </div>
         <div style="width: 50%; height: auto" class="col preview" ref="editcol" :class="theme">
-            <Preview :title="title" :content="localContent" />
+            <Preview :title="title" :content="localContent" :useHtml="useHtml"/>
         </div>
     </div>
 </template>
@@ -27,6 +27,7 @@ export default class MarkdownEditor extends Vue {
     @Prop(String) title: string
     @Prop(String) height: string
     @Prop(String) width: string
+    @Prop(Boolean) useHtml: boolean
     @Getter("getTheme") protected theme: string
     protected localContent: string
 

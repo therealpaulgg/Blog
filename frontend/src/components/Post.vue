@@ -79,7 +79,7 @@
                             <font-awesome-icon
                                 @click="removeTag(tag)"
                                 icon="times-circle"
-                                style="font-size: 12px margin-left: 4pxfloat: right position: absolute cursor: pointer"
+                                style="font-size: 12px; margin-left: 4px; float: right; position: absolute; cursor: pointer"
                             />
                         </div>
                     </div>
@@ -93,11 +93,11 @@
                     />
                     <br />
                     <br />
-                    <MarkdownEditor height="300px" width="auto" v-model="editContent" :initialContent="editContent" :title="editTitle"/>
+                    <MarkdownEditor height="300px" width="auto" v-model="editContent" :initialContent="editContent" :title="editTitle" :useHtml="true"/>
                     <div style="padding-top: 15px">
                         <a class="button" style="margin-right: 10px" @click="editing = false">Cancel</a>
                         <a class="button" :class="theme" @click="makeEdits">Submit Edit</a>
-                    </div>
+                    </div>k
                 </div>
                 <div v-else>
                     <div style="word-wrap: break-word" v-html="renderedContent"></div>
@@ -119,7 +119,7 @@
                             v-if="commentLimit"
                         >/ {{commentLimitVal}}</span>
                     </p>
-                    <MarkdownEditor v-if="postingComment" height="300px" width="auto" style="padding-bottom: 15px" v-model="commentContent" :initialContent="commentContent"/>
+                    <MarkdownEditor v-if="postingComment" height="300px" width="auto" style="padding-bottom: 15px" v-model="commentContent" :initialContent="commentContent" :useHtml="false"/>
                     <div v-if="postingComment">
                         <a class="button" style="margin-right: 10px" @click="postingComment = false">Cancel</a>
                         <a class="button" :class="theme" @click="postComment">Submit Comment</a>
@@ -158,7 +158,7 @@ import { CommentModel } from "../models/comment"
 import Comment from "./Comment.vue"
 import Editor from "./Editor.vue"
 import Preview from "./Preview.vue"
-import { md } from "../mdparser"
+import { mdHtml, mdNoHtml } from "../mdparser"
 import config from "../config"
 import LoadingAnimation from "./LoadingAnimation.vue"
 import { BButton } from "bootstrap-vue"
@@ -227,7 +227,7 @@ export default class Post extends Vue {
 
     @Watch("content")
     protected renderContent() {
-        this.renderedContent = md.render(this.content)
+        this.renderedContent = mdHtml.render(this.content)
     }
 
     protected showCommentPost() {

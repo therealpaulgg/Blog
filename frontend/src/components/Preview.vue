@@ -7,25 +7,24 @@
 
 <script lang="ts">
 import { Component, Vue, Watch, Prop } from "vue-property-decorator"
-import { md } from "../mdparser"
+import { mdHtml, mdNoHtml } from "../mdparser"
 
 @Component
 export default class Preview extends Vue {
     protected renderedContent: string
     protected renderedTitle: string
     @Prop(String) protected content: string
-    protected localContent: string
     @Prop(String) private title: string
+    @Prop(Boolean) protected useHtml: boolean 
 
     constructor() {
         super()
         this.renderedContent = ""
         this.renderedTitle = this.title ? this.title : ""
         if (this.content) {
-            this.localContent = this.content
-            this.renderedContent = md.render(this.localContent)
+            this.renderedContent = this.useHtml ? mdHtml.render(this.content) : mdNoHtml.render(this.content)
         } else {
-            this.localContent = ""
+            this.content = ""
         }
     }
 
@@ -37,7 +36,7 @@ export default class Preview extends Vue {
     @Watch("content")
     protected test(val: string, oldVal: string) {
         try {
-            this.renderedContent = md.render(val)
+            this.renderedContent = this.useHtml ? mdHtml.render(this.content) : mdNoHtml.render(this.content)
         } catch (err) {
             // TODO: error handling
             // console.error(err)

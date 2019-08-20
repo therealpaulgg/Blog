@@ -1,3 +1,3 @@
 export default {
-    apiUrl: "https://api.blog.paulgellai.dev"
+    apiUrl: "http://localhost:3000"
 }

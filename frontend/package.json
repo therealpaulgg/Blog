@@ -28,6 +28,7 @@
     "markdown-it-math": "^4.1.1",
     "markdown-it-mentions": "^1.0.0",
     "markdown-it-prism": "^2.0.2",
+    "markdown-it-sanitizer": "^0.4.3",
     "moment": "^2.24.0",
     "monaco-themes": "^0.3.3",
     "monaco-typescript": "^3.5.0",
@@ -53,6 +54,7 @@
     "sass-loader": "^7.1.0",
     "typescript": "^3.4.3",
     "vue-template-compiler": "^2.6.10",
+    "webpack": "^4.39.2",
     "webpack-cli": "^3.3.7"
   }
 }

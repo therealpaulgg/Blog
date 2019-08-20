@@ -189,10 +189,11 @@ import "prismjs/components/prism-xquery"
 import "prismjs/components/prism-yaml"
 import emoji from "markdown-it-emoji"
 import math from "markdown-it-math"
-import {renderToString} from "katex"
+import { renderToString } from "katex"
 import twemoji from "twemoji"
 import markdownItAttrs from "markdown-it-attrs"
 import mentions from "markdown-it-mentions"
+import markdown_it_sanitizer from "markdown-it-sanitizer"
 
 // Old code that was used for highlightJS
 
@@ -213,55 +214,75 @@ import mentions from "markdown-it-mentions"
 //   }
 // })
 
-export let md: markdownit = markdownit({
-  highlight: (str, lang) => {
+function highlightFunction(str, lang) {
     if (lang) {
-      const langObject = Prism.languages[lang]
-      try {
-        return (
-          `<pre class="language-${lang}"><code>` +
-          Prism.highlight(str, langObject, lang) +
-          "</code></pre>"
-        )
-      } catch (__) {
-        // pass
-      }
+        const langObject = Prism.languages[lang]
+        try {
+            return (
+                `<pre class="language-${lang}"><code>` +
+                Prism.highlight(str, langObject, lang) +
+                "</code></pre>"
+            )
+        } catch (__) {
+            // pass
+        }
     }
-    return `<pre class="language-"><code>` + md.utils.escapeHtml(str) + "</code></pre>"
-  }
-})
-md.use(math, {
-  inlineOpen: "$",
-  inlineClose: "$",
-  blockOpen: "$$",
-  blockClose: "$$",
-  inlineRenderer: (str: string) => {
-    let output = ""
-    try {
-      output = renderToString(str.trim())
-    } catch (err) {
-      output = err.message
+    return `<pre class="language-"><code>` + markdownit().utils.escapeHtml(str) + "</code></pre>"
+}
+
+const mathSettings = {
+    inlineOpen: "$",
+    inlineClose: "$",
+    blockOpen: "$$",
+    blockClose: "$$",
+    inlineRenderer: (str: string) => {
+        let output = ""
+        try {
+            output = renderToString(str.trim())
+        } catch (err) {
+            output = err.message
+        }
+        return output
+    },
+    blockRenderer: (str: string) => {
+        let output = ""
+        try {
+            output = renderToString(str.trim(), { displayMode: true })
+        } catch (err) {
+            output = err.message
+        }
+        return output
     }
-    return output
-  },
-  blockRenderer: (str: string) => {
-    let output = ""
-    try {
-      output = renderToString(str.trim(), { displayMode: true })
-    } catch (err) {
-      output = err.message
-    }
-    return output
-  }
+}
+
+const attributeSettings = {
+    leftDelimiter: "{",
+    rightDelimiter: "}",
+    allowedAttributes: ["id", "class", "style", /^regex.*$/]
+}
+
+const mentionParsing = {
+    parseURL: (username) => `/profile/${username}`,
+    external: true
+}
+
+export let mdHtml: markdownit = markdownit({
+    highlight: highlightFunction,
+    html: true
 })
-md.use(emoji)
-md.use(markdownItAttrs, {
-  leftDelimiter: "{",
-  rightDelimiter: "}",
-  allowedAttributes: ["id", "class", "style", /^regex.*$/]
+mdHtml.use(math, mathSettings)
+mdHtml.use(emoji)
+mdHtml.use(markdownItAttrs, attributeSettings)
+mdHtml.renderer.rules.emoji = (token, idx) => twemoji.parse(token[idx].content)
+mdHtml.use(mentions, mentionParsing)
+mdHtml.use(markdown_it_sanitizer)
+
+export let mdNoHtml: markdownit = markdownit({
+    highlight: highlightFunction,
+    html: false
 })
-md.renderer.rules.emoji = (token, idx) => twemoji.parse(token[idx].content)
-md.use(mentions, {
-  parseURL: (username) => `/profile/${username}`,
-  external: true
-})
+mdNoHtml.use(math, mathSettings)
+mdNoHtml.use(emoji)
+mdNoHtml.use(markdownItAttrs, attributeSettings)
+mdNoHtml.renderer.rules.emoji = (token, idx) => twemoji.parse(token[idx].content)
+mdNoHtml.use(mentions, mentionParsing)

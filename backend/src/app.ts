@@ -17,7 +17,7 @@ if (process.env.ENVIRONMENT === "development") {
     domain = "https://blog.paulgellai.dev"
 }
 
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
     // very important so our cookies don't get stolen
     res.header("Access-Control-Allow-Origin", domain)
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")

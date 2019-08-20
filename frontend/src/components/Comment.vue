@@ -39,7 +39,7 @@ import { Component, Prop, Vue } from "vue-property-decorator"
 import { Getter } from "vuex-class"
 import { CommentModel } from "../models/comment"
 import moment from "moment"
-import { md } from "../mdparser"
+import { mdNoHtml } from "../mdparser"
 import axios from "axios"
 import config from "../config"
 
@@ -59,7 +59,7 @@ export default class Comment extends Vue {
     this.alive = true
     this.repliesCount = null
     this.renderedContent =
-      this.comment != null ? md.render(this.comment.content) : null
+      this.comment != null ? mdNoHtml.render(this.comment.content) : null
   }
 
   get date() {

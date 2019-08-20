@@ -18,7 +18,7 @@
                 <font-awesome-icon
                     @click="removeTag(tag)"
                     icon="times-circle"
-                    style="font-size: 12px margin-left: 4pxfloat: right position: absolute cursor: pointer"
+                    style="font-size: 12px; margin-left: 4px;float: right; position: absolute; cursor: pointer"
                 />
             </div>
         </div>
@@ -27,7 +27,7 @@
         <br />
         <br />
         <label>Tags not in lowercase or with special characters will not be submitted.</label>
-        <MarkdownEditor height="500px" width="auto" v-model="content" :initialContent="content" :title="title"/>
+        <MarkdownEditor height="500px" width="auto" v-model="content" :initialContent="content" :title="title" :useHtml="true" />
 
         <br />
         <a class="button" :class="theme" @click="post">Post</a>
@@ -38,7 +38,7 @@
 import { Component, Vue, Watch } from "vue-property-decorator"
 import axios from "axios"
 import { PostModel } from "../models/post"
-import { md } from "../mdparser"
+import { mdHtml } from "../mdparser"
 import Editor from "../components/Editor.vue"
 import config from "../config"
 import Preview from "../components/Preview.vue"

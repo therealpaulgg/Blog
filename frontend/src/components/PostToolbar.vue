@@ -94,7 +94,7 @@ export default class PostToolbar extends Vue {
     protected language: string
     protected refs = [
         "linkbtn",
-        "emojibtn",
+        /*"emojibtn",*/
         "codebtn",
         "headerbtn",
         "boldbtn",
@@ -159,11 +159,8 @@ export default class PostToolbar extends Vue {
         }
     }
 
-    protected makeLink(line) {
-        return `[${this.editor
-            .doc.getSelection()}]
-            (${this.editor
-                .doc.getSelection()})`
+    protected makeLink() {
+        return `[${this.editor.doc.getSelection()}](${this.editor.doc.getSelection()})`.replace(/\s/g, "")
     }
 
     protected styleText(prefix: string, suffix: string, line) {
@@ -222,7 +219,7 @@ export default class PostToolbar extends Vue {
 .infield
     border-radius: 5px
 .popup
-    z-index: 1
+    z-index: 5
     position: absolute
     height: auto
     border-radius: 5px
