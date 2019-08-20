@@ -211,3 +211,9 @@ router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) 
         })
     }
 })
+
+router.get("/pageinfo", (req, res) => {
+    res.send({
+        blogTitle: settings.blogTitle
+    })
+})

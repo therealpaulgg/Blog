@@ -7,6 +7,7 @@ export class SettingsService {
     registrationEnabled: boolean
     limitCommentLength: boolean
     commentMaxLength: number
+    blogTitle: string
 
     constructor() {
         // Any route which has not explicitly set permissions will be assumed to be 'normal'.
@@ -26,6 +27,7 @@ export class SettingsService {
         this.registrationEnabled = settings.registrationEnabled
         this.limitCommentLength = settings.limitCommentLength
         this.commentMaxLength = settings.commentMaxLength
+        this.blogTitle = settings.blogTitle
     }   // add getter and setter methods
 
     public reloadSettings() {
@@ -40,6 +42,7 @@ export class SettingsService {
         settings.registrationEnabled = this.registrationEnabled = settingsObj.registrationEnabled
         settings.limitCommentLength = this.limitCommentLength = settingsObj.limitCommentLength
         settings.commentMaxLength = this.commentMaxLength = settingsObj.commentMaxLength
+        settings.blogTitle = this.blogTitle = settingsObj.blogTitle
         await connection.manager.save(settings)
     }
 }

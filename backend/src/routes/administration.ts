@@ -164,7 +164,8 @@ router.get("/settingdata", checkAuth, checkPermissions, async (req, res) => {
         commentMaxLength: settings.commentMaxLength,
         limitPostTitleLength: settings.limitPostTitleLength,
         postTitleMaxLength: settings.postTitleMaxLength,
-        registrationEnabled: settings.registrationEnabled
+        registrationEnabled: settings.registrationEnabled,
+        blogTitle: settings.blogTitle
     })
 })
 
@@ -173,10 +174,13 @@ router.post("/settingdata", checkAuth, checkPermissions, async (req, res) => {
         req.body.commentMaxLength != null &&
         req.body.limitPostTitleLength != null &&
         req.body.postTitleMaxLength != null &&
-        req.body.registrationEnabled != null) {
+        req.body.registrationEnabled != null &&
+        req.body.blogTitle != null &&
+        req.body.blogTitle.length > 0 &&
+        req.body.blogTitle.length < 30) {
         await settings.newSettings(req.body)
         res.send({
-            success: "Settings updated."
+            success: "Settings updated. Some settings may not be visible until a page refresh is done."
         })
     } else {
         res.status(400).send({

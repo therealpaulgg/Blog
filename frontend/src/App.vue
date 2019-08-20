@@ -3,7 +3,8 @@
         <link rel="stylesheet" :href="cssUrl" data-noprefix />
         <div class="jumbotron jumbotron-fluid" :class="getTheme">
             <div class="container">
-                <h1>The Blog for Engineers</h1>
+                <h1 v-if="blogTitle !== null">{{blogTitle}}</h1>
+                <h1 v-else>The Blog for Engineers</h1>
                 <hr />
                 <b-alert
                     v-if="alert"
@@ -67,6 +68,7 @@ import { Component, Vue } from "vue-property-decorator"
 import { BNav, BNavItem, BAlert } from "bootstrap-vue"
 import config from "./config"
 import { determineTokenRefreshInterval } from "./loginfunc"
+import axios from "axios";
 
 const alertFadeTime: number = 5
 
@@ -84,7 +86,14 @@ export default class App extends Vue {
     @Getter("canPost") protected canPost: boolean
     @Getter("isAdmin") protected isAdmin: boolean
     @Getter("getTheme") private getTheme: string
-    protected dismissCountDown: number = 0    
+    protected dismissCountDown: number = 0
+    protected blogTitle: string | null
+
+    constructor() {
+        super()
+        this.blogTitle = null
+        this.pageInfo()
+    }
 
     protected changeTheme() {
         this.getTheme === "light"
@@ -133,6 +142,26 @@ export default class App extends Vue {
     protected logout() {
         this.logoutAction()
         this.$router.push("/")
+    }
+
+    protected pageInfo() {
+        axios.get(`${config.apiUrl}/pageinfo`)
+            .then((res) => {
+                this.blogTitle = res.data.blogTitle
+            })
+            .catch((err) => {
+                let text = ""
+                if (err.response) {
+                    text = err.response.data.error
+                } else {
+                    text = "Something went wrong."
+                }
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: text
+                })
+
+            })
     }
 }
 </script>

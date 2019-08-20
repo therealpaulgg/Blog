@@ -67,6 +67,16 @@
                             />
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col">
+                            <p>Blog Title</p>
+                        </div>
+                        <div class="col">
+                            <b-input-group size="sm">
+                                <b-form-input class="ifield" v-model="adminSettings.blogTitle" />
+                            </b-input-group>
+                        </div>
+                    </div>
                     <b-button :variant="theme" @click="saveSettings">Save Settings</b-button>
                 </div>
                 <div v-else style="text-align: center">
@@ -171,7 +181,7 @@ import { ToggleButton } from "vue-js-toggle-button"
 import config from "../config"
 import { AdminSettings } from "../models/admin-settings"
 import LoadingAnimation from "../components/LoadingAnimation.vue"
-import { BInputGroup, BButton, BFormInput, BDropdown, BDropdownItem} from "bootstrap-vue"
+import { BInputGroup, BButton, BFormInput, BDropdown, BDropdownItem } from "bootstrap-vue"
 
 @Component({
     components: {
@@ -385,5 +395,7 @@ export default class Administration extends Vue {
     .ifield
         border-color: #20212B !important
         background-color: #2a2c39 !important
+        color: white
+    .ifield:focus
         color: white
 </style>

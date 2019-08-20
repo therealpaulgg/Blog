@@ -4,4 +4,5 @@ export interface AdminSettings {
     limitPostTitleLength: boolean | null
     postTitleMaxLength: number | null
     registrationEnabled: boolean | null
+    blogTitle: string | null
 }

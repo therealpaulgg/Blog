@@ -26,4 +26,7 @@ export class Settings {
 
     @Column({ default: 2000 })
     commentMaxLength: number
+
+    @Column({ default: "The Blog for Engineers"})
+    blogTitle: string
 }

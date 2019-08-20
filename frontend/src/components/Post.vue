@@ -97,7 +97,7 @@
                     <div style="padding-top: 15px">
                         <a class="button" style="margin-right: 10px" @click="editing = false">Cancel</a>
                         <a class="button" :class="theme" @click="makeEdits">Submit Edit</a>
-                    </div>k
+                    </div>
                 </div>
                 <div v-else>
                     <div style="word-wrap: break-word" v-html="renderedContent"></div>
