@@ -5,6 +5,7 @@ import { User } from "../entity/User"
 import { Post } from "../entity/Post"
 import { Tag } from "../entity/Tag"
 import { Comment } from "../entity/Comment"
+import notify from "../services/notify"
 
 export async function deletePost(postId: string | number | Post, username: string | User, override?: boolean) {
     let connection = getConnection()
@@ -173,7 +174,7 @@ router.post("/comment", checkAuth, checkPermissions, async (req, res) => {
     // Data should be sent through body
     try {
         let connection = getConnection()
-        let post = await connection.manager.findOne(Post, { id: req.body.id, urlTitle: req.body.urlTitle })
+        let post = await connection.manager.findOne(Post, { id: req.body.id, urlTitle: req.body.urlTitle }, {relations:  ["user"]})
         let user = await connection.manager.findOne(User, { username: res.locals.user })
         if (post && user) {
             let content: string = req.body.content
@@ -186,6 +187,7 @@ router.post("/comment", checkAuth, checkPermissions, async (req, res) => {
                 res.send({
                     success: "Comment posted."
                 })
+                notify(user, post)
             } else {
                 res.status(400).send({
                     error: `Comment content body format invalid (nonexistent, empty, or longer than ${settings.commentMaxLength} chars)`

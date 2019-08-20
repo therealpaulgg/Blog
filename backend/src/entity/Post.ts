@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Up
 import { User } from "./User"
 import { Comment } from "./Comment"
 import { Tag } from "./Tag"
+import { PostNotification } from "./PostNotification";
 
 @Entity()
 export class Post {
@@ -36,6 +37,9 @@ export class Post {
 
     @OneToMany(type => Comment, comment => comment.post)
     comments: Array<Comment>
+    
+    @OneToMany(type => PostNotification, notification => notification.post)
+    notifications: Array<PostNotification>
 
     @ManyToMany(type => Tag, tag => tag.posts)
     @JoinTable()

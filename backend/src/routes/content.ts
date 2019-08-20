@@ -3,7 +3,9 @@ import { Post } from "../entity/Post"
 import { Comment } from "../entity/Comment"
 import { Tag } from "../entity/Tag"
 import { getConnection } from "typeorm"
-import { checkAuthLevel } from "../middleware/middleware"
+import { checkAuthLevel, checkAuth } from "../middleware/middleware"
+import { User } from "../entity/User";
+import { PostNotification } from "../entity/PostNotification";
 
 router.get("/tags/:pageNum", async (req, res) => {
     let pageNum = parseInt(req.params.pageNum)
@@ -219,3 +221,38 @@ router.get("/pageinfo", (req, res) => {
         blogTitle: settings.blogTitle
     })
 })
+
+router.get("/notifications", checkAuth, async (req, res) => {
+    try {
+        let connection = getConnection()
+        let user = await connection.manager.findOne(User, {username: res.locals.user })
+        const notificationsPerPage = 10
+        const nRepo = getConnection().getRepository(PostNotification)
+        let pageNum = 1
+        const qb = nRepo.createQueryBuilder("n")
+            .where("n.\"userId\" = :userId", { userId: user.id })
+            .leftJoinAndSelect("n.post", "post")
+            .orderBy("n.createdAt", "DESC")
+            .skip((pageNum - 1) * notificationsPerPage)
+            .take(notificationsPerPage)
+        let notifications = await qb.getMany()
+        let sending = []
+        notifications.forEach(not => {
+            sending.push({
+                createdAt: not.createdAt,
+                content: not.content,
+                postUrlTitle: not.post.urlTitle,
+                postId: not.post.id
+            })
+        })
+        res.send(sending)
+    } catch {
+        res.status(500).send({
+            error: "Something went wrong."
+        })
+    }
+})
+
+router.put("/dismiss", checkAuth, async (req, res) => [
+    
+])

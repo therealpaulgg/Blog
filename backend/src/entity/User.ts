@@ -2,6 +2,7 @@ import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn,
 import { Post } from "./Post"
 import { Comment } from "./Comment"
 import { PermissionBlock } from "./PermissionBlock"
+import { PostNotification } from "./PostNotification";
 
 @Entity()
 export class User {
@@ -32,6 +33,9 @@ export class User {
 
     @OneToMany(type => Post, post => post.user)
     posts: Array<Post>
+
+    @OneToMany(type => PostNotification, postnote => postnote.user)
+    postNotifications: Array<PostNotification>
 
     @OneToMany(type => Comment, comment => comment.user)
     comments: Array<Comment>
