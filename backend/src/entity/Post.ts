@@ -24,6 +24,12 @@ export class Post {
     @Column()
     content: string
 
+    @Column({default: true})
+    editable: boolean
+
+    @Column({default: true})
+    commentsEnabled: boolean
+
     @ManyToOne(type => User, user => user.posts)
     @JoinColumn({ name: "userId" })
     user: User

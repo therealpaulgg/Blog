@@ -182,24 +182,26 @@ router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) 
             })
             let count = await qb.getCount()
             const pages = Math.ceil(count / postsPerPage)
-            let dbPosts = await getConnection().manager.findOne(Post, { id: postId, urlTitle }, { relations: ["user", "tags", "user.permissionBlock"] })
+            let post = await getConnection().manager.findOne(Post, { id: postId, urlTitle }, { relations: ["user", "tags", "user.permissionBlock"] })
             let tags = []
-            dbPosts.tags.forEach(tag => tags.push(tag.tagStr))
+            post.tags.forEach(tag => tags.push(tag.tagStr))
             let formattedData = {
-                postId: dbPosts.id,
-                urlTitle: dbPosts.urlTitle,
-                title: dbPosts.title,
-                content: dbPosts.content,
-                username: dbPosts.user.username,
-                createdAt: dbPosts.createdAt,
-                updatedAt: dbPosts.updatedAt,
+                postId: post.id,
+                urlTitle: post.urlTitle,
+                title: post.title,
+                content: post.content,
+                username: post.user.username,
+                createdAt: post.createdAt,
+                updatedAt: post.updatedAt,
                 comments,
                 pages,
                 commentCount: count,
                 tags,
                 commentLimit: settings.limitCommentLength,
                 commentLimitVal: settings.commentMaxLength,
-                requiredManagePerms: res.locals.permLevel >= 2 && res.locals.permLevel >= dbPosts.user.permissionBlock.permissionLevel
+                requiredManagePerms: res.locals.permLevel >= 2 && res.locals.permLevel >= post.user.permissionBlock.permissionLevel,
+                editable: post.editable,
+                commentsEnabled: post.commentsEnabled
             }
             res.send(formattedData)
         } catch (err) {

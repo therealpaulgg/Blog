@@ -204,6 +204,32 @@ router.post("/comment", checkAuth, checkPermissions, async (req, res) => {
 
 })
 
+router.post("/editpost-settings", checkAuth, checkPermissions, async (req, res) => {
+    let connection = getConnection()
+    try {
+        let post = await connection.manager.findOne(Post, { id: req.body.id }, { relations: ["user", "user.permissionBlock", "tags", "tags.posts"] })
+        let editingUser = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
+        if (post.user.username === res.locals.user || (editingUser.permissionBlock.permissionLevel >= 2 && editingUser.permissionBlock.permissionLevel >= post.user.permissionBlock.permissionLevel)) {
+            post.editable = req.body.editable
+            post.commentsEnabled = req.body.commentsEnabled
+            await connection.manager.save(post)
+            res.send({
+                newUrlTitle: post.urlTitle,
+                success: "Post settings successfully edited."
+            })
+        } else {
+            res.status(401).send({
+                error: "You are not the owner of this post."
+            })
+        }
+    } catch (err) {
+        console.log(err)
+        res.status(400).send({
+            error: "Bad request."
+        })
+    }
+})
+
 
 router.post("/editpost", checkAuth, checkPermissions, async (req, res) => {
     let connection = getConnection()
@@ -211,23 +237,29 @@ router.post("/editpost", checkAuth, checkPermissions, async (req, res) => {
         let post = await connection.manager.findOne(Post, { id: req.body.id }, { relations: ["user", "user.permissionBlock", "tags", "tags.posts"] })
         let editingUser = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
         if (post.user.username === res.locals.user || (editingUser.permissionBlock.permissionLevel >= 2 && editingUser.permissionBlock.permissionLevel >= post.user.permissionBlock.permissionLevel)) {
-            let title = req.body.newTitle
-            post.title = title
-            post.content = req.body.newContent
-            post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
-            let newtags = await parseTags(req.body.tags)
-            let removedTags = post.tags.filter((value) => newtags.find((tag) => tag.id === value.id) === undefined)
-            for (let tag of removedTags) {
-                if (tag.posts.length === 1 && tag.posts[0].id === post.id) {
-                    await connection.manager.remove(tag)
+            if (post.editable || editingUser.permissionBlock.permissionLevel >= 2) {
+                let title = req.body.newTitle
+                post.title = title
+                post.content = req.body.newContent
+                post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
+                let newtags = await parseTags(req.body.tags)
+                let removedTags = post.tags.filter((value) => newtags.find((tag) => tag.id === value.id) === undefined)
+                for (let tag of removedTags) {
+                    if (tag.posts.length === 1 && tag.posts[0].id === post.id) {
+                        await connection.manager.remove(tag)
+                    }
                 }
+                post.tags = newtags
+                await connection.manager.save(post)
+                res.send({
+                    newUrlTitle: post.urlTitle,
+                    success: "Post successfully edited."
+                })
+            } else {
+                res.status(400).send({
+                    error: "This post is not editable."
+                })
             }
-            post.tags = newtags
-            await connection.manager.save(post)
-            res.send({
-                newUrlTitle: post.urlTitle,
-                success: "Post successfully edited."
-            })
         } else {
             res.status(401).send({
                 error: "You are not the owner of this post."

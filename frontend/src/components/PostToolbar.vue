@@ -116,7 +116,7 @@ export default class PostToolbar extends Vue {
             { function: this.styleText, args: ["## ", ""] },
             { function: this.styleText, args: ["__", "__"] },
             { function: this.styleText, args: ["*", "*"] },
-            { function: this.styleText, args: ["<u>", "</u>"] },
+            { function: this.styleText, args: ["", "{style=\"text-decoration: underline\";}"] },
             { function: this.styleText, args: ["> ", ""] },
             { function: this.styleText, args: ["$", "$"] }
         ]

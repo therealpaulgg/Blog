@@ -15,4 +15,6 @@ export interface PostModel {
     commentLimit: boolean
     commentLimitVal: number
     requiredManagePerms: boolean
+    editable: boolean
+    commentsEnabled: boolean
 }

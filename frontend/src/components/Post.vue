@@ -37,7 +37,17 @@
                         style="float: right"
                     >
                         <a @click="del" class="delete metaelement" :class="getTheme">Delete</a>
-                        <a @click="edit" class="edit metaelement" :class="getTheme">Edit</a>
+                        <a
+                            v-if="editable || editPerms"
+                            @click="edit"
+                            class="edit metaelement"
+                            :class="getTheme"
+                        >Edit</a>
+                        <a
+                            class="plainbtn metaelement"
+                            :class="getTheme"
+                            @click="changeSettings"
+                        >Post Settings</a>
                     </span>
                     <div>
                         <div
@@ -93,10 +103,44 @@
                     />
                     <br />
                     <br />
-                    <MarkdownEditor height="300px" width="auto" v-model="editContent" :initialContent="editContent" :title="editTitle" :useHtml="true"/>
+                    <MarkdownEditor
+                        height="300px"
+                        width="auto"
+                        v-model="editContent"
+                        :initialContent="editContent"
+                        :title="editTitle"
+                        :useHtml="true"
+                    />
                     <div style="padding-top: 15px">
                         <a class="button" style="margin-right: 10px" @click="editing = false">Cancel</a>
                         <a class="button" :class="theme" @click="makeEdits">Submit Edit</a>
+                    </div>
+                </div>
+                <div v-else-if="editPostSettings">
+                    <div class="row">
+                        <div class="col">
+                            <div class="row">
+                                <div class="col">
+                                    <p>Editable</p>
+                                </div>
+                                <div class="col">
+                                    <toggle-button ref="editableTog" :sync="true" :value="editable" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p>Comments Enabled</p>
+                                </div>
+                                <div class="col">
+                                    <toggle-button ref="commentsEnabledTog" :sync="true" :value="commentsEnabled" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col"></div>
+                    </div>
+                    <div style="padding-top: 15px">
+                        <a class="button" style="margin-right: 10px" @click="changeSettings">Cancel</a>
+                        <a class="button" :class="theme" @click="submitSettings">Submit Settings</a>
                     </div>
                 </div>
                 <div v-else>
@@ -104,11 +148,13 @@
                     <hr />
                     <h1>Comments</h1>
                     <a
-                        v-if="isAuthenticated"
+                        v-if="isAuthenticated && commentsEnabled"
                         class="button"
                         :class="theme"
                         @click="showCommentPost"
                     >Comment</a>
+                    <p v-else-if="!commentsEnabled">Commenting is Disabled.</p>
+                    <p v-else>Log in to post a comment.</p>
                     <p
                         v-if="postingComment"
                         v-bind:class="{danger: commentLimit && commentContent.length > commentLimitVal}"
@@ -119,9 +165,21 @@
                             v-if="commentLimit"
                         >/ {{commentLimitVal}}</span>
                     </p>
-                    <MarkdownEditor v-if="postingComment" height="300px" width="auto" style="padding-bottom: 15px" v-model="commentContent" :initialContent="commentContent" :useHtml="false"/>
+                    <MarkdownEditor
+                        v-if="postingComment"
+                        height="300px"
+                        width="auto"
+                        style="padding-bottom: 15px"
+                        v-model="commentContent"
+                        :initialContent="commentContent"
+                        :useHtml="false"
+                    />
                     <div v-if="postingComment">
-                        <a class="button" style="margin-right: 10px" @click="postingComment = false">Cancel</a>
+                        <a
+                            class="button"
+                            style="margin-right: 10px"
+                            @click="postingComment = false"
+                        >Cancel</a>
                         <a class="button" :class="theme" @click="postComment">Submit Comment</a>
                     </div>
                     <hr />
@@ -163,19 +221,23 @@ import config from "../config"
 import LoadingAnimation from "./LoadingAnimation.vue"
 import { BButton } from "bootstrap-vue"
 import MarkdownEditor from "./MarkdownEditor.vue"
+import { ToggleButton } from "vue-js-toggle-button"
 
 @Component({
     components: {
         Comment,
         LoadingAnimation,
-        BButton, 
-        MarkdownEditor
+        BButton,
+        MarkdownEditor,
+        ToggleButton
     }
 })
 export default class Post extends Vue {
     public $refs: {
-        container: HTMLDivElement;
-        eContainer: HTMLDivElement;
+        container: HTMLDivElement
+        eContainer: HTMLDivElement
+        editableTog: any
+        commentsEnabledTog: any
     }
     protected header: string | null
     protected content: string | null
@@ -197,6 +259,9 @@ export default class Post extends Vue {
     protected commentLimit: boolean | null
     protected commentLimitVal: number | null
     protected editPerms: boolean | null
+    protected editable: boolean | null
+    protected commentsEnabled: boolean | null
+    protected editPostSettings: boolean
     @Prop(String) protected readonly title!: string
     @Prop(String) protected readonly id!: string
     @Getter("getTheme") private getTheme: string
@@ -223,6 +288,9 @@ export default class Post extends Vue {
         this.commentLimit = null
         this.commentLimitVal = null
         this.editPerms = null
+        this.editable = null
+        this.commentsEnabled = null
+        this.editPostSettings = false
     }
 
     @Watch("content")
@@ -310,11 +378,67 @@ export default class Post extends Vue {
     protected edit() {
         if (!this.editing) {
             this.postingComment = false
+            this.editPostSettings = false
             this.editContent = this.content
             this.editTitle = this.header
             this.editing = true
         } else {
             this.editing = false
+        }
+    }
+
+    protected changeSettings() {
+        if (!this.editPostSettings) {
+            this.postingComment = false
+            this.editing = false
+            this.editContent = this.content
+            this.editTitle = this.header
+            this.editPostSettings = true
+        } else {
+            this.editPostSettings = false
+        }
+    }
+
+    protected async submitSettings() {
+        let editable = this.$refs.editableTog.toggled
+        let commentsEnabled = this.$refs.commentsEnabledTog.toggled
+        // endpoint to change settings
+        try {
+            const { data } = await axios.post(
+                `${config.apiUrl}/editpost-settings`,
+                {
+                    id: this.id,
+                    urlTitle: this.title,
+                    editable,
+                    commentsEnabled,
+                },
+                { withCredentials: true }
+            )
+            const msg = data.success
+            this.$store.dispatch("addAlert", {
+                alertType: "success",
+                alertText: msg
+            })
+            this.editable = editable
+            this.commentsEnabled = commentsEnabled
+            this.changeSettings()
+        } catch (err) {
+            if (err.response.status === 401) {
+                this.$store.dispatch("forceLogout")
+                this.$router.push("/login")
+                this.editing = false
+            }
+            if (err.response.data) {
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: err.response.data.error
+                })
+            } else {
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: "Something went wrong."
+                })
+            }
         }
     }
 
@@ -501,8 +625,6 @@ export default class Post extends Vue {
             )
             this.header = data.title
             document.title = `${this.header} | Blog`
-            // this.$store.dispatch("updateTitle", this.header)
-            // this.$router.after
             this.content = data.content
             this.user = data.username
             this.pages = data.pages
@@ -512,6 +634,8 @@ export default class Post extends Vue {
             this.commentLimitVal = data.commentLimitVal
             this.editPerms = data.requiredManagePerms
             this.editingTags = ""
+            this.editable = data.editable
+            this.commentsEnabled = data.commentsEnabled
             this.tags.forEach((tag) => (this.editingTags += `#${tag} `))
             if (this.currentPage === 1) {
                 this.comments = []
@@ -572,6 +696,10 @@ export default class Post extends Vue {
     background-color: #20212B !important
 .edit
     color: #75ff74 !important
+    cursor: pointer
+    border-radius: 5px
+    padding: 10px
+.plainbtn
     cursor: pointer
     border-radius: 5px
     padding: 10px
