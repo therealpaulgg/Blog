@@ -3,6 +3,7 @@ import axios from "axios"
 import store from "./store/store"
 import router from "./router"
 import config from "./config"
+import { close, connect } from "./websocket"
 
 export async function determineTokenRefreshInterval() {
     try {
@@ -10,6 +11,7 @@ export async function determineTokenRefreshInterval() {
         const authCookie = Cookies.get("auth")
         if (isNaN(expiry) || authCookie == null) {
             store.commit("LOGOUT")
+            close()
             router.push("/login")
             store.dispatch("addAlert", {
                 alertType: "danger",
@@ -17,6 +19,7 @@ export async function determineTokenRefreshInterval() {
                     "Your login session has expired. Please log in again."
             })
         } else {
+            connect()
             const timeout = expiry - new Date().getTime()
             const delay = 10000
             if (timeout - delay > 0) {
@@ -32,6 +35,7 @@ export async function determineTokenRefreshInterval() {
                         // the timeout dies here if they aren't logged in (lazy I know)
                         if (store.state.authenticated) {
                             store.commit("LOGOUT")
+                            close()
                             router.push("/login")
                             store.dispatch("addAlert", {
                                 alertType: "danger",
@@ -52,6 +56,7 @@ export async function determineTokenRefreshInterval() {
         }
     } catch (err) {
         store.commit("LOGOUT")
+        close()
         store.dispatch("addAlert", {
             alertType: "danger",
             alertText:

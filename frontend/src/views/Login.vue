@@ -37,6 +37,7 @@ import { Action } from "vuex-class"
 import config from "../config"
 import { determineTokenRefreshInterval } from "../loginfunc"
 import {BRow, BCol, BContainer, BInputGroup, BFormInput, BButton} from "bootstrap-vue"
+import { ws, connect, close } from "../websocket"
 
 @Component({
     components: {
@@ -106,6 +107,7 @@ export default class Home extends Vue {
                         alertText: res.data.success
                     })
                 determineTokenRefreshInterval()
+                // connect()
                 this.$router.push("/")
             })
             .catch((err) => {

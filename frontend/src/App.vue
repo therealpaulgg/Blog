@@ -69,6 +69,7 @@ import { BNav, BNavItem, BAlert } from "bootstrap-vue"
 import config from "./config"
 import { determineTokenRefreshInterval } from "./loginfunc"
 import axios from "axios";
+import { close } from "./websocket";
 
 const alertFadeTime: number = 5
 
@@ -141,6 +142,7 @@ export default class App extends Vue {
 
     protected logout() {
         this.logoutAction()
+        close()
         this.$router.push("/")
     }
 
