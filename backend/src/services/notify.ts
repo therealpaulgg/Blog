@@ -1,7 +1,8 @@
-import {PostNotification} from "../entity/PostNotification"
-import {User} from "../entity/User"
+import { PostNotification } from "../entity/PostNotification"
+import { User } from "../entity/User"
 import { Post } from "../entity/Post";
 import { getConnection } from "typeorm"
+import { wss } from "../wsserver"
 
 export = function notify(user: User, post: Post) {
     if (post.user.username !== user.username) {
@@ -10,5 +11,6 @@ export = function notify(user: User, post: Post) {
         notification.post = post
         notification.user = post.user
         getConnection().manager.save(notification)
+        wss.emit("notification", null, notification.user.username)
     }
 }

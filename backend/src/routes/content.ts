@@ -222,37 +222,76 @@ router.get("/pageinfo", (req, res) => {
     })
 })
 
-router.get("/notifications", checkAuth, async (req, res) => {
-    try {
-        let connection = getConnection()
-        let user = await connection.manager.findOne(User, {username: res.locals.user })
-        const notificationsPerPage = 10
-        const nRepo = getConnection().getRepository(PostNotification)
-        let pageNum = 1
-        const qb = nRepo.createQueryBuilder("n")
-            .where("n.\"userId\" = :userId", { userId: user.id })
-            .leftJoinAndSelect("n.post", "post")
-            .orderBy("n.createdAt", "DESC")
-            .skip((pageNum - 1) * notificationsPerPage)
-            .take(notificationsPerPage)
-        let notifications = await qb.getMany()
-        let sending = []
-        notifications.forEach(not => {
-            sending.push({
-                createdAt: not.createdAt,
-                content: not.content,
-                postUrlTitle: not.post.urlTitle,
-                postId: not.post.id
+router.get("/notifications/:pagenum", checkAuth, async (req, res) => {
+    let pageNum = parseInt(req.params.pagenum)
+    if (pageNum != null) {
+        try {
+            let connection = getConnection()
+            let user = await connection.manager.findOne(User, { username: res.locals.user })
+            const notificationsPerPage = 10
+            const nRepo = getConnection().getRepository(PostNotification)
+
+            const qb = nRepo.createQueryBuilder("n")
+                .where("n.\"userId\" = :userId", { userId: user.id })
+                .leftJoinAndSelect("n.post", "post")
+                .orderBy("n.createdAt", "DESC")
+                .skip((pageNum - 1) * notificationsPerPage)
+                .take(notificationsPerPage)
+            let notifications = await qb.getMany()
+            let sending = []
+            let count = await qb.getCount()
+            const pages = Math.ceil(count / notificationsPerPage)
+            notifications.forEach(not => {
+                sending.push({
+                    createdAt: not.createdAt,
+                    content: not.content,
+                    postUrlTitle: not.post.urlTitle,
+                    postId: not.post.id,
+                    id: not.id
+                })
             })
-        })
-        res.send(sending)
-    } catch {
-        res.status(500).send({
-            error: "Something went wrong."
+            res.send({
+                notifications: sending,
+                pages,
+                count
+            })
+        } catch {
+            res.status(500).send({
+                error: "Something went wrong."
+            })
+        }
+    } else {
+        res.status(400).send({
+            error: "Malformed request."
         })
     }
 })
 
-router.put("/dismiss", checkAuth, async (req, res) => [
-    
-])
+router.post("/dismiss", checkAuth, async (req, res) => {
+    let notId = req.body.id
+    if (notId != null) {
+        try {
+            let connection = getConnection()
+            let not = await connection.manager.findOne(PostNotification, { id: notId }, { relations: ["user"] })
+            if (not.user.username === res.locals.user) {
+                connection.manager.remove(not)
+                res.send({
+                    success: "Notification dismissed."
+                })
+            } else {
+                res.status(401).send({
+                    error: "You do not have permission to perform this action."
+                })
+            }
+        } catch {
+            res.status(500).send({
+                error: "Something went wrong."
+            })
+        }
+    } else {
+        res.status(400).send({
+            error: "Malformed request."
+        })
+    }
+
+})

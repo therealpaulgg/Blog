@@ -54,5 +54,14 @@ export default {
     },
     editTags({ commit }: { commit: any }, tags: string) {
         commit("EDIT_TAGS", tags)
+    },
+    updateNotificationCount({ commit }: { commit: any }, count: number) {
+        commit("UPDATE_NOTIFICATION_COUNT", count)
+    },
+    fetchNotifications({ commit }: { commit: any }, page: number) {
+        commit("FETCH_NOTIFICATIONS", page)
+    },
+    dismissNotification({ commit }: { commit: any }, id: number) {
+        commit("DISMISS_NOTIFICATION", id)
     }
 }

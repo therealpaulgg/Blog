@@ -195,25 +195,6 @@ import markdownItAttrs from "markdown-it-attrs"
 import mentions from "markdown-it-mentions"
 import markdown_it_sanitizer from "markdown-it-sanitizer"
 
-// Old code that was used for highlightJS
-
-// let md = markdownit({
-//   highlight: (str, lang) => {
-//     if (lang && hljs.getLanguage(lang)) {
-//       try {
-//         return (
-//           '<pre class="hljs"><code>' +
-//           hljs.highlight(lang, str, true).value +
-//           "</code></pre>"
-//         )
-//       } catch (__) {}
-//     }
-//     return (
-//       '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + "</code></pre>"
-//     )
-//   }
-// })
-
 function highlightFunction(str, lang) {
     if (lang) {
         const langObject = Prism.languages[lang]

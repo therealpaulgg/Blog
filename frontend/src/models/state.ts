@@ -1,5 +1,6 @@
 import { PostModel } from "./post"
 import { Alert } from "./alert"
+import { PostNotificationModel } from './notification';
 
 export interface State {
     theme: string
@@ -18,4 +19,7 @@ export interface State {
     tags: string
     tagPosts: PostModel[]
     tagPages: number
+    notificationCount: number
+    notifications: PostNotificationModel[]
+    notificationPages: number
 }

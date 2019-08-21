@@ -33,5 +33,11 @@ export default {
     },
     getTags(state: State) {
         return state.tags
+    },
+    getNotificationCount(state: State) {
+        return state.notificationCount
+    },
+    getNotifications(state: State) {
+        return state.notifications
     }
 }

@@ -57,6 +57,10 @@
                 <div class="notification">
                 <font-awesome-icon icon="bell" @click="gotoNotifications"></font-awesome-icon>
                 </div>
+                <div class="notificationcount" v-if="notificationCount > 0">
+                    <span v-if="notificationCount > 0 && notificationCount < 100">{{notificationCount}}</span>
+                    <span v-else>99+</span>
+                </div>
             </div>
         </div>
     </div>
@@ -87,6 +91,7 @@ export default class App extends Vue {
     @Getter("canPost") protected canPost: boolean
     @Getter("isAdmin") protected isAdmin: boolean
     @Getter("getTheme") private getTheme: string
+    @Getter("getNotificationCount") private notificationCount: number
     protected dismissCountDown: number = 0
     protected blogTitle: string | null
 
@@ -109,12 +114,6 @@ export default class App extends Vue {
     get icon() {
         return this.getTheme === "light" ? "sun" : "moon"
     }
-
-    // get cssUrl() {
-    //     return this.getTheme === "light"
-    //         ? "https://cdn.jsdelivr.net/gh/highlightjs/highlight.js/src/styles/atom-one-light.css"
-    //         : "https://cdn.jsdelivr.net/gh/highlightjs/highlight.js/src/styles/dracula.css"
-    // }
 
     get cssUrl() {
         return this.getTheme === "light"
@@ -231,6 +230,16 @@ blockquote:nth-of-type(even) footer:after
     right: 40px
     margin: 20px
     cursor: pointer
+.notificationcount
+    position: fixed
+    background-color: #ff7474
+    border-radius: 15px
+    width: 30px
+    height: 30px
+    text-align: center
+    top: 35px
+    right: 40px
+    line-height: 30px
 .themebtn
     position: fixed
     top: 0

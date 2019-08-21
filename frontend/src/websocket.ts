@@ -1,5 +1,7 @@
 export let ws: WebSocket | null = null
 
+import store from "./store/store" 
+
 let clientClosed = false
 let time = 1000
 
@@ -8,7 +10,14 @@ export function connect() {
     ws.onopen = () => {
         time = 1000
     }
-    ws.onmessage = (thing) => console.log(thing)
+    ws.onmessage = (message) => {
+        let msg = JSON.parse(message.data)
+        console.log("CYKA BLYAT")
+        console.log(msg)
+        if (msg.updateNotifications === true) {
+            store.dispatch("fetchNotifications", 1)
+        }
+    }
     ws.onclose = () => {
         if (clientClosed === false) {
             setTimeout(connect, time)

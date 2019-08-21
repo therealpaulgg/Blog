@@ -4,6 +4,8 @@ import { PostModel } from "@/models/post"
 import { Alert } from "@/models/alert"
 import config from "../config"
 import Cookies from "js-cookie"
+import { PostNotificationModel } from '@/models/notification';
+import Vue from "vue"
 
 export default {
     SET_THEME(state: State, theme: string) {
@@ -24,23 +26,42 @@ export default {
             state.posts = data.posts as PostModel[]
             state.pages = data.pages as number
         } else {
-            const posts =  data.posts as PostModel[]
+            const posts = data.posts as PostModel[]
             for (const post of posts) {
                 state.posts.push(post)
             }
         }
     },
-    async FETCH_TAG_POSTS(state: State, payload: {page: number, tag: string}) {
+    async FETCH_TAG_POSTS(state: State, payload: { page: number, tag: string }) {
         const { data } = await axios.get(`${config.apiUrl}/tag/${payload.tag}/${payload.page}`)
         if (payload.page === 1) {
             state.tagPosts = data.posts as PostModel[]
             state.tagPages = data.pages as number
         } else {
-            const posts =  data.posts as PostModel[]
+            const posts = data.posts as PostModel[]
             for (const post of posts) {
                 state.tagPosts.push(post)
             }
         }
+    },
+    async FETCH_NOTIFICATIONS(state: State, page: number) {
+        try {
+            const { data } = await axios.get(`${config.apiUrl}/notifications/${page}`, { withCredentials: true })
+            if (page === 1) {
+                state.notifications = data.notifications as PostNotificationModel[]
+                state.tagPages = data.pages as number
+            } else {
+                const notifications = data.notifications as PostNotificationModel[]
+                for (const notification of notifications) {
+                    state.notifications.push(notification)
+                }
+            }
+            state.notificationCount = data.count
+        } catch {}
+    },
+    DISMISS_NOTIFICATION(state: State, id: number) {
+        state.notificationCount--
+        Vue.delete(state.notifications, state.notifications.indexOf(state.notifications.find((not) => not.id === id)))
     },
     EDIT_CONTENT(state: State, text: string) {
         state.content = text
@@ -71,5 +92,8 @@ export default {
     },
     EDIT_TAGS(state: State, tags: string) {
         state.tags = tags
+    },
+    UPDATE_NOTIFICATION_COUNT(state: State, count: number) {
+        state.notificationCount = count
     }
 }

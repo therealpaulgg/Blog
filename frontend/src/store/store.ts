@@ -25,7 +25,10 @@ function defaultState(): State {
         isAdmin: false,
         tags: "",
         tagPosts: null,
-        tagPages: 1
+        tagPages: 1,
+        notificationCount: 0,
+        notifications: [],
+        notificationPages: 1
     }
 }
 
