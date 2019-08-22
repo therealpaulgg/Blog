@@ -1,11 +1,12 @@
 <template>
     <div class="notifications">
         <div v-if="notifications.length > 0">
-        <PostNotification
-            v-for="notification in notifications"
-            :key="notification.id"
-            :notification="notification"
-        />
+            <b-button :variant="theme" @click="dismissAll">Dismiss All</b-button>
+            <PostNotification
+                v-for="notification in notifications"
+                :key="notification.id"
+                :notification="notification"
+            />
         </div>
         <p v-else>No notifications!</p>
     </div>
@@ -19,10 +20,12 @@ import { State } from "vuex-class"
 import config from "../config"
 import { PostNotificationModel } from "../models/notification"
 import PostNotification from "../components/PostNotification.vue"
+import { BButton } from "bootstrap-vue"
 
 @Component({
     components: {
-        PostNotification
+        PostNotification,
+        BButton
     }
 })
 export default class Notifications extends Vue {
@@ -40,6 +43,10 @@ export default class Notifications extends Vue {
 
     protected mounted() {
         this.$store.dispatch("fetchNotifications", 1)
+    }
+
+    dismissAll() {
+        this.$store.dispatch("dismissAllNotifications")
     }
 }
 </script>

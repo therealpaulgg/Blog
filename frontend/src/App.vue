@@ -54,13 +54,17 @@
                 <transition name="fade">
                     <font-awesome-icon class="themebtn" @click="changeTheme" :icon="icon"></font-awesome-icon>
                 </transition>
-                <div class="notification">
-                <font-awesome-icon icon="bell" @click="gotoNotifications"></font-awesome-icon>
-                </div>
-                <div class="notificationcount" v-if="notificationCount > 0">
-                    <span v-if="notificationCount > 0 && notificationCount < 100">{{notificationCount}}</span>
-                    <span v-else>99+</span>
-                </div>
+                <span v-if="isAuthenticated">
+                    <div class="notification">
+                        <font-awesome-icon icon="bell" @click="gotoNotifications"></font-awesome-icon>
+                    </div>
+                    <div class="notificationcount" v-if="notificationCount > 0">
+                        <span
+                            v-if="notificationCount > 0 && notificationCount < 100"
+                        >{{notificationCount}}</span>
+                        <span v-else>99+</span>
+                    </div>
+                </span>
             </div>
         </div>
     </div>

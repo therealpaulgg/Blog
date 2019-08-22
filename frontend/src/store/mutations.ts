@@ -95,5 +95,9 @@ export default {
     },
     UPDATE_NOTIFICATION_COUNT(state: State, count: number) {
         state.notificationCount = count
+    },
+    DISMISS_ALL_NOTIFICATIONS(state: State) {
+        state.notificationCount = 0
+        state.notifications = []
     }
 }

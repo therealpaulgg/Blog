@@ -1,19 +1,18 @@
 export let ws: WebSocket | null = null
 
 import store from "./store/store" 
+import config from "./config"
 
 let clientClosed = false
 let time = 1000
 
 export function connect() {
-    ws = new WebSocket("ws://localhost:3000")
+    ws = new WebSocket(config.wsUrl)
     ws.onopen = () => {
         time = 1000
     }
     ws.onmessage = (message) => {
         let msg = JSON.parse(message.data)
-        console.log("CYKA BLYAT")
-        console.log(msg)
         if (msg.updateNotifications === true) {
             store.dispatch("fetchNotifications", 1)
         }

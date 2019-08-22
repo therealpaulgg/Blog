@@ -121,6 +121,7 @@ export default new Router({
             name: "notifications",
             component: Notifications,
             meta: {
+                requiresAuth: true,
                 title: "Notifications"
             }
         },

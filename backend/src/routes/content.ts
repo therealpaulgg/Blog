@@ -232,7 +232,7 @@ router.get("/notifications/:pagenum", checkAuth, async (req, res) => {
             const nRepo = getConnection().getRepository(PostNotification)
 
             const qb = nRepo.createQueryBuilder("n")
-                .where("n.\"userId\" = :userId", { userId: user.id })
+                .where("n.userid = :userid", { userid: user.id })
                 .leftJoinAndSelect("n.post", "post")
                 .orderBy("n.createdAt", "DESC")
                 .skip((pageNum - 1) * notificationsPerPage)
@@ -255,7 +255,8 @@ router.get("/notifications/:pagenum", checkAuth, async (req, res) => {
                 pages,
                 count
             })
-        } catch {
+        } catch (err) {
+            console.log(err)
             res.status(500).send({
                 error: "Something went wrong."
             })
@@ -293,5 +294,19 @@ router.post("/dismiss", checkAuth, async (req, res) => {
             error: "Malformed request."
         })
     }
+})
 
+router.post("/dismissall", checkAuth, async (req, res) => {
+    try {
+        let connection = getConnection()
+        let user = await connection.manager.findOne(User, {username: res.locals.user}, {relations: ["postNotifications"]})
+        await connection.manager.remove(user.postNotifications)
+        res.send({
+            success: "All notifications cleared."
+        })
+    } catch {
+        res.status(500).send({
+            error: "Something went wrong."
+        })
+    }
 })
