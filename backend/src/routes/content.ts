@@ -217,9 +217,16 @@ router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) 
 })
 
 router.get("/pageinfo", (req, res) => {
-    res.send({
-        blogTitle: settings.blogTitle
-    })
+    try {
+        res.send({
+            blogTitle: settings.blogTitle
+        }) 
+    }
+    catch {
+        res.status(500).send({
+            error: "Something went wrong."
+        })
+    }
 })
 
 router.get("/notifications/:pagenum", checkAuth, async (req, res) => {

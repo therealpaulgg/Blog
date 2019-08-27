@@ -4,7 +4,7 @@
             <a @click="$router.go(-1)">
                 <font-awesome-icon style="margin-right: 10px" icon="arrow-left"></font-awesome-icon>Back
             </a>
-            <div v-if="notFound === false">
+            <div v-if="notFound === false" style="position: relative">
                 <hr />
                 <h1 class="bigtitle">{{header}}</h1>
                 <div class="metadata">
@@ -32,9 +32,18 @@
                         <font-awesome-icon icon="comments"></font-awesome-icon>
                         {{commentCount}}
                     </span>
-                    <span
+                    <div>
+                        <div
+                            style="display: inline-block"
+                            v-for="(tag, index) in tags"
+                            :key="index"
+                            class="hashtag"
+                            @click.stop="fooBar(tag)"
+                        >#{{tag}}</div>
+                    </div>
+                    <div
                         v-if="isAuthenticated && (user === username || editPerms) && !postingComment"
-                        style="float: right"
+                        style="position: absolute; right: 0;"
                     >
                         <a @click="del" class="delete metaelement" :class="getTheme">Delete</a>
                         <a
@@ -48,15 +57,6 @@
                             :class="getTheme"
                             @click="changeSettings"
                         >Post Settings</a>
-                    </span>
-                    <div>
-                        <div
-                            style="display: inline-block"
-                            v-for="(tag, index) in tags"
-                            :key="index"
-                            class="hashtag"
-                            @click.stop="fooBar(tag)"
-                        >#{{tag}}</div>
                     </div>
                 </div>
 
@@ -666,6 +666,23 @@ export default class Post extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
+@media screen and (min-width: 750px)
+    .datapos
+        display: inline-block
+    .buttonpos
+        position: absolute
+        top: 0
+        right: 0
+
+@media screen and (max-width: 750px)
+    .datapos
+        margin: 0 auto
+        display: block
+        margin-bottom: 15px
+    .buttonpos
+        position: relative
+        display: block
+
 .danger
     color: #ff7474
 .button

@@ -5,30 +5,35 @@
         v-if="alive"
         @click="gotoPost(comment.postId, comment.postUrlTitle)"
     >
-        <div class="metadata">
-            <span class="metaelement" v-if="comment != null && !condensed">
-                By:
-                <b>
-                    <router-link :to="`/profile/${comment.user}`">{{comment.user}}</router-link>
-                </b>
-            </span>
-            <span class="metaelement">
-                <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
-                <span class="metaelement">
-                    {{date}},
-                    <i>{{timeSince}}</i>
-                </span>
-            </span>
-            <span class="metaelement" v-if="repliesCount">
-                <font-awesome-icon icon="comments"></font-awesome-icon>
-                {{repliesCount}}
-            </span>
-            <span
-                v-if="comment != null && !condensed && ($store.state.username === comment.user || editPerms || ownsPost)"
-                style="float: right"
-            >
-                <a @click="deleteComment" class="delete metaelement">Delete</a>
-            </span>
+        <div class="metadata container">
+            <div style="position: relative">
+                <div class="datapos">
+                    <span class="metaelement" v-if="comment != null && !condensed">
+                        By:
+                        <b>
+                            <router-link :to="`/profile/${comment.user}`">{{comment.user}}</router-link>
+                        </b>
+                    </span>
+                    <span class="metaelement">
+                        <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
+                        <span class="metaelement">
+                            {{date}},
+                            <i>{{timeSince}}</i>
+                        </span>
+                    </span>
+                    <span class="metaelement" v-if="repliesCount">
+                        <font-awesome-icon icon="comments"></font-awesome-icon>
+                        {{repliesCount}}
+                    </span>
+                </div>
+
+                <div
+                    class="buttonpos"
+                    v-if="comment != null && !condensed && ($store.state.username === comment.user || editPerms || ownsPost)"
+                >
+                    <a @click="deleteComment" class="delete metaelement">Delete</a>
+                </div>
+            </div>
         </div>
         <div style="word-wrap: break-word" v-html="renderedContent"></div>
     </div>
@@ -45,74 +50,91 @@ import config from "../config"
 
 @Component
 export default class Comment extends Vue {
-  @Prop() protected comment: CommentModel
-  @Prop() protected ownsPost: boolean
-  @Prop() protected condensed: boolean
-  @Prop() protected editPerms: boolean
-  protected alive: boolean
-  protected renderedContent: string
-  protected repliesCount: number | null
-  @Getter("getTheme") private getTheme: string
+    @Prop() protected comment: CommentModel
+    @Prop() protected ownsPost: boolean
+    @Prop() protected condensed: boolean
+    @Prop() protected editPerms: boolean
+    protected alive: boolean
+    protected renderedContent: string
+    protected repliesCount: number | null
+    @Getter("getTheme") private getTheme: string
 
-  constructor() {
-    super()
-    this.alive = true
-    this.repliesCount = null
-    this.renderedContent =
-      this.comment != null ? mdNoHtml.render(this.comment.content) : null
-  }
-
-  get date() {
-    return this.comment
-      ? moment
-          .utc(this.comment.createdAt)
-          .local()
-          .format("MM/DD/YYYY, HH:mm")
-      : null
-  }
-
-  get timeSince() {
-    return this.comment ? moment(this.comment.createdAt).fromNow() : null
-  }
-
-  protected gotoPost(id, urlTitle) {
-    if (this.condensed) {
-      this.$router.push(`/posts/${id}/${urlTitle}`)
+    constructor() {
+        super()
+        this.alive = true
+        this.repliesCount = null
+        this.renderedContent =
+            this.comment != null ? mdNoHtml.render(this.comment.content) : null
     }
-  }
 
-  protected async deleteComment() {
-    try {
-      const { data } = await axios.post(
-        `${config.apiUrl}/deletecomment`,
-        { id: this.comment.id },
-        { withCredentials: true }
-      )
-      this.$store.dispatch("addAlert", {
-        alertType: "success",
-        alertText: data.success
-      })
-      this.$emit("deletedComment")
-      this.alive = false
-    } catch (err) {
-      if (err.response) {
-        this.$store.dispatch("addAlert", {
-          alertType: "danger",
-          alertText: err.response.data.error
-        })
-      } else {
-        this.$store.dispatch("addAlert", {
-          alertType: "danger",
-          alertText: "Something went wrong."
-        })
-      }
+    get date() {
+        return this.comment
+            ? moment
+                .utc(this.comment.createdAt)
+                .local()
+                .format("MM/DD/YYYY, HH:mm")
+            : null
     }
-  }
+
+    get timeSince() {
+        return this.comment ? moment(this.comment.createdAt).fromNow() : null
+    }
+
+    protected gotoPost(id, urlTitle) {
+        if (this.condensed) {
+            this.$router.push(`/posts/${id}/${urlTitle}`)
+        }
+    }
+
+    protected async deleteComment() {
+        try {
+            const { data } = await axios.post(
+                `${config.apiUrl}/deletecomment`,
+                { id: this.comment.id },
+                { withCredentials: true }
+            )
+            this.$store.dispatch("addAlert", {
+                alertType: "success",
+                alertText: data.success
+            })
+            this.$emit("deletedComment")
+            this.alive = false
+        } catch (err) {
+            if (err.response) {
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: err.response.data.error
+                })
+            } else {
+                this.$store.dispatch("addAlert", {
+                    alertType: "danger",
+                    alertText: "Something went wrong."
+                })
+            }
+        }
+    }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
+@media screen and (min-width: 750px)
+    .datapos
+        display: inline-block
+    .buttonpos
+        position: absolute
+        top: 0
+        right: 0
+
+@media screen and (max-width: 750px)
+    .datapos
+        margin: 0 auto
+        display: block
+        margin-bottom: 15px
+    .buttonpos
+        position: relative
+        display: block
+
 .delete
     color: #ff7474 !important
     cursor: pointer

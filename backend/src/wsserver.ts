@@ -1,9 +1,6 @@
 import ws from "ws"
 import jwt from "jsonwebtoken"
 import { server } from "./app"
-import { PostNotification } from "./entity/PostNotification"
-import { getConnection } from "typeorm"
-import { User } from "./entity/User";
 
 export let wss = new ws.Server({ noServer: true })
 
@@ -39,7 +36,12 @@ function heartbeat() {
     this.isAlive = true
 }
 
-wss.on("connection", (ws, request) => {
+interface CustomWs extends ws {
+    username: string
+    isAlive: boolean
+} 
+
+wss.on("connection", (ws: CustomWs, request) => {
     ws.username = getVerified(request).username
     wss.emit("notification", ws)
     ws.on("message", (message) => console.log(`Received message ${message}`))
@@ -56,12 +58,12 @@ wss.on("connection", (ws, request) => {
     }, 1000)
 })
 
-wss.on("notification", async (ws?: ws, username?) => {
+wss.on("notification", async (ws?: CustomWs, username?) => {
     console.log("attempting")
     let socket: ws
     if (!ws) {
         console.log("null!")
-        let connections = Array.from(wss.clients)
+        let connections = Array.from(wss.clients) as Array<CustomWs>
         socket = connections.find((ele) => {
             return ele ? ele.username === username : false
         })

@@ -28,5 +28,7 @@ export function connect() {
 
 export function close() {
     clientClosed = true
-    ws.close()
+    if (ws != null) {
+        ws.close()
+    }       
 }
