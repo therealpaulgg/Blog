@@ -8,55 +8,59 @@
                 <hr />
                 <h1 class="bigtitle">{{header}}</h1>
                 <div class="metadata">
-                    <span class="metaelement">
-                        By:
-                        <b>
-                            <router-link :to="`/profile/${user}`">{{user}}</router-link>
-                        </b>
-                    </span>
-                    <span class="metaelement">
-                        <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
-                        <span class="metaelement">
-                            {{dateCreated}},
-                            <i>{{sinceCreation}}</i>
-                        </span>
-                    </span>
-                    <span class="metaelement" v-if="createdAt !== updatedAt">
-                        <font-awesome-icon icon="sync-alt"></font-awesome-icon>
-                        <span class="metaelement">
-                            {{dateUpdated}},
-                            <i>{{sinceUpdate}}</i>
-                        </span>
-                    </span>
-                    <span class="metaelement" v-if="commentCount">
-                        <font-awesome-icon icon="comments"></font-awesome-icon>
-                        {{commentCount}}
-                    </span>
-                    <div>
+                    <div style="position: relative">
+                        <div style="margin: 0 auto; display: block; margin-bottom: 15px;">
+                            <span class="metaelement">
+                                By:
+                                <b>
+                                    <router-link :to="`/profile/${user}`">{{user}}</router-link>
+                                </b>
+                            </span>
+                            <span class="metaelement">
+                                <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
+                                <span class="metaelement">
+                                    {{dateCreated}},
+                                    <i>{{sinceCreation}}</i>
+                                </span>
+                            </span>
+                            <span class="metaelement" v-if="createdAt !== updatedAt">
+                                <font-awesome-icon icon="sync-alt"></font-awesome-icon>
+                                <span class="metaelement">
+                                    {{dateUpdated}},
+                                    <i>{{sinceUpdate}}</i>
+                                </span>
+                            </span>
+                            <span class="metaelement" v-if="commentCount">
+                                <font-awesome-icon icon="comments"></font-awesome-icon>
+                                {{commentCount}}
+                            </span>
+                            <div>
+                                <div
+                                    style="display: inline-block"
+                                    v-for="(tag, index) in tags"
+                                    :key="index"
+                                    class="hashtag"
+                                    @click.stop="fooBar(tag)"
+                                >#{{tag}}</div>
+                            </div>
+                        </div>
                         <div
-                            style="display: inline-block"
-                            v-for="(tag, index) in tags"
-                            :key="index"
-                            class="hashtag"
-                            @click.stop="fooBar(tag)"
-                        >#{{tag}}</div>
-                    </div>
-                    <div
-                        v-if="isAuthenticated && (user === username || editPerms) && !postingComment"
-                        style="position: absolute; right: 0;"
-                    >
-                        <a @click="del" class="delete metaelement" :class="getTheme">Delete</a>
-                        <a
-                            v-if="editable || editPerms"
-                            @click="edit"
-                            class="edit metaelement"
-                            :class="getTheme"
-                        >Edit</a>
-                        <a
-                            class="plainbtn metaelement"
-                            :class="getTheme"
-                            @click="changeSettings"
-                        >Post Settings</a>
+                            v-if="isAuthenticated && (user === username || editPerms) && !postingComment"
+                            style="position: relative; display: block; text-align: right"
+                        >
+                            <a @click="del" class="delete metaelement" :class="getTheme">Delete</a>
+                            <a
+                                v-if="editable || editPerms"
+                                @click="edit"
+                                class="edit metaelement"
+                                :class="getTheme"
+                            >Edit</a>
+                            <a
+                                class="plainbtn metaelement"
+                                :class="getTheme"
+                                @click="changeSettings"
+                            >Post Settings</a>
+                        </div>
                     </div>
                 </div>
 
@@ -124,7 +128,11 @@
                                     <p>Editable</p>
                                 </div>
                                 <div class="col">
-                                    <toggle-button ref="editableTog" :sync="true" :value="editable" />
+                                    <toggle-button
+                                        ref="editableTog"
+                                        :sync="true"
+                                        :value="editable"
+                                    />
                                 </div>
                             </div>
                             <div class="row">
@@ -132,7 +140,11 @@
                                     <p>Comments Enabled</p>
                                 </div>
                                 <div class="col">
-                                    <toggle-button ref="commentsEnabledTog" :sync="true" :value="commentsEnabled" />
+                                    <toggle-button
+                                        ref="commentsEnabledTog"
+                                        :sync="true"
+                                        :value="commentsEnabled"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -144,7 +156,7 @@
                     </div>
                 </div>
                 <div v-else>
-                    <div style="word-wrap: break-word" v-html="renderedContent"></div>
+                    <div class="betterscrollbar" style="word-wrap: break-word; overflow: auto;" v-html="renderedContent"></div>
                     <hr />
                     <h1>Comments</h1>
                     <a
@@ -682,6 +694,18 @@ export default class Post extends Vue {
     .buttonpos
         position: relative
         display: block
+
+.comment.light.condensed:hover
+    background-color: #f2feff !important
+.comment.dark.condensed:hover
+    background-color: #3e4154 !important
+.comment::-webkit-scrollbar
+    width: 10px
+.comment::-webkit-scrollbar-thumb
+    border-radius: 10px
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3)
+.comment::-webkit-scrollbar-track
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
 
 .danger
     color: #ff7474

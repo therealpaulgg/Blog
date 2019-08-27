@@ -1,6 +1,6 @@
 <template>
     <div
-        class="postblock"
+        class="postblock betterscrollbar"
         :class="{'light': getTheme === 'light', 'dark': getTheme === 'dark', 'condensed': condensed}"
         @click="goToPost"
     >
@@ -15,11 +15,18 @@
                 </b>
                 ,
             </span>
-            {{date}}
+            <span class="metaelement">
+                <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
+                <span class="metaelement">
+                    {{date}},
+                    <i>{{createdFrom}}</i>
+                </span>
+            </span>
         </div>
-        <div style="position: relative word-wrap: break-word">
+        <div style="position: relative; word-wrap: break-word">
             <h2 v-if="!condensed">{{title}}</h2>
             <h3 v-else>{{title}}</h3>
+            <div v-if="content" v-html="mdNoHtml.render(content)"></div>
         </div>
         <div style="position: relative" v-if="!condensed">
             <div
@@ -37,6 +44,7 @@
 import { Component, Prop, Vue } from "vue-property-decorator"
 import { Getter } from "vuex-class"
 import moment from "moment"
+import { mdNoHtml } from "../mdparser"
 
 @Component
 export default class PostBlock extends Vue {
@@ -45,7 +53,11 @@ export default class PostBlock extends Vue {
         return `${moment
             .utc(this.createdAt)
             .local()
-            .format("MM/DD/YYYY, HH:mm")}, ${moment.utc(this.createdAt).fromNow()}`
+            .format("MM/DD/YYYY, HH:mm")}`
+    }
+
+    get createdFrom() {
+        return `${moment.utc(this.createdAt).fromNow()}`
     }
 
     get username() {
@@ -61,6 +73,7 @@ export default class PostBlock extends Vue {
     @Prop(String) protected readonly updatedAt: string
     @Prop() protected readonly tags: string[]
     @Getter("getTheme") private getTheme: string
+    protected mdNoHtml = mdNoHtml
 
     protected fooBar(tag) {
         this.$router.push(`/tag/${tag}`)
@@ -84,6 +97,8 @@ export default class PostBlock extends Vue {
     border-radius: 20px
     transition: 0.5s
     -webkit-transition: 0.5s
+    overflow: auto
+    max-height: 250px
 .postblock.condensed
     padding: 10px 10px 1px 10px
     border-radius: 10px
@@ -107,6 +122,9 @@ export default class PostBlock extends Vue {
     transition: 0.5s
     -webkit-transition: 0.5s
     cursor: pointer
+.metaelement
+    margin-left: 10px
+    margin-right: 10px
 .hashtag
     margin: 10px 
     padding-left: 5px

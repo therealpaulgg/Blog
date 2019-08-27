@@ -66,7 +66,6 @@ export default class Editor extends Vue {
     @Watch("editorTheme")
     protected um(newval, oldval) {
         if (this.$refs.editor != null) {
-            console.log(this.$refs.editor.cminstance)
             this.$refs.editor.cminstance.setOption("theme", newval)
             this.$refs.editor.cminstance.refresh()
         }

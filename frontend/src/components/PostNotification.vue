@@ -82,7 +82,6 @@ export default class notification extends Vue {
             })
             }
             this.$store.dispatch("dismissNotification", this.notification.id)
-            console.log("bye")
             this.alive = false
         } catch (err) {
             if (err.response) {

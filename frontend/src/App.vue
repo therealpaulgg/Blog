@@ -277,6 +277,15 @@ html, body
 .preview::-webkit-scrollbar-track
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
 
+.betterscrollbar::-webkit-scrollbar
+    width: 10px
+
+.betterscrollbar::-webkit-scrollbar-thumb
+    border-radius: 10px
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3)
+
+.betterscrollbar::-webkit-scrollbar-track
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
 
 .CodeMirror-scroll::-webkit-scrollbar
     width: 10px
@@ -306,6 +315,8 @@ th, td
         color: #00ccff !important
         transition: 0.5s
         -webkit-transition: 0.5s
+    .betterscrollbar::-webkit-scrollbar-thumb
+        background-color: #dddddd !important
     .preview::-webkit-scrollbar-thumb
         background-color: #dddddd !important
     hr
@@ -320,6 +331,8 @@ th, td
     .preview::-webkit-scrollbar-thumb
         background-color: #3e404c
     .jumbotron::-webkit-scrollbar-thumb
+        background-color: #3e404c !important
+    .betterscrollbar::-webkit-scrollbar-thumb
         background-color: #3e404c !important
     a.active
         background-color: #2a2c39 !important 

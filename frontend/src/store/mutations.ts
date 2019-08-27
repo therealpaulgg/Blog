@@ -4,7 +4,7 @@ import { PostModel } from "@/models/post"
 import { Alert } from "@/models/alert"
 import config from "../config"
 import Cookies from "js-cookie"
-import { PostNotificationModel } from '@/models/notification';
+import { PostNotificationModel } from '@/models/notification'
 import Vue from "vue"
 
 export default {

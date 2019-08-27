@@ -5,7 +5,7 @@
         v-if="alive"
         @click="gotoPost(comment.postId, comment.postUrlTitle)"
     >
-        <div class="metadata container">
+        <div class="metadata">
             <div style="position: relative">
                 <div class="datapos">
                     <span class="metaelement" v-if="comment != null && !condensed">
@@ -118,7 +118,7 @@ export default class Comment extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
-@media screen and (min-width: 750px)
+@media screen and (min-width: 992px)
     .datapos
         display: inline-block
     .buttonpos
@@ -126,7 +126,7 @@ export default class Comment extends Vue {
         top: 0
         right: 0
 
-@media screen and (max-width: 750px)
+@media screen and (max-width: 992px)
     .datapos
         margin: 0 auto
         display: block

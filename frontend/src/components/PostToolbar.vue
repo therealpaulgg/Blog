@@ -129,7 +129,7 @@ export default class PostToolbar extends Vue {
         for (let i = 0; i < this.POPUP_NUM; i++) {
             Vue.set(this.popups, i, false)
         }
-    }
+    }foobar
 
     protected toggle(index) {
         for (let i = 0; i < this.POPUP_NUM; i++) {
@@ -146,11 +146,6 @@ export default class PostToolbar extends Vue {
         }
     }
 
-    @Watch("editor")
-    do() {
-        console.log(this.editor.doc.getSelection())
-    }
-
     protected insertIntoEditor(fn: (...args) => any, args: any[]) {
         const range = this.editor.doc.getSelection()
         const text = fn(...args)
@@ -165,6 +160,7 @@ export default class PostToolbar extends Vue {
 
     protected styleText(prefix: string, suffix: string, line) {
         const prefixLen = prefix.length
+
         const suffixLen = suffix.length
         const val: string = this.editor
             .doc
@@ -173,8 +169,18 @@ export default class PostToolbar extends Vue {
         // (i.e bolded already), it removes the selected styling.
         const preSubstr = val.substring(0, prefixLen)
         const sufSubstr = val.substring(val.length - suffixLen, val.length)
+        const re = new RegExp(`${prefix.replace(/(.)/g, '\\$1')}.*${suffix.replace(/(.)/g, '\\$1')}`)
+        const match = val.match(re)
         if (preSubstr === prefix && sufSubstr === suffix) {
             return val.substring(prefixLen, val.length - suffixLen)
+        } else if (match) {
+            // I recently discovered that JavaScript has two completely different substring methods and 
+            // I got stuck on this because I thought they did the same thing. I am too lazy to change
+            // it to 'substring' at this point because it works now and I have spent too much time on this.
+            let firstStr = val.substr(0, match.index) 
+            let secondStr = val.substr(match.index + prefixLen, match[0].length - suffixLen - prefixLen)
+            let thirdStr = val.substr(match.index + match[0].length)
+            return firstStr + secondStr + thirdStr 
         } else {
             return `${prefix}${val}${suffix}`
         }

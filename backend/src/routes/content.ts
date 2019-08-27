@@ -129,6 +129,7 @@ router.get("/posts/:page", async (req, res) => {
                     username: post.user.username,
                     createdAt: post.createdAt,
                     updatedAt: post.updatedAt,
+                    content: post.content.length < 150 ? post.content : post.content.substr(0, 150) + "...",
                     tags
                 }
                 posts.push(obj)
