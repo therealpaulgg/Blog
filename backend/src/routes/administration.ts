@@ -75,10 +75,9 @@ router.post("/admindeleteuser/:username", checkAuth, checkPermissions, async (re
             let connection = getConnection()
             let user = await connection.manager.findOne(User, { username }, { relations: ["comments", "posts", "permissionBlock"] })
             if (user != null) {
-                console.log(user)
-                // delete all user comments TODO: make 'deleted' if parent of replies
+                // delete all user comments
                 for (let comment of user.comments) {
-                    await deleteComment(comment, user, true)
+                    await deleteComment(comment.id, user, true)
                 }
                 // delete all user posts 
                 for (let post of user.posts) {

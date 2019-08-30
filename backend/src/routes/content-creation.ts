@@ -6,6 +6,7 @@ import { Post } from "../entity/Post"
 import { Tag } from "../entity/Tag"
 import { Comment } from "../entity/Comment"
 import notify from "../services/notify"
+import { parentPort } from "worker_threads";
 
 export async function deletePost(postId: string | number | Post, username: string | User, override?: boolean) {
     let connection = getConnection()
@@ -74,20 +75,12 @@ export async function deletePost(postId: string | number | Post, username: strin
     }
 }
 
-export async function deleteComment(commentId: string | Comment, username: string | User, override?: boolean) {
+export async function deleteComment(commentId: number, username: string | User, override?: boolean) {
     let connection = getConnection()
-    let comment = null
-    let id = 0
-    if (commentId instanceof Comment) {
-        comment = commentId
-    } else {
-        id = parseInt(commentId)
-    }
-    if (!isNaN(id)) {
+    let comment: Comment | null = null
+    if (!isNaN(commentId)) {
         try {
-            if (comment == null) {
-                comment = await connection.manager.findOne(Comment, { id }, { relations: ["post", "user", "post.user", "user.permissionBlock"] })
-            }
+            comment = await connection.manager.findOne(Comment, { id: commentId }, { relations: ["post", "user", "post.user", "user.permissionBlock", "children", "parent", "parent.user"] })
             if (comment != null) {
                 let user = null
                 if (username instanceof User) {
@@ -96,8 +89,26 @@ export async function deleteComment(commentId: string | Comment, username: strin
                     user = await connection.manager.findOne(User, { username }, { relations: ["permissionBlock"] })
                 }
                 let commentUser = comment.user
+                if (!override && commentUser == null) {
+                    throw {
+                        responseId: 401,
+                        responseContent: "You may not directly delete a comment marked as deleted."
+                    }
+                }
+                // permissions check
                 if (override || username === commentUser.username || comment.post.user.username === username || (user.permissionBlock.permissionLevel >= 3 || (user.permissionBlock.permissionLevel >= 2 && comment.user.permissionBlock.permissionLevel < 3))) {
-                    await connection.manager.remove(comment)
+                    if (comment.children.length > 0) {
+                        comment.content = "[deleted]"
+                        comment.user = null
+                        await connection.manager.save(comment)
+                    } else {
+                        let parent = comment.parent
+                        await connection.manager.remove(comment)
+                        if (parent != null && parent.content == "[deleted]" && parent.user == null) {
+                            // recursion is cool!
+                            await deleteComment(parent.id, parent.user, true)
+                        }
+                    }
                 } else {
                     throw {
                         responseId: 401,
@@ -174,15 +185,24 @@ router.post("/comment", checkAuth, checkPermissions, async (req, res) => {
     // Data should be sent through body
     try {
         let connection = getConnection()
-        let post = await connection.manager.findOne(Post, { id: req.body.id, urlTitle: req.body.urlTitle }, {relations:  ["user"]})
+        let post = await connection.manager.findOne(Post, { id: req.body.id, urlTitle: req.body.urlTitle }, { relations: ["user"] })
         let user = await connection.manager.findOne(User, { username: res.locals.user })
         if (post && user) {
             let content: string = req.body.content
+            let replyId: number = req.body.replyId
             if (content != null && content.length > 0 && ((!settings.limitCommentLength) || (content.length <= settings.commentMaxLength && settings.limitCommentLength))) {
                 let comment = new Comment()
                 comment.post = post
                 comment.content = content
                 comment.user = user
+                if (replyId != null) {
+                    comment.parent = await connection.manager.findOne(Comment, { id: replyId }, { relations: ["user"] })
+                    if (comment.parent.user == null) {
+                        res.status(400).send({
+                            error: "You cannot reply to a comment marked as deleted."
+                        })
+                    }
+                }
                 await connection.manager.save(comment)
                 res.send({
                     success: "Comment posted."
@@ -198,12 +218,12 @@ router.post("/comment", checkAuth, checkPermissions, async (req, res) => {
                 error: "Post not found or user not found."
             })
         }
-    } catch {
+    } catch (err) {
+        console.log(err)
         res.status(400).send({
             error: "Malformed request."
         })
     }
-
 })
 
 router.post("/editpost-settings", checkAuth, checkPermissions, async (req, res) => {
@@ -288,8 +308,9 @@ router.post("/deletepost", checkAuth, checkPermissions, async (req, res) => {
 })
 
 router.post("/deletecomment", checkAuth, checkPermissions, async (req, res) => {
+    let id = parseInt(req.body.id)
     try {
-        await deleteComment(req.body.id, res.locals.user)
+        await deleteComment(id, res.locals.user)
         res.send({
             success: "Comment successfully deleted."
         })

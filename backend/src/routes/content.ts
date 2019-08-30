@@ -162,29 +162,32 @@ router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) 
     let postId = parseInt(req.params.postId)
     let urlTitle = req.params.urlTitle
     if (!isNaN(postId) && !isNaN(pageNum) && urlTitle) {
-        const postsPerPage = 10
-        const postRepo = getConnection().getRepository(Comment)
-        const qb = postRepo.createQueryBuilder("c")
+        const commentsPerPage = 10
+        const commentRepo = getConnection().getRepository(Comment)
+        const qb = commentRepo.createQueryBuilder("c")
             .where("c.\"postId\" = :postId", { postId })
             .leftJoinAndSelect("c.user", "user")
+            .leftJoinAndSelect("c.children", "children")
+            .andWhere("c.parent IS NULL")
             .orderBy("c.createdAt", "DESC")
-            .skip((pageNum - 1) * postsPerPage)
-            .take(postsPerPage)
-
+            .skip((pageNum - 1) * commentsPerPage)
+            .take(commentsPerPage)
         try {
             let dbComments = await qb.getMany()
             let comments = []
             dbComments.forEach(comment => {
                 comments.push({
                     content: comment.content,
-                    user: comment.user.username,
+                    user: comment.user ? comment.user.username : "[deleted]",
                     createdAt: comment.createdAt,
                     updatedAt: comment.updatedAt,
-                    id: comment.id
+                    id: comment.id,
+                    replies: comment.children.length > 0,
+                    repliesCount: comment.children.length
                 })
             })
             let count = await qb.getCount()
-            const pages = Math.ceil(count / postsPerPage)
+            const pages = Math.ceil(count / commentsPerPage)
             let post = await getConnection().manager.findOne(Post, { id: postId, urlTitle }, { relations: ["user", "tags", "user.permissionBlock"] })
             let tags = []
             post.tags.forEach(tag => tags.push(tag.tagStr))
@@ -208,6 +211,7 @@ router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) 
             }
             res.send(formattedData)
         } catch (err) {
+            console.log(err)
             res.status(404).send({ error: "No post found. :(" })
         }
     } else {
@@ -217,11 +221,52 @@ router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) 
     }
 })
 
+router.get("/commentreplies/:id/:pageNum", async (req, res) => {
+    let id = parseInt(req.params.id)
+    let pageNum = parseInt(req.params.pageNum)
+    if (!isNaN(id) && !isNaN(pageNum)) {
+        try {
+            const commentsPerPage = 10
+            const commentRepo = getConnection().getRepository(Comment)
+            const qb = commentRepo.createQueryBuilder("c")
+                .where("c.\"parentId\" = :id", { id })
+                .leftJoinAndSelect("c.user", "user")
+                .leftJoinAndSelect("c.children", "children")
+                .orderBy("c.createdAt", "DESC")
+                .skip((pageNum - 1) * commentsPerPage)
+                .take(commentsPerPage)
+            let dbComments = await qb.getMany()
+            let comments = []
+            dbComments.forEach(comment => {
+                comments.push({
+                    content: comment.content,
+                    user: comment.user ? comment.user.username : "[deleted]",
+                    createdAt: comment.createdAt,
+                    updatedAt: comment.updatedAt,
+                    id: comment.id,
+                    replies: comment.children.length > 0,
+                    repliesCount: comment.children.length
+                })
+            })
+            res.send(comments)
+        } catch (err) {
+            console.log(err)
+            res.status(500).send({
+                error: "Something went wrong."
+            })
+        }
+    } else {
+        res.status(400).send({
+            error: "Malformed request."
+        })
+    }
+})
+
 router.get("/pageinfo", (req, res) => {
     try {
         res.send({
             blogTitle: settings.blogTitle
-        }) 
+        })
     }
     catch {
         res.status(500).send({
@@ -307,7 +352,7 @@ router.post("/dismiss", checkAuth, async (req, res) => {
 router.post("/dismissall", checkAuth, async (req, res) => {
     try {
         let connection = getConnection()
-        let user = await connection.manager.findOne(User, {username: res.locals.user}, {relations: ["postNotifications"]})
+        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["postNotifications"] })
         await connection.manager.remove(user.postNotifications)
         res.send({
             success: "All notifications cleared."

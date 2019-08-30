@@ -61,7 +61,7 @@ wss.on("connection", (ws: CustomWs, request) => {
 wss.on("notification", async (ws?: CustomWs, username?) => {
     console.log("attempting")
     let socket: ws
-    if (!ws) {
+    if (ws == null) {
         console.log("null!")
         let connections = Array.from(wss.clients) as Array<CustomWs>
         socket = connections.find((ele) => {
@@ -73,9 +73,11 @@ wss.on("notification", async (ws?: CustomWs, username?) => {
     // let connection = getConnection()
     // let user = await connection.manager.findOne(User, { username: socket.username })
     // notificationCount: await connection.manager.count(PostNotification, { user })
-    socket.send(JSON.stringify({
-        updateNotifications: true
-    }))
+    if (socket) {
+        socket.send(JSON.stringify({
+            updateNotifications: true
+        }))
+    }
 })
 
 wss.on("close", () => console.log("Client disconnected."))

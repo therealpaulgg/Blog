@@ -156,7 +156,11 @@
                     </div>
                 </div>
                 <div v-else>
-                    <div class="betterscrollbar" style="word-wrap: break-word; overflow: auto;" v-html="renderedContent"></div>
+                    <div
+                        class="betterscrollbar"
+                        style="word-wrap: break-word; overflow: auto;"
+                        v-html="renderedContent"
+                    ></div>
                     <hr />
                     <h1>Comments</h1>
                     <a
@@ -200,8 +204,10 @@
                         :key="comment.id"
                         :comment="comment"
                         :ownsPost="user === $store.state.username"
-                        @deletedComment="updateCommentsOnDelete"
+                        @replying="replyToComment"
                         :editPerms="editPerms"
+                        :postingComment="postingComment"
+                        :parent="false"
                     />
                     <b-button v-if="show" @click="load" :variant="theme">Load More Comments</b-button>
                     <p v-else-if="comments.length === 0">No comments found.</p>
@@ -274,6 +280,8 @@ export default class Post extends Vue {
     protected editable: boolean | null
     protected commentsEnabled: boolean | null
     protected editPostSettings: boolean
+    protected isReply: boolean
+    protected replyId: number | null
     @Prop(String) protected readonly title!: string
     @Prop(String) protected readonly id!: string
     @Getter("getTheme") private getTheme: string
@@ -303,6 +311,8 @@ export default class Post extends Vue {
         this.editable = null
         this.commentsEnabled = null
         this.editPostSettings = false
+        this.isReply = false
+        this.replyId = null
     }
 
     @Watch("content")
@@ -312,6 +322,13 @@ export default class Post extends Vue {
 
     protected showCommentPost() {
         this.postingComment = !this.postingComment
+        this.isReply = false
+    }
+
+    protected replyToComment(id) {
+        this.postingComment = true
+        this.isReply = true
+        this.replyId = id
     }
 
     protected del() {
@@ -507,7 +524,8 @@ export default class Post extends Vue {
                 {
                     id: this.id,
                     urlTitle: this.title,
-                    content: this.commentContent
+                    content: this.commentContent,
+                    replyId: this.isReply ? this.replyId : null
                 },
                 { withCredentials: true }
             )
@@ -536,10 +554,6 @@ export default class Post extends Vue {
                 })
             }
         }
-    }
-
-    protected updateCommentsOnDelete() {
-        this.loadComments()
     }
 
     protected mounted() {

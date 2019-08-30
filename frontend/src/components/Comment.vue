@@ -1,68 +1,111 @@
 <template>
-    <div
-        class="comment"
-        :class="{'light': getTheme === 'light', 'dark': getTheme === 'dark', 'condensed': condensed}"
-        v-if="alive"
-        @click="gotoPost(comment.postId, comment.postUrlTitle)"
-    >
-        <div class="metadata">
-            <div style="position: relative">
-                <div class="datapos">
-                    <span class="metaelement" v-if="comment != null && !condensed">
-                        By:
-                        <b>
-                            <router-link :to="`/profile/${comment.user}`">{{comment.user}}</router-link>
-                        </b>
-                    </span>
-                    <span class="metaelement">
-                        <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
-                        <span class="metaelement">
-                            {{date}},
-                            <i>{{timeSince}}</i>
+    <div :class="{'commentwrapper': !parent, 'bigwrapper': replies != null}" v-if="alive">
+        <div
+            class="comment"
+            :class="{'light': getTheme === 'light', 'dark': getTheme === 'dark', 'condensed': condensed, 'commentthread': replies != null || parent, 'noverflow': parent}"
+            @click="gotoPost(comment.postId, comment.postUrlTitle)"
+        >
+            <div class="metadata">
+                <div style="position: relative">
+                    <div class="datapos">
+                        <span class="metaelement" v-if="comment != null && !condensed">
+                            By:
+                            <b>
+                                <router-link
+                                    :to="`/profile/${comment.user}`"
+                                    v-if="comment.user !== '[deleted]'"
+                                >{{comment.user}}</router-link>
+                                <span v-else>{{comment.user}}</span>
+                            </b>
                         </span>
-                    </span>
-                    <span class="metaelement" v-if="repliesCount">
-                        <font-awesome-icon icon="comments"></font-awesome-icon>
-                        {{repliesCount}}
-                    </span>
-                </div>
+                        <span class="metaelement">
+                            <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
+                            <span class="metaelement">
+                                {{date}},
+                                <i>{{timeSince}}</i>
+                            </span>
+                        </span>
+                        <span class="metaelement" v-if="comment.repliesCount">
+                            <font-awesome-icon icon="comments"></font-awesome-icon>
+                            {{comment.repliesCount}}
+                        </span>
+                    </div>
 
-                <div
-                    class="buttonpos"
-                    v-if="comment != null && !condensed && ($store.state.username === comment.user || editPerms || ownsPost)"
-                >
-                    <a @click="deleteComment" class="delete metaelement">Delete</a>
+                    <div
+                        class="buttonpos"
+                        v-if="comment != null && !condensed && ($store.state.username === comment.user || editPerms || ownsPost)"
+                    >
+                        <a
+                            @click="replying(undefined)"
+                            v-if="!postingComment && comment.user !== '[deleted]'"
+                            class="delete metaelement"
+                        >Reply</a>
+                        <a
+                            @click="deleteComment"
+                            v-if="comment.user !== '[deleted]'"
+                            class="delete metaelement"
+                        >Delete</a>
+                    </div>
                 </div>
             </div>
+            <div style="word-wrap: break-word" v-html="renderedContent"></div>
+            <b-button
+                @click="getReplies"
+                v-if="comment.replies && replies == null"
+                :variant="getTheme"
+            >Show Replies</b-button>
+            <comment
+                @replying="replying"
+                v-for="reply in replies"
+                :key="reply.id"
+                :comment="reply"
+                :ownsPost="ownsPost"
+                :editPerms="editPerms"
+                :condensed="condensed"
+                :postingComment="postingComment"
+                :parent="true"
+                @hide="determineHide"
+            />
         </div>
-        <div style="word-wrap: break-word" v-html="renderedContent"></div>
     </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator"
+import { Component, Prop, Vue, Watch } from "vue-property-decorator"
 import { Getter } from "vuex-class"
 import { CommentModel } from "../models/comment"
 import moment from "moment"
 import { mdNoHtml } from "../mdparser"
 import axios from "axios"
 import config from "../config"
+import { BButton } from "bootstrap-vue"
 
-@Component
+interface ChildComponent extends Vue {
+    alive: boolean
+}
+
+@Component({
+    name: "comment",
+    components: {
+        BButton
+    }
+})
 export default class Comment extends Vue {
     @Prop() protected comment: CommentModel
     @Prop() protected ownsPost: boolean
     @Prop() protected condensed: boolean
     @Prop() protected editPerms: boolean
+    @Prop() protected postingComment: boolean
+    @Prop() protected parent: boolean
     protected alive: boolean
     protected renderedContent: string
-    protected repliesCount: number | null
+    protected replies: Array<CommentModel> | null
     @Getter("getTheme") private getTheme: string
 
     constructor() {
         super()
         this.alive = true
-        this.repliesCount = null
+        this.replies = null
         this.renderedContent =
             this.comment != null ? mdNoHtml.render(this.comment.content) : null
     }
@@ -76,14 +119,56 @@ export default class Comment extends Vue {
             : null
     }
 
+    @Watch("comment.content")
+    updateContent(newVal, oldVal) {
+        this.renderedContent = mdNoHtml.render(newVal)
+    }
+
     get timeSince() {
         return this.comment ? moment(this.comment.createdAt).fromNow() : null
+    }
+
+    protected async getReplies() {
+        try {
+            let { data }: { data: Array<CommentModel> } = await axios.get(`${config.apiUrl}/commentreplies/${this.comment.id}/1`)
+            this.replies = data
+        } catch {
+
+        }
+    }
+
+    protected determineHide(id) {
+        if (this.replies != null) {
+            let index = this.replies.indexOf(this.replies.find(comment => comment.id == id))
+
+            Vue.delete(this.replies, index)
+            if (this.replies.length == 0) {
+                this.replies = null
+                this.comment.replies = false
+            }
+        }
+        if (this.comment.content == "[deleted]" && this.comment.user == "[deleted]") {
+            let child = this.$children.find((child: ChildComponent) => child.alive === true)
+            if (child == null) {
+                this.alive = false
+                this.$emit("hide", this.comment.id)
+            }
+        }
     }
 
     protected gotoPost(id, urlTitle) {
         if (this.condensed) {
             this.$router.push(`/posts/${id}/${urlTitle}`)
         }
+    }
+
+    protected replying(id) {
+        if (id != undefined) {
+            this.$emit("replying", id)
+        } else {
+            this.$emit("replying", this.comment.id)
+        }
+
     }
 
     protected async deleteComment() {
@@ -97,8 +182,14 @@ export default class Comment extends Vue {
                 alertType: "success",
                 alertText: data.success
             })
-            this.$emit("deletedComment")
-            this.alive = false
+            if (this.replies != null) {
+                this.comment.user = "[deleted]"
+                this.comment.content = "[deleted]"
+            } else {
+                this.alive = false
+                this.$emit("hide", this.comment.id)
+            }
+
         } catch (err) {
             if (err.response) {
                 this.$store.dispatch("addAlert", {
@@ -149,14 +240,30 @@ export default class Comment extends Vue {
 .metaelement
     margin-left: 10px
     margin-right: 10px
+.noverflow
+    max-height: none !important
+    margin-bottom: 0px
 .comment
-    padding: 20px
-    margin: 20px
+    margin-bottom: 20px
+.commentthread
+    border-top-left-radius: 0px
+    border-bottom-left-radius: 0px
+    padding-left: 20px
+.commentthread.dark
+    border-left: thick solid #3e4154
+.commentthread.light
+    border-left: thick solid #dddddd
+.comment.condensed
+    padding: 10px 10px 0px 10px
+    max-width: 350px
+    padding-top: 20px
+    margin-bottom: 20px
+    margin-top: 20px
     border-radius: 10px
     max-height: 300px
     overflow-y: auto
-.comment.condensed
-    padding: 10px 10px 0px 10px
+    width: 100%
+    padding-left: 20px
 .comment.condensed:hover
     border-radius: 20px
     transition: 0.5s
@@ -173,9 +280,34 @@ export default class Comment extends Vue {
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3)
 .comment::-webkit-scrollbar-track
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
+.commentwrapper
+    padding: 20px
+    border-radius: 20px
+    padding-top: 20px
+    margin-bottom: 20px
+    margin-top: 20px
+    border-radius: 10px
+    max-height: 300px
+    overflow-y: auto
+    width: 100%
+    padding-left: 20px
+.bigwrapper
+    max-height: 800px
+.commentwrapper::-webkit-scrollbar
+    width: 10px
+.commentwrapper::-webkit-scrollbar-thumb
+    border-radius: 10px
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3)
+.commentwrapper::-webkit-scrollbar-track
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
 .dark
     background-color: #2a2c39 !important
     color: white
+    .commentwrapper
+        background-color: #2a2c39 !important
+        color: white
+    .commentwrapper::-webkit-scrollbar-thumb
+        background-color: #3e404c
     .comment::-webkit-scrollbar-thumb
         background-color: #3e404c
     .delete
@@ -185,6 +317,11 @@ export default class Comment extends Vue {
 .light
     background-color: white !important
     color: black
+    .commentwrapper
+        background-color: white !important
+        color: black
+    .commentwrapper::-webkit-scrollbar-thumb
+        background-color: #dddddd
     .comment::-webkit-scrollbar-thumb
         background-color: #dddddd
     .delete
