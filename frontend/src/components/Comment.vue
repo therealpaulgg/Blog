@@ -107,7 +107,6 @@ export default class Comment extends Vue {
         this.replies = null
         this.renderedContent =
             this.comment != null ? mdNoHtml.render(this.comment.content) : null
-        console.log(this.condensed)
     }
 
     get date() {
