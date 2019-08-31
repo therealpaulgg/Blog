@@ -40,7 +40,7 @@ import axios from "axios"
 import { PostModel } from "../models/post"
 import { mdHtml } from "../mdparser"
 import Editor from "../components/Editor.vue"
-import config from "../config"
+
 import Preview from "../components/Preview.vue"
 import MarkdownEditor from "../components/MarkdownEditor.vue"
 
@@ -139,7 +139,7 @@ export default class NewPost extends Vue {
     protected post() {
         axios
             .post(
-                `${config.apiUrl}/newpost`,
+                `${process.env.VUE_APP_API_URL}/newpost`,
                 { title: this.title, content: this.content, tags: this.tags },
                 { withCredentials: true }
             )

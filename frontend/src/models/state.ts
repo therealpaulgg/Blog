@@ -1,6 +1,6 @@
 import { PostModel } from "./post"
 import { Alert } from "./alert"
-import { PostNotificationModel } from './notification';
+import { PostNotificationModel } from "./notification"
 
 export interface State {
     theme: string

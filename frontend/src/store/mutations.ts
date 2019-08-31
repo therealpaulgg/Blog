@@ -2,9 +2,9 @@ import { State } from "@/models/state"
 import axios from "axios"
 import { PostModel } from "@/models/post"
 import { Alert } from "@/models/alert"
-import config from "../config"
+
 import Cookies from "js-cookie"
-import { PostNotificationModel } from '@/models/notification'
+import { PostNotificationModel } from "@/models/notification"
 import Vue from "vue"
 
 export default {
@@ -21,7 +21,7 @@ export default {
         Cookies.remove("expiration", { domain: "localhost" })
     },
     async FETCH_POSTS(state: State, page: number) {
-        const { data } = await axios.get(`${config.apiUrl}/posts/${page}`)
+        const { data } = await axios.get(`${process.env.VUE_APP_API_URL}/posts/${page}`)
         if (page === 1) {
             state.posts = data.posts as PostModel[]
             state.pages = data.pages as number
@@ -33,7 +33,7 @@ export default {
         }
     },
     async FETCH_TAG_POSTS(state: State, payload: { page: number, tag: string }) {
-        const { data } = await axios.get(`${config.apiUrl}/tag/${payload.tag}/${payload.page}`)
+        const { data } = await axios.get(`${process.env.VUE_APP_API_URL}/tag/${payload.tag}/${payload.page}`)
         if (payload.page === 1) {
             state.tagPosts = data.posts as PostModel[]
             state.tagPages = data.pages as number
@@ -46,7 +46,8 @@ export default {
     },
     async FETCH_NOTIFICATIONS(state: State, page: number) {
         try {
-            const { data } = await axios.get(`${config.apiUrl}/notifications/${page}`, { withCredentials: true })
+            const { data } = await axios.get(`${process.env.VUE_APP_API_URL}/notifications/${page}`,
+                { withCredentials: true })
             if (page === 1) {
                 state.notifications = data.notifications as PostNotificationModel[]
                 state.tagPages = data.pages as number
@@ -57,7 +58,8 @@ export default {
                 }
             }
             state.notificationCount = data.count
-        } catch {}
+        // tslint:disable-next-line: no-empty
+        } catch { }
     },
     DISMISS_NOTIFICATION(state: State, id: number) {
         state.notificationCount--

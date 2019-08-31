@@ -2,7 +2,7 @@ import Cookies from "js-cookie"
 import axios from "axios"
 import store from "./store/store"
 import router from "./router"
-import config from "./config"
+
 import { close, connect } from "./websocket"
 
 export async function determineTokenRefreshInterval() {
@@ -26,7 +26,7 @@ export async function determineTokenRefreshInterval() {
                 setTimeout(async () => {
                     try {
                         await axios.post(
-                            `${config.apiUrl}/renew-jwt`,
+                            `${process.env.VUE_APP_API_URL}/renew-jwt`,
                             {},
                             { withCredentials: true }
                         )
@@ -47,7 +47,7 @@ export async function determineTokenRefreshInterval() {
                 }, timeout - delay)
             } else {
                 await axios.post(
-                    `${config.apiUrl}/renew-jwt`,
+                    `${process.env.VUE_APP_API_URL}/renew-jwt`,
                     {},
                     { withCredentials: true }
                 )

@@ -7,27 +7,6 @@
             @click="toggle(0)"
             ref="linkbtn"
         ></font-awesome-icon>
-        <!-- <img
-            class="icon emoji"
-            draggable="false"
-            alt="😃"
-            @click="toggle(1)"
-            src="https://twemoji.maxcdn.com/v/12.1.2/72x72/1f603.png"
-            ref="emojibtn"
-        />
-        <div class="popup" v-if="popups[1]">
-            <picker
-                v-closable="{
-                        exclude: refs,
-                        handler: 'closeAll'
-                    }"
-                set="twitter"
-                @select="addEmoji"
-                title="Emoji Picker"
-                :style="getStyle"
-                color="white"
-            />
-        </div> -->
         <font-awesome-icon class="icon" icon="code" ref="codebtn" @click="toggle(2)"></font-awesome-icon>
 
         <div
@@ -129,7 +108,7 @@ export default class PostToolbar extends Vue {
         for (let i = 0; i < this.POPUP_NUM; i++) {
             Vue.set(this.popups, i, false)
         }
-    }foobar
+    }
 
     protected toggle(index) {
         for (let i = 0; i < this.POPUP_NUM; i++) {
@@ -169,18 +148,18 @@ export default class PostToolbar extends Vue {
         // (i.e bolded already), it removes the selected styling.
         const preSubstr = val.substring(0, prefixLen)
         const sufSubstr = val.substring(val.length - suffixLen, val.length)
-        const re = new RegExp(`${prefix.replace(/(.)/g, '\\$1')}.*${suffix.replace(/(.)/g, '\\$1')}`)
+        const re = new RegExp(`${prefix.replace(/(.)/g, "\\$1")}.*${suffix.replace(/(.)/g, "\\$1")}`)
         const match = val.match(re)
         if (preSubstr === prefix && sufSubstr === suffix) {
             return val.substring(prefixLen, val.length - suffixLen)
         } else if (match) {
-            // I recently discovered that JavaScript has two completely different substring methods and 
+            // I recently discovered that JavaScript has two completely different substring methods and
             // I got stuck on this because I thought they did the same thing. I am too lazy to change
             // it to 'substring' at this point because it works now and I have spent too much time on this.
-            let firstStr = val.substr(0, match.index) 
-            let secondStr = val.substr(match.index + prefixLen, match[0].length - suffixLen - prefixLen)
-            let thirdStr = val.substr(match.index + match[0].length)
-            return firstStr + secondStr + thirdStr 
+            const firstStr = val.substr(0, match.index)
+            const secondStr = val.substr(match.index + prefixLen, match[0].length - suffixLen - prefixLen)
+            const thirdStr = val.substr(match.index + match[0].length)
+            return firstStr + secondStr + thirdStr
         } else {
             return `${prefix}${val}${suffix}`
         }

@@ -22,12 +22,12 @@ import Preview from "./Preview.vue"
     }
 })
 export default class MarkdownEditor extends Vue {
-    @Prop(String) content: string
-    @Prop(String) initialContent: string
-    @Prop(String) title: string
-    @Prop(String) height: string
-    @Prop(String) width: string
-    @Prop(Boolean) useHtml: boolean
+    @Prop(String) protected content: string
+    @Prop(String) protected initialContent: string
+    @Prop(String) protected title: string
+    @Prop(String) protected height: string
+    @Prop(String) protected width: string
+    @Prop(Boolean) protected useHtml: boolean
     @Getter("getTheme") protected theme: string
     protected localContent: string
 

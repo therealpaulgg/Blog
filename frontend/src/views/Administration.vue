@@ -98,7 +98,7 @@
                                 {{user.postCount}}
                                 <font-awesome-icon
                                     icon="comments"
-                                    style="margin-left: 10px margin-right: 10px"
+                                    style="margin-left: 10px; margin-right: 10px"
                                 ></font-awesome-icon>
                                 {{user.commentCount}}
                             </div>
@@ -178,7 +178,7 @@ import PostBlock from "@/components/PostBlock.vue" // @ is an alias to /src
 import axios from "axios"
 import { State } from "vuex-class"
 import { ToggleButton } from "vue-js-toggle-button"
-import config from "../config"
+
 import { AdminSettings } from "../models/admin-settings"
 import LoadingAnimation from "../components/LoadingAnimation.vue"
 import { BInputGroup, BButton, BFormInput, BDropdown, BDropdownItem } from "bootstrap-vue"
@@ -226,7 +226,7 @@ export default class Administration extends Vue {
     protected async deleteUser(user) {
         try {
             const { data } = await axios.post(
-                `${config.apiUrl}/admindeleteuser/${user.username}`,
+                `${process.env.VUE_APP_API_URL}/admindeleteuser/${user.username}`,
                 {},
                 { withCredentials: true }
             )
@@ -267,7 +267,7 @@ export default class Administration extends Vue {
     protected async updatePerms(user) {
         try {
             const { data } = await axios.post(
-                `${config.apiUrl}/setuserpermissions`,
+                `${process.env.VUE_APP_API_URL}/setuserpermissions`,
                 {
                     username: user.username,
                     permissionLevel: user.permissionLevel
@@ -297,7 +297,7 @@ export default class Administration extends Vue {
     protected async saveSettings() {
         try {
             const { data } = await axios.post(
-                `${config.apiUrl}/settingdata`,
+                `${process.env.VUE_APP_API_URL}/settingdata`,
                 this.adminSettings,
                 { withCredentials: true }
             )
@@ -322,7 +322,7 @@ export default class Administration extends Vue {
 
     protected async getSettings() {
         try {
-            const { data }: { data: AdminSettings } = await axios.get(`${config.apiUrl}/settingdata`, {
+            const { data }: { data: AdminSettings } = await axios.get(`${process.env.VUE_APP_API_URL}/settingdata`, {
                 withCredentials: true
             })
             this.adminSettings = data
@@ -337,7 +337,7 @@ export default class Administration extends Vue {
     protected async getUsers() {
         try {
             const { data } = await axios.get(
-                `${config.apiUrl}/administration/${this.userPageNum}`,
+                `${process.env.VUE_APP_API_URL}/administration/${this.userPageNum}`,
                 { withCredentials: true }
             )
             if (this.userPageNum === 1) {

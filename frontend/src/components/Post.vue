@@ -235,7 +235,6 @@ import Comment from "./Comment.vue"
 import Editor from "./Editor.vue"
 import Preview from "./Preview.vue"
 import { mdHtml, mdNoHtml } from "../mdparser"
-import config from "../config"
 import LoadingAnimation from "./LoadingAnimation.vue"
 import { BButton } from "bootstrap-vue"
 import MarkdownEditor from "./MarkdownEditor.vue"
@@ -334,7 +333,7 @@ export default class Post extends Vue {
     protected del() {
         axios
             .post(
-                `${config.apiUrl}/deletepost`,
+                `${process.env.VUE_APP_API_URL}/deletepost`,
                 { id: this.id },
                 { withCredentials: true }
             )
@@ -429,12 +428,12 @@ export default class Post extends Vue {
     }
 
     protected async submitSettings() {
-        let editable = this.$refs.editableTog.toggled
-        let commentsEnabled = this.$refs.commentsEnabledTog.toggled
+        const editable = this.$refs.editableTog.toggled
+        const commentsEnabled = this.$refs.commentsEnabledTog.toggled
         // endpoint to change settings
         try {
             const { data } = await axios.post(
-                `${config.apiUrl}/editpost-settings`,
+                `${process.env.VUE_APP_API_URL}/editpost-settings`,
                 {
                     id: this.id,
                     urlTitle: this.title,
@@ -474,7 +473,7 @@ export default class Post extends Vue {
     protected async makeEdits() {
         try {
             const { data } = await axios.post(
-                `${config.apiUrl}/editpost`,
+                `${process.env.VUE_APP_API_URL}/editpost`,
                 {
                     id: this.id,
                     urlTitle: this.title,
@@ -520,7 +519,7 @@ export default class Post extends Vue {
     protected async postComment() {
         try {
             await axios.post(
-                `${config.apiUrl}/comment`,
+                `${process.env.VUE_APP_API_URL}/comment`,
                 {
                     id: this.id,
                     urlTitle: this.title,
@@ -562,14 +561,14 @@ export default class Post extends Vue {
 
     protected async loadComments() {
         const { data }: { data: PostModel } = await axios.get(
-            `${config.apiUrl}/post/${this.id}/${this.title}/${this.currentPage}`,
+            `${process.env.VUE_APP_API_URL}/post/${this.id}/${this.title}/${this.currentPage}`,
             { withCredentials: true }
         )
         this.commentCount = data.commentCount
         this.comments = []
         for (let i = 1; i <= this.currentPage; i++) {
             const comments = (await axios.get(
-                `${config.apiUrl}/post/${this.id}/${this.title}/${i}`
+                `${process.env.VUE_APP_API_URL}/post/${this.id}/${this.title}/${i}`
             )).data.comments
             for (const comment of comments) {
                 this.comments.push(comment)
@@ -646,7 +645,7 @@ export default class Post extends Vue {
         try {
             this.notFound = null
             const { data }: { data: PostModel } = await axios.get(
-                `${config.apiUrl}/post/${this.id}/${this.title}/${this.currentPage}`,
+                `${process.env.VUE_APP_API_URL}/post/${this.id}/${this.title}/${this.currentPage}`,
                 { withCredentials: true }
             )
             this.header = data.title

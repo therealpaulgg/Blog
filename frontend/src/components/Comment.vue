@@ -77,7 +77,6 @@ import { CommentModel } from "../models/comment"
 import moment from "moment"
 import { mdNoHtml } from "../mdparser"
 import axios from "axios"
-import config from "../config"
 import { BButton } from "bootstrap-vue"
 
 interface ChildComponent extends Vue {
@@ -99,7 +98,7 @@ export default class Comment extends Vue {
     @Prop() protected parent: boolean
     protected alive: boolean
     protected renderedContent: string
-    protected replies: Array<CommentModel> | null
+    protected replies: CommentModel[] | null
     @Getter("getTheme") private getTheme: string
 
     constructor() {
@@ -120,7 +119,7 @@ export default class Comment extends Vue {
     }
 
     @Watch("comment.content")
-    updateContent(newVal, oldVal) {
+    protected updateContent(newVal, oldVal) {
         this.renderedContent = mdNoHtml.render(newVal)
     }
 
@@ -130,25 +129,29 @@ export default class Comment extends Vue {
 
     protected async getReplies() {
         try {
-            let { data }: { data: Array<CommentModel> } = await axios.get(`${config.apiUrl}/commentreplies/${this.comment.id}/1`)
+            const { data }: { data: CommentModel[] } =
+                await axios.get(`${process.env.VUE_APP_API_URL}/commentreplies/${this.comment.id}/1`)
             this.replies = data
         } catch {
-
+            this.$store.dispatch("addAlert", {
+                alertType: "danger",
+                alertText: "Something went wrong."
+            })
         }
     }
 
     protected determineHide(id) {
         if (this.replies != null) {
-            let index = this.replies.indexOf(this.replies.find(comment => comment.id == id))
+            const index = this.replies.indexOf(this.replies.find((comment) => comment.id === id))
 
             Vue.delete(this.replies, index)
-            if (this.replies.length == 0) {
+            if (this.replies.length === 0) {
                 this.replies = null
                 this.comment.replies = false
             }
         }
-        if (this.comment.content == "[deleted]" && this.comment.user == "[deleted]") {
-            let child = this.$children.find((child: ChildComponent) => child.alive === true)
+        if (this.comment.content === "[deleted]" && this.comment.user === "[deleted]") {
+            const child = this.$children.find((cChild: ChildComponent) => cChild.alive === true)
             if (child == null) {
                 this.alive = false
                 this.$emit("hide", this.comment.id)
@@ -163,7 +166,7 @@ export default class Comment extends Vue {
     }
 
     protected replying(id) {
-        if (id != undefined) {
+        if (id !== undefined) {
             this.$emit("replying", id)
         } else {
             this.$emit("replying", this.comment.id)
@@ -174,7 +177,7 @@ export default class Comment extends Vue {
     protected async deleteComment() {
         try {
             const { data } = await axios.post(
-                `${config.apiUrl}/deletecomment`,
+                `${process.env.VUE_APP_API_URL}/deletecomment`,
                 { id: this.comment.id },
                 { withCredentials: true }
             )

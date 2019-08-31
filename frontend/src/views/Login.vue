@@ -34,7 +34,7 @@ import { Component, Vue } from "vue-property-decorator"
 import PostBlock from "@/components/PostBlock.vue" // @ is an alias to /src
 import axios from "axios"
 import { Action } from "vuex-class"
-import config from "../config"
+
 import { determineTokenRefreshInterval } from "../loginfunc"
 import {BRow, BCol, BContainer, BInputGroup, BFormInput, BButton} from "bootstrap-vue"
 import { ws, connect, close } from "../websocket"
@@ -93,7 +93,7 @@ export default class Home extends Vue {
     protected authenticate() {
         axios
             .post(
-                `${config.apiUrl}/login`,
+                `${process.env.VUE_APP_API_URL}/login`,
                 { username: this.username, password: this.password },
                 { withCredentials: true }
             )

@@ -1,7 +1,5 @@
 import { Alert } from "@/models/alert"
-import Cookies from "js-cookie"
 import axios from "axios"
-import config from "../config"
 
 export default {
     setTheme({ commit }: { commit: any }, theme: string) {
@@ -67,7 +65,9 @@ export default {
     },
     async dismissAllNotifications({ commit, dispatch }: { commit: any, dispatch: any }) {
         try {
-            let { data } = await axios.post(`${config.apiUrl}/dismissall`, {}, { withCredentials: true })
+            const { data } = await axios.post(`${process.env.VUE_APP_API_URL}/dismissall`,
+                {},
+                { withCredentials: true })
             commit("DISMISS_ALL_NOTIFICATIONS")
             dispatch("addAlert", {
                 alertType: "success",

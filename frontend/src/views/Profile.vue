@@ -201,7 +201,7 @@ import PostBlock from "../components/PostBlock.vue"
 import Comment from "../components/Comment.vue"
 import { PostModel } from "../models/post"
 import { CommentModel } from "../models/comment"
-import config from "../config"
+
 import LoadingAnimation from "../components/LoadingAnimation.vue"
 import { BButton } from "bootstrap-vue"
 
@@ -301,7 +301,7 @@ export default class Profile extends Vue {
     protected async submitEmailChange() {
         try {
             const { data } = await axios.post(
-                `${config.apiUrl}/changeemail`,
+                `${process.env.VUE_APP_API_URL}/changeemail`,
                 { email: this.email },
                 { withCredentials: true }
             )
@@ -329,7 +329,7 @@ export default class Profile extends Vue {
         if (this.password === this.confirmPassword) {
             try {
                 const { data } = await axios.post(
-                    `${config.apiUrl}/changepassword`,
+                    `${process.env.VUE_APP_API_URL}/changepassword`,
                     {
                         username: this.username,
                         password: this.password,
@@ -366,7 +366,7 @@ export default class Profile extends Vue {
     protected async submitBio() {
         try {
             const { data } = await axios.post(
-                `${config.apiUrl}/updatebio`,
+                `${process.env.VUE_APP_API_URL}/updatebio`,
                 {
                     bio: this.bio,
                     username: this.username
@@ -405,7 +405,7 @@ export default class Profile extends Vue {
         try {
             this.postLoadingFailed = false
             const { data } = await axios.get(
-                `${config.apiUrl}/userposts/${this.user}/${this.postPage}`
+                `${process.env.VUE_APP_API_URL}/userposts/${this.user}/${this.postPage}`
             )
             if (this.postPage === 1) {
                 this.postPages = data.pages
@@ -425,7 +425,7 @@ export default class Profile extends Vue {
         try {
             this.commentLoadingFailed = false
             const { data } = await axios.get(
-                `${config.apiUrl}/usercomments/${this.user}/${this.postPage}`
+                `${process.env.VUE_APP_API_URL}/usercomments/${this.user}/${this.postPage}`
             )
             if (this.commentPage === 1) {
                 this.commentPages = data.pages
@@ -447,7 +447,7 @@ export default class Profile extends Vue {
                 this.user = this.username
             }
             const { data } = await axios.get(
-                `${config.apiUrl}/profile/${this.user}`
+                `${process.env.VUE_APP_API_URL}/profile/${this.user}`
             )
             this.user = data.username
             document.title = `${this.user} | Blog`

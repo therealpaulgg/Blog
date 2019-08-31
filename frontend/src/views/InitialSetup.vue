@@ -53,7 +53,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator"
 import axios from "axios"
-import config from "../config"
+
 import { State, Action } from "vuex-class"
 import { BInputGroup, BFormInput, BButton, BCol, BRow, BContainer } from "bootstrap-vue"
 
@@ -85,7 +85,7 @@ export default class InitialSetup extends Vue {
     protected async setup() {
         try {
             await axios.post(
-                `${config.apiUrl}/initialsetup`,
+                `${process.env.VUE_APP_API_URL}/initialsetup`,
                 {
                     username: this.username,
                     email: this.email,
@@ -94,7 +94,7 @@ export default class InitialSetup extends Vue {
                 { withCredentials: true }
             )
             const { data } = await axios.post(
-                `${config.apiUrl}/login`,
+                `${process.env.VUE_APP_API_URL}/login`,
                 { username: this.username, password: this.password },
                 { withCredentials: true }
             )

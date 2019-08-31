@@ -14,8 +14,8 @@ export default class Preview extends Vue {
     protected renderedContent: string
     protected renderedTitle: string
     @Prop(String) protected content: string
-    @Prop(String) private title: string
-    @Prop(Boolean) protected useHtml: boolean 
+    @Prop(String) protected title: string
+    @Prop(Boolean) protected useHtml: boolean
 
     constructor() {
         super()

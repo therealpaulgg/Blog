@@ -1,7 +1,7 @@
 <template>
     <div class="editor">
         <div class="codemirror">
-            <PostToolbar :editor="this.editor"/>
+            <PostToolbar :editor="this.editor" />
             <codemirror ref="editor" class="codemirror" v-model="content" :options="cmOption"></codemirror>
         </div>
     </div>
@@ -28,8 +28,8 @@ export default class Editor extends Vue {
         editor: any
     }
     @Prop(String) protected initialContent: string
-    @Prop(String) height: string
-    @Prop(String) width: string
+    @Prop(String) protected height: string
+    @Prop(String) protected width: string
     protected content: string
     protected editor: any
 
@@ -47,7 +47,7 @@ export default class Editor extends Vue {
             lineNumbers: true,
             lineWrapping: true,
             line: true,
-            mode: 'markdown',
+            mode: "markdown",
             theme: this.editorTheme
         }
     }
@@ -57,7 +57,7 @@ export default class Editor extends Vue {
         this.$emit("input", this.content)
     }
 
-    mounted() {
+    protected mounted() {
         this.$refs.editor.cminstance.setOption("scrollbarStyle", "null")
         this.$refs.editor.cminstance.setSize(this.width, this.height)
         this.editor = this.$refs.editor.cminstance

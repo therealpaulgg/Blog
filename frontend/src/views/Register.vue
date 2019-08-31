@@ -52,7 +52,7 @@ import { Component, Vue } from "vue-property-decorator"
 import PostBlock from "@/components/PostBlock.vue" // @ is an alias to /src
 import axios from "axios"
 import { Action } from "vuex-class"
-import config from "../config"
+
 import {BRow, BCol, BContainer, BInputGroup, BFormInput, BButton} from "bootstrap-vue"
 
 @Component({
@@ -88,7 +88,7 @@ export default class Register extends Vue {
         if (this.password === this.confirmPassword) {
             try {
                 await axios.post(
-                    `${config.apiUrl}/register`,
+                    `${process.env.VUE_APP_API_URL}/register`,
                     {
                         username: this.username,
                         email: this.email,
@@ -98,7 +98,7 @@ export default class Register extends Vue {
                 )
                 try {
                     const { data } = await axios.post(
-                        `${config.apiUrl}/login`,
+                        `${process.env.VUE_APP_API_URL}/login`,
                         { username: this.username, password: this.password },
                         { withCredentials: true }
                     )

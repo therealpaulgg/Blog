@@ -74,10 +74,9 @@
 import { State, Getter, Action } from "vuex-class"
 import { Component, Vue } from "vue-property-decorator"
 import { BNav, BNavItem, BAlert } from "bootstrap-vue"
-import config from "./config"
 import { determineTokenRefreshInterval } from "./loginfunc"
-import axios from "axios";
-import { close } from "./websocket";
+import axios from "axios"
+import { close } from "./websocket"
 
 const alertFadeTime: number = 5
 
@@ -94,10 +93,10 @@ export default class App extends Vue {
     @Getter("isAuthenticated") protected isAuthenticated: boolean
     @Getter("canPost") protected canPost: boolean
     @Getter("isAdmin") protected isAdmin: boolean
-    @Getter("getTheme") private getTheme: string
-    @Getter("getNotificationCount") private notificationCount: number
     protected dismissCountDown: number = 0
     protected blogTitle: string | null
+    @Getter("getTheme") private getTheme: string
+    @Getter("getNotificationCount") private notificationCount: number
 
     constructor() {
         super()
@@ -150,7 +149,7 @@ export default class App extends Vue {
     }
 
     protected pageInfo() {
-        axios.get(`${config.apiUrl}/pageinfo`)
+        axios.get(`${process.env.VUE_APP_API_URL}/pageinfo`)
             .then((res) => {
                 this.blogTitle = res.data.blogTitle
             })

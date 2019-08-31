@@ -17,7 +17,7 @@ import { Component, Vue } from "vue-property-decorator"
 import PostBlock from "@/components/PostBlock.vue" // @ is an alias to /src
 import axios from "axios"
 import { State } from "vuex-class"
-import config from "../config"
+
 import { PostNotificationModel } from "../models/notification"
 import PostNotification from "../components/PostNotification.vue"
 import { BButton } from "bootstrap-vue"
@@ -45,7 +45,7 @@ export default class Notifications extends Vue {
         this.$store.dispatch("fetchNotifications", 1)
     }
 
-    dismissAll() {
+    protected dismissAll() {
         this.$store.dispatch("dismissAllNotifications")
     }
 }

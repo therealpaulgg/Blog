@@ -38,7 +38,7 @@ import { Component, Vue, Prop } from "vue-property-decorator"
 import axios from "axios"
 import { Action } from "vuex-class"
 
-import config from "../config"
+
 import {BRow, BCol, BContainer, BInputGroup, BFormInput, BButton} from "bootstrap-vue"
 
 @Component({
@@ -78,7 +78,7 @@ export default class ResetPassword extends Vue {
         if (this.token != null) {
             try {
                 const { data } = await axios.get(
-                    `${config.apiUrl}/resetpassword/${this.token}`
+                    `${process.env.VUE_APP_API_URL}/resetpassword/${this.token}`
                 )
                 this.username = data.username
                 this.email = data.email
@@ -105,7 +105,7 @@ export default class ResetPassword extends Vue {
         if (this.password === this.confirmPassword) {
             try {
                 const { data } = await axios.post(
-                    `${config.apiUrl}/resetpassword/${this.token}`,
+                    `${process.env.VUE_APP_API_URL}/resetpassword/${this.token}`,
                     { password: this.password }
                 )
                 this.$store.dispatch("addAlert", {

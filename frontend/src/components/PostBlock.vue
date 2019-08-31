@@ -49,20 +49,6 @@ import { mdNoHtml } from "../mdparser"
 @Component
 export default class PostBlock extends Vue {
 
-    get date() {
-        return `${moment
-            .utc(this.createdAt)
-            .local()
-            .format("MM/DD/YYYY, HH:mm")}`
-    }
-
-    get createdFrom() {
-        return `${moment.utc(this.createdAt).fromNow()}`
-    }
-
-    get username() {
-        return this.$store.state.username
-    }
     @Prop() public condensed: boolean
     @Prop(Number) protected readonly id!: number
     @Prop(String) protected readonly title!: string
@@ -72,8 +58,8 @@ export default class PostBlock extends Vue {
     @Prop(String) protected readonly createdAt: string
     @Prop(String) protected readonly updatedAt: string
     @Prop() protected readonly tags: string[]
-    @Getter("getTheme") private getTheme: string
     protected mdNoHtml = mdNoHtml
+    @Getter("getTheme") private getTheme: string
 
     protected fooBar(tag) {
         this.$router.push(`/tag/${tag}`)
@@ -85,6 +71,21 @@ export default class PostBlock extends Vue {
 
     protected gotoUser(user) {
         this.$router.push(`/profile/${user}`)
+    }
+
+    protected get date() {
+        return `${moment
+            .utc(this.createdAt)
+            .local()
+            .format("MM/DD/YYYY, HH:mm")}`
+    }
+
+    protected get createdFrom() {
+        return `${moment.utc(this.createdAt).fromNow()}`
+    }
+
+    protected get username() {
+        return this.$store.state.username
     }
 }
 </script>

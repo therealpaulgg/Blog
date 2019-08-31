@@ -8,5 +8,5 @@ export interface CommentModel {
     postUrlTitle: string | undefined
     replies: boolean
     repliesCount: number
-    children: boolean 
+    children: boolean
 }

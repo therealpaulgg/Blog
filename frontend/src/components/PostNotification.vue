@@ -31,11 +31,10 @@ import { Getter } from "vuex-class"
 import moment from "moment"
 import { mdNoHtml } from "../mdparser"
 import axios from "axios"
-import config from "../config"
-import { PostNotificationModel } from "../models/notification";
+import { PostNotificationModel } from "../models/notification"
 
 @Component
-export default class notification extends Vue {
+export default class Notification extends Vue {
     @Prop() protected notification: PostNotificationModel
     protected alive: boolean
     protected renderedContent: string
@@ -71,7 +70,7 @@ export default class notification extends Vue {
     protected async dismiss(show) {
         try {
             const { data } = await axios.post(
-                `${config.apiUrl}/dismiss`,
+                `${process.env.VUE_APP_API_URL}/dismiss`,
                 { id: this.notification.id },
                 { withCredentials: true }
             )
