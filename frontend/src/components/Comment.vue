@@ -1,5 +1,5 @@
 <template>
-    <div :class="{'commentwrapper': !parent, 'bigwrapper': replies != null}" v-if="alive">
+    <div :class="{'commentwrapper': !parent && !condensed, 'bigwrapper': replies != null}" v-if="alive">
         <div
             class="comment"
             :class="{'light': getTheme === 'light', 'dark': getTheme === 'dark', 'condensed': condensed, 'commentthread': replies != null || parent, 'noverflow': parent}"
@@ -107,6 +107,7 @@ export default class Comment extends Vue {
         this.replies = null
         this.renderedContent =
             this.comment != null ? mdNoHtml.render(this.comment.content) : null
+        console.log(this.condensed)
     }
 
     get date() {

@@ -73,4 +73,36 @@ If you can, leave some feedback in the issues section as it will help me find is
 
 ## Running the App
 
-I haven't really gotten the app in a stage to be run yet, but I'll eventually update with a how-to guide. If you know how to use NPM and Yarn you'll be able to figure out how to run a development version of this. There are build scripts in the repo which may make some sense of things, but you will ned to modify them for your use case. I also have deployed them on a linux server behind an Nginx proxy, so you'll have to set things up according to your own configuration.
+There are a few things I have done to attempt to ease the pain of doing things on dev/production. While I don't yet have a foolproof install script for everyone, I have one that can generally be followed along.
+
+### Preface
+
+This guide assumes you have yarn installed as that is the package manager I use. NPM should work fine.
+
+If you're on Windows, make sure you have windows-build-tools and that node-gyp is up to date (especially if using Visual Studio 2019). There's some useful feedback here. [https://github.com/nodejs/node-gyp/issues/1663](https://github.com/)nodejs/node-gyp/issues/1663
+
+### Development
+
+To run in development mode, you must open two terminals, in one `cd ./frontend`, and the other `cd ./backend`. In both terminals, type `yarn` to install dependencies.
+
+To run the frontend development server, type `yarn serve`. To run the backend development server, type `yarn dev`.
+
+### Deploying to a Server
+
+There are many ways you can end up configuring a server to run this application. I will first go over the required steps and then explain how I set up my server.
+
+You will need to create a file named `.env` in the root directory of `backend`. These are variables used by the server. Below is an example file of the variables needed:
+
+(environment is 'staging' in case of staging)
+
+```
+RESET_PASSWORD_EMAIL="email@example.com"
+RESET_PASSWORD_PASSWORD="supersecurepassword"
+ENVIRONMENT="prod"
+SECRET_KEY="supersecretkey"
+PORT=3000
+```
+
+For my server setup, I personally use nginx as a reverse proxy for my backend service, and host the frontend files as static files. 
+
+There are linux shell and powershell scripts I have created so you might be able to get a better idea of how to set things up.

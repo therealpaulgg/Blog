@@ -30,7 +30,7 @@ if [ "$app" = "y" ] ; then
         cd ..
     fi
     echo "Copying files to server..."
-    ssh killer-whale 'rm -r /var/www/blog/app/'
+    ssh killer-whale 'rm -r /var/www/blog/app/*'
     rsync -r ./frontend/dist/ killer-whale:/var/www/blog/app/
 fi
 echo "Script complete."
