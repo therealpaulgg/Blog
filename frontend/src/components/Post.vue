@@ -46,28 +46,38 @@
                         </div>
                         <div
                             v-if="isAuthenticated && (user === username || editPerms) && !postingComment"
-                            style="position: relative; display: block; text-align: right"
+                            class="buttonpos"
                         >
-                            <a @click="del" class="delete metaelement" :class="getTheme">Delete</a>
+                            <font-awesome-icon
+                                icon="ellipsis-h"
+                                class="hamburger"
+                                @click="reveal"
+                                ref="hamburgerMenu"
+                            ></font-awesome-icon>
+                        </div>
+                        <div
+                            class="dropmenu"
+                            v-if="revealBtns"
+                            v-closable="{
+                                handler: 'reveal',
+                                exclude: refs
+                            }"
+                        >
+                            <a @click="del" class="delete dropbtn" :class="getTheme">Delete</a>
                             <a
                                 v-if="editable || editPerms"
                                 @click="edit"
-                                class="edit metaelement"
+                                class="edit dropbtn"
                                 :class="getTheme"
                             >Edit</a>
                             <a
-                                class="plainbtn metaelement"
+                                class="dropbtn"
                                 :class="getTheme"
                                 @click="changeSettings"
                             >Post Settings</a>
                         </div>
                     </div>
                 </div>
-
-                <!-- <div v-if="isAuthenticated && user === username">
-                <a @click="del" class="delete" :class="getTheme">Delete</a>
-                <a @click="edit" class="edit" :class="getTheme">Edit</a>
-                </div>-->
                 <hr />
                 <div v-if="editing">
                     <label>Post Title</label>
@@ -281,10 +291,15 @@ export default class Post extends Vue {
     protected editPostSettings: boolean
     protected isReply: boolean
     protected replyId: number | null
+    protected revealBtns: boolean = false
     @Prop(String) protected readonly title!: string
     @Prop(String) protected readonly id!: string
     @Getter("getTheme") private getTheme: string
     @Getter("isAuthenticated") private isAuthenticated: boolean
+
+    public refs = [
+        "hamburgerMenu"
+    ]
 
     constructor() {
         super()
@@ -330,7 +345,12 @@ export default class Post extends Vue {
         this.replyId = id
     }
 
+    protected reveal() {
+        this.revealBtns = !this.revealBtns
+    }
+
     protected del() {
+        this.revealBtns = false
         axios
             .post(
                 `${process.env.VUE_APP_API_URL}/deletepost`,
@@ -357,7 +377,7 @@ export default class Post extends Vue {
                         alertText: "Something went wrong."
                     })
                 }
-                this.$router.push("/")
+                this.$router.replace("/")
             })
     }
 
@@ -404,6 +424,7 @@ export default class Post extends Vue {
     }
 
     protected edit() {
+        this.revealBtns = false
         if (!this.editing) {
             this.postingComment = false
             this.editPostSettings = false
@@ -416,6 +437,7 @@ export default class Post extends Vue {
     }
 
     protected changeSettings() {
+        this.revealBtns = false
         if (!this.editPostSettings) {
             this.postingComment = false
             this.editing = false
@@ -698,7 +720,8 @@ export default class Post extends Vue {
         position: absolute
         top: 0
         right: 0
-
+    .dropmenu
+        right: 0
 @media screen and (max-width: 750px)
     .datapos
         margin: 0 auto
@@ -707,7 +730,19 @@ export default class Post extends Vue {
     .buttonpos
         position: relative
         display: block
-
+.dropmenu
+    position: absolute
+    background-color: #2a2c39
+    padding: 0px
+    border-radius: 5px
+    border: 1px solid white
+.dropbtn
+    display: block
+    cursor: pointer
+    width: 100%
+    height: auto
+    border-radius: 5px
+    padding: 15px
 .comment.light.condensed:hover
     background-color: #f2feff !important
 .comment.dark.condensed:hover
@@ -739,20 +774,12 @@ export default class Post extends Vue {
     padding-right: 15px
 .delete
     color: #ff7474 !important
-    cursor: pointer
-    border-radius: 5px
-    padding: 10px
-    width: auto
-    height: auto
 .delete.light
     background-color: #e9ecef !important
 .delete.dark
     background-color: #20212B !important
 .edit
     color: #75ff74 !important
-    cursor: pointer
-    border-radius: 5px
-    padding: 10px
 .plainbtn
     cursor: pointer
     border-radius: 5px
@@ -791,6 +818,13 @@ a:hover
     border-radius: 5px
 .hashtag:hover
     cursor: pointer
+.hamburger
+    cursor: pointer
+    webkit-transition: 0.5s
+    transition: 0.5s
+.hamburger:hover
+    webkit-transition: 0.5s
+    transition: 0.5s
 .dark
     .button
         background-color: #2a2c39 !important

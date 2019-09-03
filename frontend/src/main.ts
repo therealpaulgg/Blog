@@ -32,7 +32,8 @@ import {
     faUserSecret,
     faTimesCircle,
     faBell,
-    faClipboard
+    faClipboard,
+    faEllipsisH
 } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
 
@@ -60,7 +61,8 @@ library.add(
     faUserSecret,
     faTimesCircle,
     faBell,
-    faClipboard
+    faClipboard,
+    faEllipsisH
 )
 
 Vue.component("font-awesome-icon", FontAwesomeIcon)
@@ -86,17 +88,19 @@ Vue.directive("closable", {
             const { handler, exclude } = binding.value
             // This variable indicates if the clicked element is excluded
             let clickedOnExcludedEl = false
-            exclude.forEach((refName) => {
-                // We only run this code if we haven't detected
-                // any excluded element yet
-                if (!clickedOnExcludedEl) {
-                    // Get the element using the reference name
-                    const excludedEl = vnode.context.$refs[refName]
-                    // See if this excluded element
-                    // is the same element the user just clicked on
-                    clickedOnExcludedEl = excludedEl.contains(e.target)
-                }
-            })
+            if (exclude != null) {
+                exclude.forEach((refName) => {
+                    // We only run this code if we haven't detected
+                    // any excluded element yet
+                    if (!clickedOnExcludedEl) {
+                        // Get the element using the reference name
+                        const excludedEl = vnode.context.$refs[refName]
+                        // See if this excluded element
+                        // is the same element the user just clicked on
+                        clickedOnExcludedEl = excludedEl.contains(e.target)
+                    }
+                })
+            }
             // We check to see if the clicked element is not
             // the dialog element and not excluded
             if (!el.contains(e.target) && !clickedOnExcludedEl) {

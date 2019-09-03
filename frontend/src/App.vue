@@ -370,7 +370,7 @@ th, td
         background-color: #3e404c !important
     .nav-item .active
         background-color: #2a2c39 !important
-        border-color: #dee2e6 #dee2e6 #fff
+        // border-color: #dee2e6 #dee2e6 #fff
     .navbar-nav
         border-bottom: 1px solid #dee2e6
     .navbar-toggler

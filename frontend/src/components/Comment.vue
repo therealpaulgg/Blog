@@ -1,5 +1,8 @@
 <template>
-    <div :class="{'commentwrapper': !parent && !condensed, 'bigwrapper': replies != null}" v-if="alive">
+    <div
+        :class="{'commentwrapper': !parent && !condensed, 'bigwrapper': replies != null}"
+        v-if="alive"
+    >
         <div
             class="comment"
             :class="{'light': getTheme === 'light', 'dark': getTheme === 'dark', 'condensed': condensed, 'commentthread': replies != null || parent, 'noverflow': parent}"
@@ -35,15 +38,25 @@
                         class="buttonpos"
                         v-if="comment != null && !condensed && ($store.state.username === comment.user || editPerms || ownsPost)"
                     >
+                        <font-awesome-icon icon="ellipsis-h" class="hamburger" @click="reveal" ref="hamburgerMenu"></font-awesome-icon>
+                    </div>
+                    <div
+                        class="dropmenu"
+                        v-if="revealBtns"
+                        v-closable="{
+                                handler: 'reveal',
+                                exclude: refs
+                            }"
+                    >
                         <a
                             @click="replying(undefined)"
                             v-if="!postingComment && comment.user !== '[deleted]'"
-                            class="delete metaelement"
+                            class="dropbtn"
                         >Reply</a>
                         <a
                             @click="deleteComment"
                             v-if="comment.user !== '[deleted]'"
-                            class="delete metaelement"
+                            class="dropbtn delete"
                         >Delete</a>
                     </div>
                 </div>
@@ -99,7 +112,12 @@ export default class Comment extends Vue {
     protected alive: boolean
     protected renderedContent: string
     protected replies: CommentModel[] | null
+    protected revealBtns: boolean = false
     @Getter("getTheme") private getTheme: string
+
+    public refs = [
+        "hamburgerMenu"
+    ]
 
     constructor() {
         super()
@@ -174,6 +192,10 @@ export default class Comment extends Vue {
 
     }
 
+    protected reveal() {
+        this.revealBtns = !this.revealBtns
+    }
+
     protected async deleteComment() {
         try {
             const { data } = await axios.post(
@@ -219,7 +241,8 @@ export default class Comment extends Vue {
         position: absolute
         top: 0
         right: 0
-
+    .dropmenu
+        right: 0
 @media screen and (max-width: 992px)
     .datapos
         margin: 0 auto
@@ -228,14 +251,21 @@ export default class Comment extends Vue {
     .buttonpos
         position: relative
         display: block
-
+.dropbtn
+    display: block
+    cursor: pointer
+    width: 100%
+    height: auto
+    border-radius: 5px
+    padding: 15px
+.dropmenu
+    position: absolute
+    background-color: #2a2c39
+    padding: 0px
+    border-radius: 5px
+    border: 1px solid white
 .delete
     color: #ff7474 !important
-    cursor: pointer
-    border-radius: 5px
-    padding: 10px
-    width: auto
-    height: auto
 .metadata
     border-radius: 20px
     padding: 10px
@@ -303,6 +333,13 @@ export default class Comment extends Vue {
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3)
 .commentwrapper::-webkit-scrollbar-track
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
+.hamburger
+    cursor: pointer
+    webkit-transition: 0.5s
+    transition: 0.5s
+.hamburger:hover
+    webkit-transition: 0.5s
+    transition: 0.5s
 .dark
     background-color: #2a2c39 !important
     color: white
@@ -317,6 +354,8 @@ export default class Comment extends Vue {
         background-color: #2a2c39 !important
     .metadata
         background-color: #20212B !important
+    .hamburger:hover
+        color: #FF79c6
 .light
     background-color: white !important
     color: black
@@ -331,4 +370,6 @@ export default class Comment extends Vue {
         background-color: #ffffff !important
     .metadata
         background-color: #e9ecef !important
+    .hamburger:hover
+        color: #00ccff
 </style>
