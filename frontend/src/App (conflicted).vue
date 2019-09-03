@@ -19,7 +19,7 @@
                     <b-navbar toggleable="lg">
                         <b-navbar-toggle target="nav-collapse" />
                         <b-collapse id="nav-collapse" is-nav>
-                            <b-navbar-nav tabs class="navbar-nav">
+                            <b-navbar-nav tabs>
                                 <b-nav-item
                                     to="/"
                                     :active="$route.path == '/'"
@@ -319,18 +319,12 @@ table, th, td
     border: 1px solid rgba(0,0,0,0.15)
 th, td
     padding: 10px
-.nav-item .nav-link
-    padding: 8px 16px 8px 16px !important
+.nav-item a
+    padding: 10px !important
     border-top-left-radius: 0.25rem
     border-top-right-radius: 0.25rem
     border: 1px solid transparent
-@media (min-width: 992px)
-    .nav-item .nav-link
-        border-bottom: 0px transparent
-.navbar-nav
-    width: 100%
-.navbar
-    padding: 0px !important
+
 .light
     a
         color: black !important
@@ -350,15 +344,8 @@ th, td
     -webkit-transition: 0.5s
     .jumbotron::-webkit-scrollbar-thumb
         background-color: #cccccc !important
-    .nav-item .active
+    .nav-item a
         background-color: white
-        border-color: #dee2e6 #dee2e6 #fff
-    .navbar-nav
-        border-bottom: #dee2e6 1px solid
-    .navbar-toggler
-        background-color: white !important
-    .nav-link:hover
-        border-color: #dee2e6 #dee2e6 #fff !important
 .dark
     background-color: #20212B !important
     color: white
@@ -371,12 +358,6 @@ th, td
     .nav-item .active
         background-color: #2a2c39 !important
         border-color: #dee2e6 #dee2e6 #fff
-    .navbar-nav
-        border-bottom: 1px solid #dee2e6
-    .navbar-toggler
-        background-color: #2a2c39 !important
-    .navbar-toggler-icon
-        color: white !important
     a
         color: white !important
         transition: 0.5s
@@ -387,9 +368,6 @@ th, td
         color: #FF79c6 !important
         transition: 0.5s
         -webkit-transition: 0.5s
-    .nav-link:hover
-        border-color: #dee2e6 #dee2e6 #fff !important
-    
     transition: 0.5s
     -webkit-transition: 0.5s
 
