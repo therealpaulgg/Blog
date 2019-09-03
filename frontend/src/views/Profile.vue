@@ -468,11 +468,12 @@ export default class Profile extends Vue {
 </script>
 
 <style lang="sass" scoped>
+@import "../assets/sass/variables.sass"
 .input
     transition: 0.5s
     -webkit-transition: 0.5s
     box-shadow: 0px 0px 5px black !important
 .input.dark
-    background-color: #2a2c39 !important
-    border-color: #2a2c39
+    background-color: $darkfg !important
+    border-color: $darkfg
 </style>

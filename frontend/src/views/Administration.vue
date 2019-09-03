@@ -367,6 +367,7 @@ export default class Administration extends Vue {
 </script>
 
 <style lang="sass">
+@import "../assets/sass/variables.sass"
 .user
     padding: 10px
     margin: 10px
@@ -380,22 +381,20 @@ export default class Administration extends Vue {
     cursor: pointer
 .light
     .user
-        background-color: white
+        background-color: $lightfg
     .user:hover
-        background-color: #f2feff
+        background-color: $lightelehover
     .ifield
-        background-color: white
+        background-color: $lightfg
 .dark
-    .dropdown-menu
-        background-color: black 
     .user
-        background-color: #2a2c39
+        background-color: $darkfg
     .user:hover
-        background-color: #3e4154
+        background-color: $darkelehover
     .ifield
-        border-color: #20212B !important
-        background-color: #2a2c39 !important
-        color: white
+        border-color: $darkbg !important
+        background-color: $darkfg !important
+        color: $darktext
     .ifield:focus
-        color: white
+        color: $darktext
 </style>

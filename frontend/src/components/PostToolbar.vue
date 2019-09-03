@@ -167,7 +167,7 @@ export default class PostToolbar extends Vue {
 
     protected get getStyle() {
         return this.$store.getters.getTheme === "dark"
-            ? { "background-color": "#20212B", "color": "white" }
+            ? { "background-color": "$darkbg", "color": "white" }
             : {}
     }
 
@@ -198,6 +198,7 @@ export default class PostToolbar extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="sass">
+@import "../assets/sass/variables.sass"
 .picker
     z-index: 1
     position: absolute
@@ -228,19 +229,19 @@ export default class PostToolbar extends Vue {
 
 .dark
     .popup
-        background-color: #20212B
+        background-color: $darkbg
     .toolbar
-        background-color: #2a2c39 !important
+        background-color: $darkfg !important
     .infield
-        border-color: #2a2c39 !important
-        background-color: #20212B !important
+        border-color: $darkfg !important
+        background-color: $darkbg !important
         color: white
     .toolbar::-webkit-scrollbar-thumb
-        background-color: #3e404c
+        background-color: $darkscroll
     
 .light
     .popup
-        background-color: #e9ecef
+        background-color: $lightbg
     .toolbar
         background-color: white !important
     .toolbar::-webkit-scrollbar-thumb

@@ -46,6 +46,7 @@ export default class Preview extends Vue {
 </script>
 
 <style scoped lang="sass">
+@import "../assets/sass/variables.sass"
 .title
     border-radius: 5px    
 .break
@@ -57,8 +58,8 @@ export default class Preview extends Vue {
 .dark
     .title
         border-radius: 5px
-        border-color: #2a2c39 !important
-        background-color: #20212B !important
+        border-color: $darkfg !important
+        background-color: $darkbg !important
 .light
     .title
         border-color: white !important

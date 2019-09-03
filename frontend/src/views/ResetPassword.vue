@@ -133,16 +133,17 @@ export default class ResetPassword extends Vue {
 </script>
 
 <style lang="sass" scoped>
+@import "../assets/sass/variables.sass"
 .button
     border-radius: 5px
     padding: 10px
     cursor: pointer
 .dark
     .button
-        background-color: #2a2c39 !important
+        background-color: $darkfg !important
     .ifield
-        border-color: #20212B !important
-        background-color: #2a2c39 !important
+        border-color: $darkbg !important
+        background-color: $darkfg !important
         color: white
 .light
     .button

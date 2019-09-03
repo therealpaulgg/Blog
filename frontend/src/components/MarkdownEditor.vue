@@ -45,13 +45,14 @@ export default class MarkdownEditor extends Vue {
 </script>
 
 <style lang="sass" scoped>
+@import "../assets/sass/variables.sass"
 .preview
     padding: 0px
     border-radius: 5px
     overflow-y: auto
 .dark
     .preview
-        background-color: #2a2c39 !important
+        background-color: $darkfg !important
 .light
     .preview
         background-color: #FFFFFE !important

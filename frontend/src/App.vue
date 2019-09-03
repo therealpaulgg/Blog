@@ -188,6 +188,7 @@ export default class App extends Vue {
 <style lang="sass">
 @import url("https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css")
 @import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap')
+@import "./assets/sass/variables.sass"
 // https://stackoverflow.com/questions/3245141/using-otf-fonts-on-web-browsers#3245187
 @font-face 
     font-family: "Fira Code"
@@ -238,7 +239,6 @@ blockquote:nth-of-type(even) footer:after
   blockquote:nth-of-type(even) 
     padding: 1em 1em 1em 20%
   
-
 .emoji
     height: 1.2em !important
     width: 1.2em !important
@@ -250,7 +250,7 @@ blockquote:nth-of-type(even) footer:after
     cursor: pointer
 .notificationcount
     position: fixed
-    background-color: #ff7474
+    background-color: $red
     border-radius: 15px
     width: 30px
     height: 30px
@@ -331,65 +331,60 @@ th, td
     width: 100%
 .navbar
     padding: 0px !important
+.nav-link:hover
+    border-color: $darkerwhite !important
+.nav-item .active
+    border-color: $darkerwhite
+.navbar-nav
+    border-bottom: $darkerwhite 1px solid
 .light
     a
-        color: black !important
+        color: $lighttext !important
         transition: 0.5s
         -webkit-transition: 0.5s
     a:hover
-        color: #00ccff !important
+        color: $lighthover !important
         transition: 0.5s
         -webkit-transition: 0.5s
     .betterscrollbar::-webkit-scrollbar-thumb
-        background-color: #dddddd !important
+        background-color: $lightscroll !important
     .preview::-webkit-scrollbar-thumb
-        background-color: #dddddd !important
+        background-color: $lightscroll !important
     hr
         background-color: gray
     transition: 0.5s
     -webkit-transition: 0.5s
     .jumbotron::-webkit-scrollbar-thumb
-        background-color: #cccccc !important
+        background-color: $lightscroll !important
     .nav-item .active
-        background-color: white
-        border-color: #dee2e6 #dee2e6 #fff
-    .navbar-nav
-        border-bottom: #dee2e6 1px solid
+        background-color: $lightfg
     .navbar-toggler
         background-color: white !important
-    .nav-link:hover
-        border-color: #dee2e6 #dee2e6 #fff !important
 .dark
-    background-color: #20212B !important
-    color: white
+    background-color: $darkbg !important
+    color: $darktext
     .preview::-webkit-scrollbar-thumb
-        background-color: #3e404c
+        background-color: $darkscroll
     .jumbotron::-webkit-scrollbar-thumb
-        background-color: #3e404c !important
+        background-color: $darkscroll !important
     .betterscrollbar::-webkit-scrollbar-thumb
-        background-color: #3e404c !important
+        background-color: $darkscroll !important
     .nav-item .active
-        background-color: #2a2c39 !important
-        // border-color: #dee2e6 #dee2e6 #fff
-    .navbar-nav
-        border-bottom: 1px solid #dee2e6
+        background-color: $darkfg !important
     .navbar-toggler
-        background-color: #2a2c39 !important
+        background-color: $darkfg !important
     .navbar-toggler-icon
-        color: white !important
+        color: $darktext !important
     a
-        color: white !important
+        color: $darktext !important
         transition: 0.5s
         -webkit-transition: 0.5s
     hr
-        background-color: white
+        background-color: $darktext
     a:hover
-        color: #FF79c6 !important
+        color: $darkhover !important
         transition: 0.5s
-        -webkit-transition: 0.5s
-    .nav-link:hover
-        border-color: #dee2e6 #dee2e6 #fff !important
-    
+        -webkit-transition: 0.5s 
     transition: 0.5s
     -webkit-transition: 0.5s
 

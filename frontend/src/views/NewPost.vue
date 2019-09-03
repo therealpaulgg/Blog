@@ -175,6 +175,7 @@ export default class NewPost extends Vue {
 </script>
 
 <style scoped lang="sass">
+@import "../assets/sass/variables.sass"
 .button
     border-radius: 5px
     padding: 10px
@@ -202,10 +203,10 @@ export default class NewPost extends Vue {
     border-radius: 5px
 .dark
     .button
-        background-color: #2a2c39 !important
+        background-color: $darkfg !important
     .title
-        border-color: #20212B !important
-        background-color: #2a2c39 !important
+        border-color: $darkbg !important
+        background-color: $darkfg !important
     .hashtag
         background-color: black !important
 .light

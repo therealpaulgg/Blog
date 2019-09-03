@@ -713,6 +713,7 @@ export default class Post extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
+@import "../assets/sass/variables.sass"
 @media screen and (min-width: 750px)
     .datapos
         display: inline-block
@@ -722,6 +723,7 @@ export default class Post extends Vue {
         right: 0
     .dropmenu
         right: 0
+        top: 30px
 @media screen and (max-width: 750px)
     .datapos
         margin: 0 auto
@@ -732,10 +734,8 @@ export default class Post extends Vue {
         display: block
 .dropmenu
     position: absolute
-    background-color: #2a2c39
     padding: 0px
     border-radius: 5px
-    border: 1px solid white
 .dropbtn
     display: block
     cursor: pointer
@@ -744,9 +744,9 @@ export default class Post extends Vue {
     border-radius: 5px
     padding: 15px
 .comment.light.condensed:hover
-    background-color: #f2feff !important
+    background-color: $darkelehover !important
 .comment.dark.condensed:hover
-    background-color: #3e4154 !important
+    background-color: $lightelehover !important
 .comment::-webkit-scrollbar
     width: 10px
 .comment::-webkit-scrollbar-thumb
@@ -754,9 +754,8 @@ export default class Post extends Vue {
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3)
 .comment::-webkit-scrollbar-track
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
-
 .danger
-    color: #ff7474
+    color: $red
 .button
     border-radius: 5px
     padding: 10px
@@ -773,21 +772,13 @@ export default class Post extends Vue {
     padding-left: 15px
     padding-right: 15px
 .delete
-    color: #ff7474 !important
-.delete.light
-    background-color: #e9ecef !important
-.delete.dark
-    background-color: #20212B !important
+    color: $red !important
 .edit
-    color: #75ff74 !important
+    color: $green !important
 .plainbtn
     cursor: pointer
     border-radius: 5px
     padding: 10px
-.edit.light
-    background-color: #e9ecef !important
-.edit.dark
-    background-color: #20212B !important
 .preview
     padding: 0px
     border-radius: 5px
@@ -827,40 +818,50 @@ a:hover
     transition: 0.5s
 .dark
     .button
-        background-color: #2a2c39 !important
+        background-color: $darkfg !important
     .preview
-        background-color: #2a2c39 !important
+        background-color: $darkfg !important
     .button
-        background-color: #2a2c39 !important
+        background-color: $darkfg !important
     .title
-        border-color: #20212B !important
-        background-color: #2a2c39 !important
+        border-color: $darkbg !important
+        background-color: $darkfg !important
     .metadata
-        background-color: #2a2c39 !important
+        background-color: $darkfg !important
     .hashtag
-        background-color: black !important
+        background-color: $darkhashtagbg !important
     .hashtag:hover
-        color: #FF79c6
+        color: $darkhover
     .hashtag-edit
-        background-color: black !important
+        background-color: $darkhashtagbg !important
     .hashtag:hover
-        color: #FF79c6
+        color: $darkhover
+    .hamburger:hover
+        color: $darkhover
+    .dropmenu
+        background-color: $darkfg
+        border: 1px solid $darkborder
 .light
     .preview
-        background-color: #FFFFFE !important
+        background-color: $lightfg !important
     .button
-        background-color: white !important
+        background-color: $lightfg !important
     .title
-        border-color: white !important
-        background-color: white !important
+        border-color: $lightfg !important
+        background-color: $lightfg !important
     .metadata
-        background-color: #FFFFFE !important
+        background-color: $lightfg !important
     .hashtag
-        background-color: #e9ecef !important
+        background-color: $lighthashtagbg !important
     .hashtag:hover
-        color: #00ccff
+        color: $lighthover
     .hashtag-edit
-        background-color: white 
+        background-color: $lightfg 
     .hashtag-edit:hover
-        color: #00ccff
+        color: $lighthover
+    .hamburger:hover
+        color: $lighthover
+    .dropmenu
+        background-color: $lightfg
+        border: 1px solid $lightborder
 </style>

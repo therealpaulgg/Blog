@@ -101,6 +101,7 @@ export default class Notification extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
+@import "../assets/sass/variables.sass"
 .delete
     color: #ff7474 !important
     cursor: pointer
@@ -138,14 +139,14 @@ export default class Notification extends Vue {
 .postnotification::-webkit-scrollbar-track
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
 .dark
-    background-color: #2a2c39 !important
+    background-color: $darkfg !important
     color: white
     .postnotification::-webkit-scrollbar-thumb
-        background-color: #3e404c
+        background-color: $darkscroll
     .delete
-        background-color: #2a2c39 !important
+        background-color: $darkfg !important
     .metadata
-        background-color: #20212B !important
+        background-color: $darkbg !important
 .light
     background-color: white !important
     color: black
@@ -154,5 +155,5 @@ export default class Notification extends Vue {
     .delete
         background-color: #ffffff !important
     .metadata
-        background-color: #e9ecef !important
+        background-color: $lightbg !important
 </style>

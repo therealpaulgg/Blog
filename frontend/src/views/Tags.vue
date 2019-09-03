@@ -99,6 +99,7 @@ export default class Tags extends Vue {
 </script>
 
 <style lang="sass" scoped>
+@import "../assets/sass/variables.sass"
 .hashtag
     margin: 10px 
     padding-left: 5px
@@ -114,7 +115,7 @@ export default class Tags extends Vue {
     .hashtag
         background-color: black !important
     .hashtag:hover
-        color: #FF79c6
+        color: $darkhover
 .light
     .hashtag
         background-color: white !important

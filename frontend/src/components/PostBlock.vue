@@ -92,6 +92,7 @@ export default class PostBlock extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
+@import "../assets/sass/variables.sass"
 .postblock
     padding: 20px
     margin: 20px
@@ -104,15 +105,15 @@ export default class PostBlock extends Vue {
     padding: 10px 10px 1px 10px
     border-radius: 10px
 .postblock.dark
-    color: white
-    background-color: #2a2c39 !important
+    color: $darktext
+    background-color: $darkfg !important
 .postblock.dark:hover
-    background-color: #3e4154 !important
+    background-color: $darkelehover !important
 .postblock.light    
-    background-color: white !important
-    color: black
+    background-color: $lightfg !important
+    color: $lighttext
 .postblock.light:hover
-    background-color: #f2feff !important
+    background-color: $lightelehover !important
 .postblock:hover
     border-radius: 50px
     transition: 0.5s
@@ -137,16 +138,16 @@ export default class PostBlock extends Vue {
     -webkit-transition: 0.25s
 .dark
     .lessnoticed
-        color: #d5d5d5
+        color: $darklessnoticed
     .hashtag
-        background-color: black !important
+        background-color: $darkhashtagbg !important
     .hashtag:hover
-        color: #FF79c6
+        color: $darkhover
 .light
     .lessnoticed
-        color: #787878
+        color: $lightlessnoticed
     .hashtag
-        background-color: #e9ecef !important
+        background-color: $lighthashtagbg !important
     .hashtag:hover
-        color: #00ccff
+        color: $lighthover
 </style>

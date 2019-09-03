@@ -234,6 +234,7 @@ export default class Comment extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
+@import "../assets/sass/variables.sass"
 @media screen and (min-width: 992px)
     .datapos
         display: inline-block
@@ -243,6 +244,7 @@ export default class Comment extends Vue {
         right: 0
     .dropmenu
         right: 0
+        top: 30px
 @media screen and (max-width: 992px)
     .datapos
         margin: 0 auto
@@ -260,12 +262,10 @@ export default class Comment extends Vue {
     padding: 15px
 .dropmenu
     position: absolute
-    background-color: #2a2c39
     padding: 0px
     border-radius: 5px
-    border: 1px solid white
 .delete
-    color: #ff7474 !important
+    color: $red !important
 .metadata
     border-radius: 20px
     padding: 10px
@@ -283,9 +283,9 @@ export default class Comment extends Vue {
     border-bottom-left-radius: 0px
     padding-left: 20px
 .commentthread.dark
-    border-left: thick solid #3e4154
+    border-left: thick solid $lightcommentbar
 .commentthread.light
-    border-left: thick solid #dddddd
+    border-left: thick solid $darkcommentbar
 .comment.condensed
     padding: 10px 10px 0px 10px
     max-width: 350px
@@ -303,9 +303,9 @@ export default class Comment extends Vue {
     -webkit-transition: 0.5s
     cursor: pointer
 .comment.light.condensed:hover
-    background-color: #f2feff !important
+    background-color: $lightelehover !important
 .comment.dark.condensed:hover
-    background-color: #3e4154 !important
+    background-color: $darkelehover !important
 .comment::-webkit-scrollbar
     width: 10px
 .comment::-webkit-scrollbar-thumb
@@ -341,35 +341,37 @@ export default class Comment extends Vue {
     webkit-transition: 0.5s
     transition: 0.5s
 .dark
-    background-color: #2a2c39 !important
-    color: white
+    background-color: $darkfg !important
+    color: $darktext
     .commentwrapper
-        background-color: #2a2c39 !important
-        color: white
+        background-color: $darkfg !important
+        color: $darktext
     .commentwrapper::-webkit-scrollbar-thumb
-        background-color: #3e404c
+        background-color: $darkscroll
     .comment::-webkit-scrollbar-thumb
-        background-color: #3e404c
-    .delete
-        background-color: #2a2c39 !important
+        background-color: $darkscroll
     .metadata
-        background-color: #20212B !important
+        background-color: $darkbg !important
     .hamburger:hover
-        color: #FF79c6
+        color: $darkhover
+    .dropmenu
+        background-color: $darkfg
+        border: 1px solid $darkborder
 .light
-    background-color: white !important
-    color: black
+    background-color: $lightfg !important
+    color: $lighttext
     .commentwrapper
-        background-color: white !important
-        color: black
+        background-color: $lightfg !important
+        color: $lighttext
     .commentwrapper::-webkit-scrollbar-thumb
-        background-color: #dddddd
+        background-color: $lightcommentbar
     .comment::-webkit-scrollbar-thumb
-        background-color: #dddddd
-    .delete
-        background-color: #ffffff !important
+        background-color: $lightcommentbar
     .metadata
-        background-color: #e9ecef !important
+        background-color: $lightbg !important
     .hamburger:hover
-        color: #00ccff
+        color: $lighthover
+    .dropmenu
+        background-color: $lightfg
+        border: 1px solid $lightborder
 </style>
