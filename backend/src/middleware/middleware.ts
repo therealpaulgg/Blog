@@ -23,6 +23,29 @@ export async function checkAuth(req, res, next) {
     }
 }
 
+export async function checkAuthBool(cookie) {
+    try {
+        let token: any = jwt.verify(cookie, process.env.SECRET_KEY)
+        let user = await getConnection().manager.findOne(User, { username: token.username })
+        if (user) {
+            return {
+                auth: true, 
+                user
+            }
+        } else {
+            return {
+                auth: false, 
+                user: null
+            }
+        }
+    } catch {
+        return {
+            auth: false, 
+            user: null
+        }
+    }
+}
+
 export async function checkAuthLevel(req, res, next) {
     try {
         let token: any = jwt.verify(req.cookies["auth"], process.env.SECRET_KEY)

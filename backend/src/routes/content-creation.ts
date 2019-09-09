@@ -6,7 +6,8 @@ import { Post } from "../entity/Post"
 import { Tag } from "../entity/Tag"
 import { Comment } from "../entity/Comment"
 import notify from "../services/notify"
-import { parentPort } from "worker_threads";
+import nanoid from "nanoid"
+import { domain } from "../app"
 
 export async function deletePost(postId: string | number | Post, username: string | User, override?: boolean) {
     let connection = getConnection()
@@ -180,6 +181,28 @@ router.post("/newpost", checkAuth, checkPermissions, async (req, res) => {
     }
 })
 
+router.post("/sharable-post-token", checkAuth, async (req, res) => {
+    let postId = req.body.id
+    let user = res.locals.user
+    let makenew = req.body.makenew
+    let connection = getConnection()
+    let post = await connection.manager.findOne(Post, {id: postId}, {relations: ["user"]})
+    if (user === post.user.username) {
+        if (post.sharableUrlToken == null || makenew === true) {
+            post.sharableUrlToken = nanoid(44)
+        }
+        await connection.manager.save(post)
+        
+        res.send({
+            success: `${domain}/posts/${post.id}/${post.urlTitle}?token=${post.sharableUrlToken}`
+        })
+    } else {
+        res.status(401).send({
+            error: "You are not authorized to perform this action."
+        })
+    }
+})
+
 // Posts a comment (anyone can do this, need to use recaptcha in future or disable registration)
 router.post("/comment", checkAuth, checkPermissions, async (req, res) => {
     // Data should be sent through body
@@ -234,6 +257,12 @@ router.post("/editpost-settings", checkAuth, checkPermissions, async (req, res) 
         if (post.user.username === res.locals.user || (editingUser.permissionBlock.permissionLevel >= 2 && editingUser.permissionBlock.permissionLevel >= post.user.permissionBlock.permissionLevel)) {
             post.editable = req.body.editable
             post.commentsEnabled = req.body.commentsEnabled
+            const v = req.body.visibility
+            if (v === "public" || v === "private" || v === "login_only") {
+                post.visibility = v
+            } else {
+                throw {}
+            }
             await connection.manager.save(post)
             res.send({
                 newUrlTitle: post.urlTitle,

@@ -25,10 +25,16 @@ export class Post {
     @Column()
     content: string
 
+    @Column({default: "public"})
+    visibility: string
+
+    @Column({nullable: true})
+    sharableUrlToken: string
+
     @Column({default: true})
     editable: boolean
 
-    @Column({default: true})
+    @Column({default: true, nullable: true})
     commentsEnabled: boolean
 
     @ManyToOne(type => User, user => user.posts)

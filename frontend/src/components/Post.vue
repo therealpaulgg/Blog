@@ -7,6 +7,7 @@
             <div v-if="notFound === false" style="position: relative">
                 <hr />
                 <h1 class="bigtitle">{{header}}</h1>
+                <div v-if="sharableUrl" class="urlshare">Sharable URL: <a :href="sharableUrl">{{sharableUrl}}</a></div>
                 <div class="metadata">
                     <div style="position: relative">
                         <div style="margin: 0 auto; display: block; margin-bottom: 15px;">
@@ -75,6 +76,9 @@
                                 :class="getTheme"
                                 @click="changeSettings"
                             >Post Settings</a>
+                            <a class="dropbtn" :class="getTheme" @click="getSharableUrl">
+                                <font-awesome-icon icon="share-square" @click="reveal"></font-awesome-icon>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -157,6 +161,17 @@
                                     />
                                 </div>
                             </div>
+                            <h3>Visibility Settings</h3>
+                            <b-dropdown
+                                style="margin-bottom: 10px;"
+                                :variant="theme"
+                                @click.stop
+                                :text="visibility"
+                            >
+                                <b-dropdown-item @click.stop="visibility = 'public'">Public</b-dropdown-item>
+                                <b-dropdown-item @click.stop="visibility = 'login_only'">Login Only</b-dropdown-item>
+                                <b-dropdown-item @click.stop="visibility = 'private'">Private</b-dropdown-item>
+                            </b-dropdown>
                         </div>
                         <div class="col"></div>
                     </div>
@@ -246,9 +261,9 @@ import Editor from "./Editor.vue"
 import Preview from "./Preview.vue"
 import { mdHtml, mdNoHtml } from "../mdparser"
 import LoadingAnimation from "./LoadingAnimation.vue"
-import { BButton } from "bootstrap-vue"
 import MarkdownEditor from "./MarkdownEditor.vue"
 import { ToggleButton } from "vue-js-toggle-button"
+import { BDropdown, BDropdownItem, BButton } from "bootstrap-vue"
 
 @Component({
     components: {
@@ -256,7 +271,9 @@ import { ToggleButton } from "vue-js-toggle-button"
         LoadingAnimation,
         BButton,
         MarkdownEditor,
-        ToggleButton
+        ToggleButton,
+        BDropdownItem,
+        BDropdown
     }
 })
 export default class Post extends Vue {
@@ -292,6 +309,9 @@ export default class Post extends Vue {
     protected isReply: boolean
     protected replyId: number | null
     protected revealBtns: boolean = false
+    protected visibility: string | null
+    protected token: string | undefined
+    protected sharableUrl: string | null
     @Prop(String) protected readonly title!: string
     @Prop(String) protected readonly id!: string
     @Getter("getTheme") private getTheme: string
@@ -327,6 +347,9 @@ export default class Post extends Vue {
         this.editPostSettings = false
         this.isReply = false
         this.replyId = null
+        this.sharableUrl = null
+        // TODO
+        this.visibility = null
     }
 
     @Watch("content")
@@ -461,6 +484,7 @@ export default class Post extends Vue {
                     urlTitle: this.title,
                     editable,
                     commentsEnabled,
+                    visibility: this.visibility
                 },
                 { withCredentials: true }
             )
@@ -578,7 +602,20 @@ export default class Post extends Vue {
     }
 
     protected mounted() {
+        if (typeof (this.$route.query.token) === "string") {
+            this.token = this.$route.query.token
+        }
         this.fetchData()
+    }
+
+    protected async getSharableUrl() {
+        this.revealBtns = false
+        const {data} = await axios.post(
+            `${process.env.VUE_APP_API_URL}/sharable-post-token`,
+            {id: this.id},
+            {withCredentials: true}
+        )
+        this.sharableUrl = data.success
     }
 
     protected async loadComments() {
@@ -667,7 +704,7 @@ export default class Post extends Vue {
         try {
             this.notFound = null
             const { data }: { data: PostModel } = await axios.get(
-                `${process.env.VUE_APP_API_URL}/post/${this.id}/${this.title}/${this.currentPage}`,
+                `${process.env.VUE_APP_API_URL}/post/${this.id}/${this.title}/${this.currentPage}?token=${this.token}`,
                 { withCredentials: true }
             )
             this.header = data.title
@@ -683,6 +720,7 @@ export default class Post extends Vue {
             this.editingTags = ""
             this.editable = data.editable
             this.commentsEnabled = data.commentsEnabled
+            this.visibility = data.visibility
             this.tags.forEach((tag) => (this.editingTags += `#${tag} `))
             if (this.currentPage === 1) {
                 this.comments = []
@@ -714,7 +752,7 @@ export default class Post extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
 @import "../assets/sass/variables.sass"
-@media screen and (min-width: 750px)
+@media screen and (min-width: 992px)
     .datapos
         display: inline-block
     .buttonpos
@@ -724,7 +762,7 @@ export default class Post extends Vue {
     .dropmenu
         right: 0
         top: 30px
-@media screen and (max-width: 750px)
+@media screen and (max-width: 992px)
     .datapos
         margin: 0 auto
         display: block
@@ -816,6 +854,10 @@ a:hover
 .hamburger:hover
     webkit-transition: 0.5s
     transition: 0.5s
+.urlshare
+    padding: 20px
+    border-radius: 20px
+    margin-bottom: 20px
 .dark
     .button
         background-color: $darkfg !important
@@ -841,6 +883,10 @@ a:hover
     .dropmenu
         background-color: $darkfg
         border: 1px solid $darkborder
+    .dropdown-menu
+        background-color: $darkfg
+    .urlshare
+        background-color: $darkfg
 .light
     .preview
         background-color: $lightfg !important

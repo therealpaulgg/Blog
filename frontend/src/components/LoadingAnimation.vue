@@ -33,7 +33,6 @@ export default Vue.extend({
     border-radius: 50%
     background: #222222
     animation-timing-function: cubic-bezier(0, 1, 1, 0)
-    
 .lds-ellipsis 
   display: inline-block
   position: relative

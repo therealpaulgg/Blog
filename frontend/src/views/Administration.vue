@@ -125,7 +125,7 @@
                                 <p>Secret Role</p>
                             </div>
                             <b-dropdown
-                                style="margin-bottom: 10px"
+                                style="margin-bottom: 10px;"
                                 :variant="theme"
                                 v-if="user.username !== username"
                                 @click.stop
@@ -397,4 +397,6 @@ export default class Administration extends Vue {
         color: $darktext
     .ifield:focus
         color: $darktext
+    .dropdown-menu
+        background-color: $darkfg !important
 </style>

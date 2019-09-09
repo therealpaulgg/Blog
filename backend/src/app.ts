@@ -8,7 +8,7 @@ import http from "http"
 
 const app = express()
 
-let domain = ""
+export let domain = ""
 if (process.env.ENVIRONMENT === "development") {
     domain = "http://localhost:8080"
 } else if (process.env.ENVIRONMENT === "staging") {

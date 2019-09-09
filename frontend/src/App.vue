@@ -195,8 +195,6 @@ export default class App extends Vue {
     src: url("https://cdn.jsdelivr.net/gh/tonsky/FiraCode@0.2.1/FiraCode-Regular.otf") format("opentype")
 code
     font-family: "Fira Code" !important
-// .CodeMirror
-//     font-family: "Fira Code" !important
 blockquote 
   margin: 0 auto
   padding: 1em
@@ -300,17 +298,6 @@ html, body
 
 .betterscrollbar::-webkit-scrollbar-track
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
-
-.CodeMirror-scroll::-webkit-scrollbar
-    width: 10px
-
-.CodeMirror-scroll::-webkit-scrollbar-thumb
-    border-radius: 10px
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3)
-
-.CodeMirror-scroll::-webkit-scrollbar-track
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
-
 thead
     background-color: rgba(0,0,0,0.15)
 tr:nth-child(even) 
@@ -387,8 +374,6 @@ th, td
         -webkit-transition: 0.5s 
     transition: 0.5s
     -webkit-transition: 0.5s
-
-    
 .fade-enter-active, .fade-leave-active 
     transition: opacity 0.5s
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */

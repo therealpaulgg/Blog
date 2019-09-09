@@ -3,7 +3,7 @@ import { Post } from "../entity/Post"
 import { Comment } from "../entity/Comment"
 import { Tag } from "../entity/Tag"
 import { getConnection } from "typeorm"
-import { checkAuthLevel, checkAuth } from "../middleware/middleware"
+import { checkAuthLevel, checkAuth, checkAuthBool } from "../middleware/middleware"
 import { User } from "../entity/User";
 import { PostNotification } from "../entity/PostNotification";
 
@@ -144,7 +144,8 @@ router.get("/posts/:page", async (req, res) => {
                     pages
                 }
             )
-        } catch {
+        } catch (err) {
+            console.log(err)
             res.status(500).send({
                 error: "Something went wrong."
             })
@@ -189,27 +190,50 @@ router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) 
             let count = await qb.getCount()
             const pages = Math.ceil(count / commentsPerPage)
             let post = await getConnection().manager.findOne(Post, { id: postId, urlTitle }, { relations: ["user", "tags", "user.permissionBlock"] })
-            let tags = []
-            post.tags.forEach(tag => tags.push(tag.tagStr))
-            let formattedData = {
-                postId: post.id,
-                urlTitle: post.urlTitle,
-                title: post.title,
-                content: post.content,
-                username: post.user.username,
-                createdAt: post.createdAt,
-                updatedAt: post.updatedAt,
-                comments,
-                pages,
-                commentCount: count,
-                tags,
-                commentLimit: settings.limitCommentLength,
-                commentLimitVal: settings.commentMaxLength,
-                requiredManagePerms: res.locals.permLevel >= 2 && res.locals.permLevel >= post.user.permissionBlock.permissionLevel,
-                editable: post.editable,
-                commentsEnabled: post.commentsEnabled
+            let authorized = false
+            let token = req.query.token
+            if (token === post.sharableUrlToken) {
+                authorized = true
             }
-            res.send(formattedData)
+            else if (post.visibility === "public") {
+                authorized = true
+            } else if (post.visibility === "login_only") {
+                let data = await checkAuthBool(req.cookies["auth"])
+                authorized = data.auth
+            } else if (post.visibility === "private") {
+                let data = await checkAuthBool(req.cookies["auth"])
+                // TODO: make so that the user can add 'private' posts to collection
+                authorized = data.auth && data.user.id === post.user.id
+            }
+            if (authorized) {
+                let tags = []
+                post.tags.forEach(tag => tags.push(tag.tagStr))
+                let formattedData = {
+                    postId: post.id,
+                    urlTitle: post.urlTitle,
+                    title: post.title,
+                    content: post.content,
+                    username: post.user.username,
+                    createdAt: post.createdAt,
+                    updatedAt: post.updatedAt,
+                    comments,
+                    pages,
+                    commentCount: count,
+                    tags,
+                    commentLimit: settings.limitCommentLength,
+                    commentLimitVal: settings.commentMaxLength,
+                    requiredManagePerms: res.locals.permLevel >= 2 && res.locals.permLevel >= post.user.permissionBlock.permissionLevel,
+                    editable: post.editable,
+                    commentsEnabled: post.commentsEnabled,
+                    visibility: post.visibility
+                }
+                res.send(formattedData)
+            } else {
+                res.status(401).send({
+                    error: "You are not authorized to access this post."
+                })
+            }
+            
         } catch (err) {
             console.log(err)
             res.status(404).send({ error: "No post found. :(" })

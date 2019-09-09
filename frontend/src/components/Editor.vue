@@ -87,4 +87,11 @@ export default class Editor extends Vue {
     font-family: "Fira Code", monospace
     font-size: 14px
     width: auto
+.CodeMirror-scroll::-webkit-scrollbar
+    width: 10px
+.CodeMirror-scroll::-webkit-scrollbar-thumb
+    border-radius: 10px
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3)
+.CodeMirror-scroll::-webkit-scrollbar-track
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
 </style>

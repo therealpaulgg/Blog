@@ -176,7 +176,10 @@ router.post("/settingdata", checkAuth, checkPermissions, async (req, res) => {
         req.body.registrationEnabled != null &&
         req.body.blogTitle != null &&
         req.body.blogTitle.length > 0 &&
-        req.body.blogTitle.length < 30) {
+        req.body.blogTitle.length < 30 &&
+        !isNaN(req.body.commentMaxLength) &&
+        !isNaN(req.body.postTitleMaxLength)
+        ) {
         await settings.newSettings(req.body)
         res.send({
             success: "Settings updated. Some settings may not be visible until a page refresh is done."
