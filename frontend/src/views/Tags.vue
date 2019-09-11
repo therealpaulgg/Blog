@@ -71,7 +71,8 @@ export default class Tags extends Vue {
     protected async getData() {
         try {
             const { data } = await axios.get(
-                `${process.env.VUE_APP_API_URL}/tags/${this.currentPage}`
+                `${process.env.VUE_APP_API_URL}/tags/${this.currentPage}`, 
+                {withCredentials: true}
             )
             this.pages = data.pages
             if (this.currentPage === 1) {

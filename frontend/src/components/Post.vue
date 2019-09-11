@@ -627,7 +627,8 @@ export default class Post extends Vue {
         this.comments = []
         for (let i = 1; i <= this.currentPage; i++) {
             const comments = (await axios.get(
-                `${process.env.VUE_APP_API_URL}/post/${this.id}/${this.title}/${i}`
+                `${process.env.VUE_APP_API_URL}/post/${this.id}/${this.title}/${i}`, 
+                {withCredentials: true}
             )).data.comments
             for (const comment of comments) {
                 this.comments.push(comment)

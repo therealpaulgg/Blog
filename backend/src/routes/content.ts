@@ -13,12 +13,30 @@ router.get("/tags/:pageNum", async (req, res) => {
         try {
             let connection = getConnection()
             const postsPerPage = 10
+            let authStatus = await checkAuthBool(req.cookies["auth"])
             const postRepo = connection.getRepository(Tag)
-            const qb = postRepo.createQueryBuilder("t")
+            let qb
+            if (authStatus.auth) {
+                qb = postRepo.createQueryBuilder("t")
+                .leftJoinAndSelect("t.posts", "post")
+                .leftJoinAndSelect("post.authorizedUsers", "authorizedUser")
+                .where("authorizedUser.id = :id", { id: authStatus.user.id })
+                .orWhere("post.user.id = :id", { id: authStatus.user.id })
+                .orWhere("post.visibility = 'public'")
+                .orWhere("post.visibility = 'login_only'")                
                 .orderBy("t.tagStr", "ASC")
                 .skip((pageNum - 1) * postsPerPage)
                 .take(postsPerPage)
+            } else {
+                qb = postRepo.createQueryBuilder("t")
+                    .leftJoinAndSelect("t.posts", "post")
+                    .where("post.visibility = 'public'")
+                    .orderBy("t.tagStr", "ASC")
+                    .skip((pageNum - 1) * postsPerPage)
+                    .take(postsPerPage)
+            }
             let tags = await qb.getMany()
+            // console.log(tags[0].posts[0].user)
             let sending = []
             tags.forEach(tag => sending.push(tag.tagStr))
             let count = await qb.getCount()
@@ -27,7 +45,8 @@ router.get("/tags/:pageNum", async (req, res) => {
                 tags: sending,
                 pages
             })
-        } catch {
+        } catch (err) {
+            console.log(err)
             res.status(500).send({
                 error: "Something went wrong."
             })
@@ -43,10 +62,29 @@ let tagPostsQuery = `
 select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, t.id as "tagId", t."tagStr", u.id, u.username
 from post_tags_tag pt, tag t, "user" u,
     (select p.*
+     from post p, post_tags_tag pt, tag t, post_authorized_users_user pu
+     where p.id = pt."postId" 
+       and pt."tagId" = t.id
+       and t."tagStr" = $1
+       and (pu."postId" = p.id and pu."userId" = $2
+       or p.userId = $2 or p.visibility = 'public' or p.visibility = 'login_only')
+       ) p
+where p.id = pt."postId" 
+  and t.id = pt."tagId"
+  and u.id = p."userId"
+ORDER BY p."createdAt" DESC
+`
+
+
+let altTagPostsQuery = `
+select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, t.id as "tagId", t."tagStr", u.id, u.username
+from post_tags_tag pt, tag t, "user" u,
+    (select p.*
      from post p, post_tags_tag pt, tag t
      where p.id = pt."postId" 
        and pt."tagId" = t.id
-       and t."tagStr" = $1) p
+       and t."tagStr" = $1
+       and p.visibility = 'public') p
 where p.id = pt."postId" 
   and t.id = pt."tagId"
   and u.id = p."userId"
@@ -59,10 +97,20 @@ router.get("/tag/:tag/:pageNum", async (req, res) => {
         let pageNum = req.params.pageNum
         if (tag != null && pageNum != null && pageNum >= 1) {
             const postRepo = getConnection().getRepository(Post)
-            let data: any[] = await postRepo.query(
-                tagPostsQuery,
-                [tag]
-            )
+            let authStatus = await checkAuthBool(req.cookies["auth"])
+            let data: any[]
+            if (authStatus.auth) {
+                data = await postRepo.query(
+                    tagPostsQuery,
+                    [tag, authStatus.user.id]
+                )
+                console.log(data)
+            } else {
+                data = await postRepo.query(
+                    altTagPostsQuery,
+                    [tag]
+                )
+            }
             // most efficient algorithm ever, better time complexity but lower space complexity
             let sending = []
             let seen = {}
@@ -110,12 +158,29 @@ router.get("/posts/:page", async (req, res) => {
     if (!isNaN(page)) {
         const postsPerPage = 10
         const postRepo = getConnection().getRepository(Post)
-        const qb = postRepo.createQueryBuilder("p")
-            .orderBy("p.createdAt", "DESC")
-            .leftJoinAndSelect("p.user", "user")
-            .leftJoinAndSelect("p.tags", "tag")
-            .skip((pageNum - 1) * postsPerPage)
-            .take(postsPerPage)
+        const loginStatus = await checkAuthBool(req.cookies["auth"])
+        let qb
+        if (loginStatus.auth) {
+            qb = postRepo.createQueryBuilder("p")
+                .orderBy("p.createdAt", "DESC")
+                .leftJoinAndSelect("p.user", "user")
+                .leftJoinAndSelect("p.tags", "tag")
+                .leftJoinAndSelect("p.authorizedUsers", "authorizedUser")
+                .where("authorizedUser.id = :id", { id: loginStatus.user.id })
+                .orWhere("user.id = :id", { id: loginStatus.user.id })
+                .orWhere("p.visibility = 'public'")
+                .orWhere("p.visibility = 'login_only'")
+                .skip((pageNum - 1) * postsPerPage)
+                .take(postsPerPage)
+        } else {
+            qb = postRepo.createQueryBuilder("p")
+                .orderBy("p.createdAt", "DESC")
+                .leftJoinAndSelect("p.user", "user")
+                .leftJoinAndSelect("p.tags", "tag")
+                .where("p.visibility = 'public'")
+                .skip((pageNum - 1) * postsPerPage)
+                .take(postsPerPage)
+        }
         try {
             let result = await qb.getMany()
             let posts = []
@@ -159,6 +224,7 @@ router.get("/posts/:page", async (req, res) => {
 
 // Gets a post with comments, paginated
 router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) => {
+    console.log(req.cookies["auth"])
     let pageNum = parseInt(req.params.pageNum)
     let postId = parseInt(req.params.postId)
     let urlTitle = req.params.urlTitle
@@ -189,21 +255,27 @@ router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) 
             })
             let count = await qb.getCount()
             const pages = Math.ceil(count / commentsPerPage)
-            let post = await getConnection().manager.findOne(Post, { id: postId, urlTitle }, { relations: ["user", "tags", "user.permissionBlock"] })
+            let post = await getConnection().manager.findOne(Post, { id: postId, urlTitle }, { relations: ["user", "tags", "user.permissionBlock", "authorizedUsers"] })
             let authorized = false
             let token = req.query.token
             if (token === post.sharableUrlToken) {
                 authorized = true
+                const data = await checkAuthBool(req.cookies["auth"])
+                if (data.auth) {
+                    post.authorizedUsers.push(data.user)
+                    await getConnection().manager.save(post)
+                }
             }
             else if (post.visibility === "public") {
                 authorized = true
             } else if (post.visibility === "login_only") {
                 let data = await checkAuthBool(req.cookies["auth"])
+                console.log(data)
                 authorized = data.auth
             } else if (post.visibility === "private") {
                 let data = await checkAuthBool(req.cookies["auth"])
                 // TODO: make so that the user can add 'private' posts to collection
-                authorized = data.auth && data.user.id === post.user.id
+                authorized = data.auth && (data.user.id === post.user.id || post.authorizedUsers.find(user => user.id === data.user.id) !== undefined)
             }
             if (authorized) {
                 let tags = []
@@ -233,7 +305,7 @@ router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) 
                     error: "You are not authorized to access this post."
                 })
             }
-            
+
         } catch (err) {
             console.log(err)
             res.status(404).send({ error: "No post found. :(" })

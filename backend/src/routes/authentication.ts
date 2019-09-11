@@ -16,7 +16,7 @@ let domainStr = ""
 if (process.env.ENVIRONMENT === "prod") {
     domainStr = "blog.paulgellai.dev"
 } else if (process.env.ENVIRONMENT === "staging") {
-    domainStr = "test.blog.paulgellai.dev"
+    domainStr = "paulgellai.dev"
 } else {
     domainStr = "localhost"
 }
@@ -357,9 +357,9 @@ router.post("/login", async (req, res) => {
             if (await argon2.verify(user.password_hash, password)) {
                 let token = jwt.sign({ username }, process.env.SECRET_KEY, { expiresIn: COOKIE_EXPIRE_TIME })
                 let age = COOKIE_EXPIRE_TIME * 1000
-                res.cookie("auth", token, { maxAge: age, domain: domainStr })
+                res.cookie("auth", token, { maxAge: age, domain: domainStr, sameSite: true })
                 let date = new Date(new Date().getTime() + age).getTime()
-                res.cookie("expiration", date, { maxAge: age, domain: domainStr })
+                res.cookie("expiration", date, { maxAge: age, domain: domainStr, sameSite: true })
                 let personalizedLoginMsg = user.permissionBlock.permissionLevel >= 3 ? "Welcome, admin :)" : ""
                 res.send({
                     username,
@@ -389,9 +389,9 @@ router.post("/login", async (req, res) => {
 router.post("/renew-jwt", checkAuth, (req, res) => {
     let token = jwt.sign({ username: res.locals.user }, process.env.SECRET_KEY, { expiresIn: COOKIE_EXPIRE_TIME })
     let age = COOKIE_EXPIRE_TIME * 1000
-    res.cookie("auth", token, { maxAge: age, domain: domainStr })
+    res.cookie("auth", token, { maxAge: age, domain: domainStr, sameSite: true })
     let date = new Date(new Date().getTime() + age).getTime()
-    res.cookie("expiration", date, { maxAge: age, domain: domainStr })
+    res.cookie("expiration", date, { maxAge: age, domain: domainStr, sameSite: true })
     res.send({
         success: "JWT renewed"
     })

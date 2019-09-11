@@ -41,6 +41,10 @@ export class Post {
     @JoinColumn({ name: "userId" })
     user: User
 
+    @ManyToMany(type => User, user => user.authorizedPosts)
+    @JoinTable()
+    authorizedUsers: User[]
+
     @OneToMany(type => Comment, comment => comment.post)
     comments: Array<Comment>
     

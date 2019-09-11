@@ -21,7 +21,7 @@ export default {
         Cookies.remove("expiration", { domain: "localhost" })
     },
     async FETCH_POSTS(state: State, page: number) {
-        const { data } = await axios.get(`${process.env.VUE_APP_API_URL}/posts/${page}`)
+        const { data } = await axios.get(`${process.env.VUE_APP_API_URL}/posts/${page}`, {withCredentials: true})
         if (page === 1) {
             state.posts = data.posts as PostModel[]
             state.pages = data.pages as number
@@ -33,7 +33,7 @@ export default {
         }
     },
     async FETCH_TAG_POSTS(state: State, payload: { page: number, tag: string }) {
-        const { data } = await axios.get(`${process.env.VUE_APP_API_URL}/tag/${payload.tag}/${payload.page}`)
+        const { data } = await axios.get(`${process.env.VUE_APP_API_URL}/tag/${payload.tag}/${payload.page}`, {withCredentials: true})
         if (payload.page === 1) {
             state.tagPosts = data.posts as PostModel[]
             state.tagPages = data.pages as number

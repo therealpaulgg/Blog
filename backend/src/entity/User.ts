@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn} from "typeorm"
+import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, ManyToMany} from "typeorm"
 import { Post } from "./Post"
 import { Comment } from "./Comment"
 import { PermissionBlock } from "./PermissionBlock"
@@ -43,6 +43,9 @@ export class User {
     @OneToOne(type => PermissionBlock, permissionBlock => permissionBlock.user)
     @JoinColumn()
     permissionBlock: PermissionBlock
+
+    @ManyToMany(type => Post, post => post.authorizedUsers)
+    authorizedPosts: Post[]
 
     addPost(post: Post) {
         if (!this.posts) this.posts = []

@@ -405,7 +405,8 @@ export default class Profile extends Vue {
         try {
             this.postLoadingFailed = false
             const { data } = await axios.get(
-                `${process.env.VUE_APP_API_URL}/userposts/${this.user}/${this.postPage}`
+                `${process.env.VUE_APP_API_URL}/userposts/${this.user}/${this.postPage}`, 
+                {withCredentials: true}
             )
             if (this.postPage === 1) {
                 this.postPages = data.pages
@@ -425,7 +426,8 @@ export default class Profile extends Vue {
         try {
             this.commentLoadingFailed = false
             const { data } = await axios.get(
-                `${process.env.VUE_APP_API_URL}/usercomments/${this.user}/${this.postPage}`
+                `${process.env.VUE_APP_API_URL}/usercomments/${this.user}/${this.postPage}`,
+                {withCredentials: true}
             )
             if (this.commentPage === 1) {
                 this.commentPages = data.pages

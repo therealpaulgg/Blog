@@ -1,6 +1,6 @@
 import { router } from "../routes"
-import { checkAuth } from "../middleware/middleware"
-import { getConnection } from "typeorm"
+import { checkAuth, checkAuthBool } from "../middleware/middleware"
+import { getConnection, Brackets } from "typeorm"
 import { User } from "../entity/User"
 import { Comment } from "../entity/Comment"
 import { Post } from "../entity/Post"
@@ -39,17 +39,40 @@ router.get("/userposts/:username/:page", async (req, res) => {
             const postsPerPage = 10
             let page = req.params.page
             const postRepo = getConnection().getRepository(Post)
-            const qb = postRepo.createQueryBuilder("p")
-                .where("p.\"userId\" = :userId", { userId: user.id })
-                .leftJoinAndSelect("p.tags", "tag")
+            let authStatus = await checkAuthBool(req.cookies["auth"])
+            let qb
+            if (authStatus.auth) {
+                qb = postRepo.createQueryBuilder("p")
                 .orderBy("p.createdAt", "DESC")
+                .leftJoinAndSelect("p.user", "user")
+                .leftJoinAndSelect("p.tags", "tag")
+                .leftJoinAndSelect("p.authorizedUsers", "authorizedUser")
+                .where("p.\"userId\" = :userId", {userId: user.id})
+                .andWhere(new Brackets((qb) => {
+                    qb.where("authorizedUser.id = :id", { id: authStatus.user.id})
+                    .orWhere("p.visibility = 'public'")
+                    .orWhere("p.visibility = 'login_only'")
+                    .orWhere("user.id = :id", {id: authStatus.user.id})
+                }))
                 .skip((page - 1) * postsPerPage)
                 .take(postsPerPage)
+            } else {
+                qb = postRepo.createQueryBuilder("p")
+                .orderBy("p.createdAt", "DESC")
+                .leftJoinAndSelect("p.user", "user")
+                .leftJoinAndSelect("p.tags", "tag")
+                .where("p.visibility = 'public'")
+                .andWhere("p.\"userId\" = :userId", {userId: user.id})
+                .skip((page - 1) * postsPerPage)
+                .take(postsPerPage)
+            }
+            
             let result = await qb.getMany()
             let count = await qb.getCount()
             const pages = Math.ceil(count / postsPerPage)
             let posts = []
             for (let post of result) {
+                console.log(post.authorizedUsers)
                 let tags = []
                 post.tags.forEach(tag => tags.push(tag.tagStr))
                 let obj = {
@@ -90,12 +113,32 @@ router.get("/usercomments/:username/:page", async (req, res) => {
             const commentsPerPage = 10
             let page = req.params.page
             const postRepo = getConnection().getRepository(Comment)
-            const qb = postRepo.createQueryBuilder("c")
+            let authStatus = await checkAuthBool(req.cookies["auth"])
+            let qb
+            if (authStatus.auth) {
+                qb = postRepo.createQueryBuilder("c")
                 .where("c.userId = :userId", { userId: user.id })
-                .leftJoinAndSelect("c.post", "post")
+                .leftJoinAndSelect("c.post", "p")
+                .leftJoinAndSelect("c.user", "user")
+                .leftJoinAndSelect("p.authorizedUsers", "authorizedUser")
+                .andWhere(new Brackets((qb) => {
+                    qb.where("authorizedUser.id = :id", { id: authStatus.user.id})
+                    .orWhere("p.visibility = 'public'")
+                    .orWhere("p.visibility = 'login_only'")
+                    .orWhere("user.id = :id", {id: authStatus.user.id})
+                }))
                 .orderBy("c.createdAt", "DESC")
                 .skip((page - 1) * commentsPerPage)
                 .take(commentsPerPage)
+            } else {
+                qb = postRepo.createQueryBuilder("c")
+                .where("c.userId = :userId", { userId: user.id })
+                .leftJoinAndSelect("c.post", "p")
+                .andWhere("p.visibility = 'public'")
+                .orderBy("c.createdAt", "DESC")
+                .skip((page - 1) * commentsPerPage)
+                .take(commentsPerPage)
+            }
             let result = await qb.getMany()
             let count = await qb.getCount()
             const pages = Math.ceil(count / commentsPerPage)
@@ -122,7 +165,8 @@ router.get("/usercomments/:username/:page", async (req, res) => {
             })
         }
 
-    } catch {
+    } catch (err) {
+        console.log(err)
         res.status(500).send({
             error: "Something went wrong."
         })
