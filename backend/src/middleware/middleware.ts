@@ -26,7 +26,7 @@ export async function checkAuth(req, res, next) {
 export async function checkAuthBool(cookie) {
     try {
         let token: any = jwt.verify(cookie, process.env.SECRET_KEY)
-        let user = await getConnection().manager.findOne(User, { username: token.username })
+        let user = await getConnection().manager.findOne(User, { username: token.username }, {relations: ["permissionBlock"]})
         if (user) {
             return {
                 auth: true, 

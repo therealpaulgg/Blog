@@ -16,7 +16,7 @@ let domainStr = ""
 if (process.env.ENVIRONMENT === "prod") {
     domainStr = "blog.paulgellai.dev"
 } else if (process.env.ENVIRONMENT === "staging") {
-    domainStr = "paulgellai.dev"
+    domainStr = "test.blog.paulgellai.dev"
 } else {
     domainStr = "localhost"
 }
@@ -137,6 +137,23 @@ router.get("/canpost", checkAuth, async (req, res) => {
         if (user.permissionBlock.permissionLevel >= 1) {
             foo.canPost = true
         }
+        res.send(foo)
+    } catch {
+        res.status(500).send({
+            error: "Something went wrong."
+        })
+    }
+})
+
+router.get("/usermetadata", checkAuth, async (req, res) => {
+    try {
+        let connection = getConnection()
+        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
+        let foo = {
+            canPost: user.permissionBlock.permissionLevel >= 1,
+            isAdmin: user.permissionBlock.permissionLevel >= 3,
+            username: user.username
+        } 
         res.send(foo)
     } catch {
         res.status(500).send({

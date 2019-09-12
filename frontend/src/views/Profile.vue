@@ -129,6 +129,7 @@
                             :author="post.username"
                             :tags="post.tags"
                             :condensed="true"
+                            :visibility="post.visibility"
                         ></PostBlock>
                         <b-button
                             v-if="showPostBtn"

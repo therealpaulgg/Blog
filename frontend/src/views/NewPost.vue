@@ -27,9 +27,23 @@
         <br />
         <br />
         <label>Tags not in lowercase or with special characters will not be submitted.</label>
-        <MarkdownEditor height="500px" width="auto" v-model="content" :initialContent="content" :title="title" :useHtml="true" />
+        <MarkdownEditor
+            height="500px"
+            width="auto"
+            v-model="content"
+            :initialContent="content"
+            :title="title"
+            :useHtml="true"
+        />
 
         <br />
+        <h3>Visibility Settings</h3>
+        <b-dropdown style="margin-bottom: 10px;" :variant="theme" @click.stop :text="visibility">
+            <b-dropdown-item @click.stop="visibility = 'public'">Public</b-dropdown-item>
+            <b-dropdown-item @click.stop="visibility = 'login_only'">Login Only</b-dropdown-item>
+            <b-dropdown-item @click.stop="visibility = 'private'">Private</b-dropdown-item>
+        </b-dropdown>
+        <div style="margin-bottom: 20px;"/>
         <a class="button" :class="theme" @click="post">Post</a>
     </div>
 </template>
@@ -43,12 +57,15 @@ import Editor from "../components/Editor.vue"
 
 import Preview from "../components/Preview.vue"
 import MarkdownEditor from "../components/MarkdownEditor.vue"
+import {BDropdownItem, BDropdown} from "bootstrap-vue"
 
 @Component({
     components: {
         Editor,
         Preview,
-        MarkdownEditor
+        MarkdownEditor,
+        BDropdownItem,
+        BDropdown
     }
 })
 export default class NewPost extends Vue {
@@ -61,6 +78,7 @@ export default class NewPost extends Vue {
     protected editor = null
     protected width: number | null
     protected height: number | null
+    protected visibility = "public"
     private options = {
         fontLigatures: true,
         fontFamily: "Fira Code",
@@ -140,7 +158,7 @@ export default class NewPost extends Vue {
         axios
             .post(
                 `${process.env.VUE_APP_API_URL}/newpost`,
-                { title: this.title, content: this.content, tags: this.tags },
+                { title: this.title, content: this.content, tags: this.tags, visibility: this.visibility },
                 { withCredentials: true }
             )
             .then((res) => {

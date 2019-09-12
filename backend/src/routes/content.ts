@@ -6,6 +6,7 @@ import { getConnection } from "typeorm"
 import { checkAuthLevel, checkAuth, checkAuthBool } from "../middleware/middleware"
 import { User } from "../entity/User";
 import { PostNotification } from "../entity/PostNotification";
+import e = require("express")
 
 router.get("/tags/:pageNum", async (req, res) => {
     let pageNum = parseInt(req.params.pageNum)
@@ -17,16 +18,24 @@ router.get("/tags/:pageNum", async (req, res) => {
             const postRepo = connection.getRepository(Tag)
             let qb
             if (authStatus.auth) {
-                qb = postRepo.createQueryBuilder("t")
-                .leftJoinAndSelect("t.posts", "post")
-                .leftJoinAndSelect("post.authorizedUsers", "authorizedUser")
-                .where("authorizedUser.id = :id", { id: authStatus.user.id })
-                .orWhere("post.user.id = :id", { id: authStatus.user.id })
-                .orWhere("post.visibility = 'public'")
-                .orWhere("post.visibility = 'login_only'")                
-                .orderBy("t.tagStr", "ASC")
-                .skip((pageNum - 1) * postsPerPage)
-                .take(postsPerPage)
+                if (authStatus.user.permissionBlock.permissionLevel >= 3) {
+                    qb = postRepo.createQueryBuilder("t")
+                    .leftJoinAndSelect("t.posts", "post")      
+                    .orderBy("t.tagStr", "ASC")
+                    .skip((pageNum - 1) * postsPerPage)
+                    .take(postsPerPage)
+                } else {
+                    qb = postRepo.createQueryBuilder("t")
+                    .leftJoinAndSelect("t.posts", "post")
+                    .leftJoinAndSelect("post.authorizedUsers", "authorizedUser")
+                    .where("authorizedUser.id = :id", { id: authStatus.user.id })
+                    .orWhere("post.user.id = :id", { id: authStatus.user.id })
+                    .orWhere("post.visibility = 'public'")
+                    .orWhere("post.visibility = 'login_only'")                
+                    .orderBy("t.tagStr", "ASC")
+                    .skip((pageNum - 1) * postsPerPage)
+                    .take(postsPerPage)
+                }   
             } else {
                 qb = postRepo.createQueryBuilder("t")
                     .leftJoinAndSelect("t.posts", "post")
@@ -59,7 +68,7 @@ router.get("/tags/:pageNum", async (req, res) => {
 })
 
 let tagPostsQuery = `
-select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, t.id as "tagId", t."tagStr", u.id, u.username
+select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, t.id as "tagId", t."tagStr", u.id, u.username, p.visibility
 from post_tags_tag pt, tag t, "user" u,
     (select p.*
      from post p, post_tags_tag pt, tag t, post_authorized_users_user pu
@@ -75,9 +84,22 @@ where p.id = pt."postId"
 ORDER BY p."createdAt" DESC
 `
 
+let adminPostsQuery = `
+select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, t.id as "tagId", t."tagStr", u.id, u.username, p.visibility
+from post_tags_tag pt, tag t, "user" u,
+    (select p.*
+     from post p, post_tags_tag pt, tag t
+     where p.id = pt."postId" 
+       and pt."tagId" = t.id
+       and t."tagStr" = $1) p
+where p.id = pt."postId" 
+  and t.id = pt."tagId"
+  and u.id = p."userId"
+ORDER BY p."createdAt" DESC
+`
 
 let altTagPostsQuery = `
-select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, t.id as "tagId", t."tagStr", u.id, u.username
+select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, t.id as "tagId", t."tagStr", u.id, u.username, p.visibility
 from post_tags_tag pt, tag t, "user" u,
     (select p.*
      from post p, post_tags_tag pt, tag t
@@ -100,11 +122,17 @@ router.get("/tag/:tag/:pageNum", async (req, res) => {
             let authStatus = await checkAuthBool(req.cookies["auth"])
             let data: any[]
             if (authStatus.auth) {
-                data = await postRepo.query(
-                    tagPostsQuery,
-                    [tag, authStatus.user.id]
-                )
-                console.log(data)
+                if (authStatus.user.permissionBlock.permissionLevel >= 3) {
+                    data = await postRepo.query(
+                        adminPostsQuery,
+                        [tag]
+                    )
+                } else {
+                    data = await postRepo.query(
+                        tagPostsQuery,
+                        [tag, authStatus.user.id]
+                    )
+                }
             } else {
                 data = await postRepo.query(
                     altTagPostsQuery,
@@ -126,7 +154,8 @@ router.get("/tag/:tag/:pageNum", async (req, res) => {
                         username: d.username,
                         createdAt: d.createdAt,
                         updatedAt: d.updatedAt,
-                        tags: [d.tagStr]
+                        tags: [d.tagStr],
+                        visibility: d.visibility
                     }
                 }
             }
@@ -161,7 +190,15 @@ router.get("/posts/:page", async (req, res) => {
         const loginStatus = await checkAuthBool(req.cookies["auth"])
         let qb
         if (loginStatus.auth) {
-            qb = postRepo.createQueryBuilder("p")
+            if (loginStatus.user.permissionBlock.permissionLevel >= 3) {
+                qb = postRepo.createQueryBuilder("p")
+                .orderBy("p.createdAt", "DESC")
+                .leftJoinAndSelect("p.user", "user")
+                .leftJoinAndSelect("p.tags", "tag")
+                .skip((pageNum - 1) * postsPerPage)
+                .take(postsPerPage)
+            } else {
+                qb = postRepo.createQueryBuilder("p")
                 .orderBy("p.createdAt", "DESC")
                 .leftJoinAndSelect("p.user", "user")
                 .leftJoinAndSelect("p.tags", "tag")
@@ -172,6 +209,7 @@ router.get("/posts/:page", async (req, res) => {
                 .orWhere("p.visibility = 'login_only'")
                 .skip((pageNum - 1) * postsPerPage)
                 .take(postsPerPage)
+            }
         } else {
             qb = postRepo.createQueryBuilder("p")
                 .orderBy("p.createdAt", "DESC")
@@ -195,7 +233,8 @@ router.get("/posts/:page", async (req, res) => {
                     createdAt: post.createdAt,
                     updatedAt: post.updatedAt,
                     content: post.content.length < 150 ? post.content : post.content.substr(0, 150) + "...",
-                    tags
+                    tags,
+                    visibility: post.visibility
                 }
                 posts.push(obj)
             }
@@ -270,12 +309,10 @@ router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) 
                 authorized = true
             } else if (post.visibility === "login_only") {
                 let data = await checkAuthBool(req.cookies["auth"])
-                console.log(data)
                 authorized = data.auth
             } else if (post.visibility === "private") {
                 let data = await checkAuthBool(req.cookies["auth"])
-                // TODO: make so that the user can add 'private' posts to collection
-                authorized = data.auth && (data.user.id === post.user.id || post.authorizedUsers.find(user => user.id === data.user.id) !== undefined)
+                authorized = data.auth && ((data.user.id === post.user.id || post.authorizedUsers.find(user => user.id === data.user.id) !== undefined) || data.user.permissionBlock.permissionLevel >= 3)
             }
             if (authorized) {
                 let tags = []

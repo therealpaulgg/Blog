@@ -20,14 +20,8 @@
                         <b-navbar-toggle target="nav-collapse" />
                         <b-collapse id="nav-collapse" is-nav>
                             <b-navbar-nav tabs class="navbar-nav">
-                                <b-nav-item
-                                    to="/"
-                                    :active="$route.path == '/'"
-                                >Home</b-nav-item>
-                                <b-nav-item
-                                    to="/tags"
-                                    :active="$route.path == '/tags'"
-                                >Tags</b-nav-item>
+                                <b-nav-item to="/" :active="$route.path == '/'">Home</b-nav-item>
+                                <b-nav-item to="/tags" :active="$route.path == '/tags'">Tags</b-nav-item>
                                 <b-nav-item
                                     v-if="isAuthenticated && canPost"
                                     to="/newpost"
@@ -147,9 +141,17 @@ export default class App extends Vue {
         this.$store.dispatch("addAlert", null)
     }
 
-    protected mounted() {
+    protected async mounted() {
         if (this.isAuthenticated) {
             determineTokenRefreshInterval()
+            try {
+                let { data } = await axios.get(`${process.env.VUE_APP_API_URL}/usermetadata`, { withCredentials: true })
+                this.$store.dispatch("setUsername", data.username)
+                this.$store.dispatch("setAdmin", data.isAdmin)
+                this.$store.dispatch("setCanPost", data.canPost)
+            } catch {
+
+            }
         }
     }
 

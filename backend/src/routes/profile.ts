@@ -42,20 +42,30 @@ router.get("/userposts/:username/:page", async (req, res) => {
             let authStatus = await checkAuthBool(req.cookies["auth"])
             let qb
             if (authStatus.auth) {
-                qb = postRepo.createQueryBuilder("p")
-                .orderBy("p.createdAt", "DESC")
-                .leftJoinAndSelect("p.user", "user")
-                .leftJoinAndSelect("p.tags", "tag")
-                .leftJoinAndSelect("p.authorizedUsers", "authorizedUser")
-                .where("p.\"userId\" = :userId", {userId: user.id})
-                .andWhere(new Brackets((qb) => {
-                    qb.where("authorizedUser.id = :id", { id: authStatus.user.id})
-                    .orWhere("p.visibility = 'public'")
-                    .orWhere("p.visibility = 'login_only'")
-                    .orWhere("user.id = :id", {id: authStatus.user.id})
-                }))
-                .skip((page - 1) * postsPerPage)
-                .take(postsPerPage)
+                if (authStatus.user.permissionBlock.permissionLevel >= 3) {
+                    qb = postRepo.createQueryBuilder("p")
+                    .orderBy("p.createdAt", "DESC")
+                    .leftJoinAndSelect("p.user", "user")
+                    .leftJoinAndSelect("p.tags", "tag")
+                    .where("p.\"userId\" = :userId", {userId: user.id})
+                    .skip((page - 1) * postsPerPage)
+                    .take(postsPerPage)
+                } else {
+                    qb = postRepo.createQueryBuilder("p")
+                    .orderBy("p.createdAt", "DESC")
+                    .leftJoinAndSelect("p.user", "user")
+                    .leftJoinAndSelect("p.tags", "tag")
+                    .leftJoinAndSelect("p.authorizedUsers", "authorizedUser")
+                    .where("p.\"userId\" = :userId", {userId: user.id})
+                    .andWhere(new Brackets((qb) => {
+                        qb.where("authorizedUser.id = :id", { id: authStatus.user.id})
+                        .orWhere("p.visibility = 'public'")
+                        .orWhere("p.visibility = 'login_only'")
+                        .orWhere("user.id = :id", {id: authStatus.user.id})
+                    }))
+                    .skip((page - 1) * postsPerPage)
+                    .take(postsPerPage)
+                }
             } else {
                 qb = postRepo.createQueryBuilder("p")
                 .orderBy("p.createdAt", "DESC")
@@ -82,7 +92,8 @@ router.get("/userposts/:username/:page", async (req, res) => {
                     username: user.username,
                     createdAt: post.createdAt,
                     updatedAt: post.updatedAt,
-                    tags
+                    tags,
+                    visibility: post.visibility
                 }
                 posts.push(obj)
             }

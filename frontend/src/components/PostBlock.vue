@@ -22,6 +22,11 @@
                     <i>{{createdFrom}}</i>
                 </span>
             </span>
+            <span class="metaelement">
+                <font-awesome-icon icon="eye" v-if="visibility === 'public'"></font-awesome-icon>
+                <font-awesome-icon icon="key" v-if="visibility === 'login_only'"></font-awesome-icon>
+                <font-awesome-icon icon="user-secret" v-if="visibility === 'private'"></font-awesome-icon>
+            </span>
         </div>
         <div style="position: relative; word-wrap: break-word">
             <h2 v-if="!condensed">{{title}}</h2>
@@ -57,6 +62,7 @@ export default class PostBlock extends Vue {
     @Prop(String) protected readonly urlTitle!: string
     @Prop(String) protected readonly createdAt: string
     @Prop(String) protected readonly updatedAt: string
+    @Prop(String) protected readonly visibility: string
     @Prop() protected readonly tags: string[]
     protected mdNoHtml = mdNoHtml
     @Getter("getTheme") private getTheme: string

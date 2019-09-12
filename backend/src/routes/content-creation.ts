@@ -150,6 +150,7 @@ router.post("/newpost", checkAuth, checkPermissions, async (req, res) => {
     let title: string = req.body.title
     let content = req.body.content
     let tags = req.body.tags
+    let visibility = req.body.visibility
     if ((title != null && title.length > 0) &&
         (content != null && content.length > 0) &&
         ((settings.limitPostTitleLength && title.length <= settings.postTitleMaxLength) || !settings.limitPostTitleLength)) {
@@ -158,6 +159,9 @@ router.post("/newpost", checkAuth, checkPermissions, async (req, res) => {
             post.title = title
             post.content = content
             post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
+            if (visibility === "public" || visibility === "private" || visibility === "login_only") {
+                post.visibility = visibility                
+            }
             let user = await connection.manager.findOne(User, { username: res.locals.user })
             post.user = user
             let postTags = []

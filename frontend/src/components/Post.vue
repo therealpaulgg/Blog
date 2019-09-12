@@ -7,7 +7,10 @@
             <div v-if="notFound === false" style="position: relative">
                 <hr />
                 <h1 class="bigtitle">{{header}}</h1>
-                <div v-if="sharableUrl" class="urlshare">Sharable URL: <a :href="sharableUrl">{{sharableUrl}}</a></div>
+                <div v-if="sharableUrl" class="urlshare">
+                    Sharable URL:
+                    <a :href="sharableUrl">{{sharableUrl}}</a>
+                </div>
                 <div class="metadata">
                     <div style="position: relative">
                         <div style="margin: 0 auto; display: block; margin-bottom: 15px;">
@@ -34,6 +37,14 @@
                             <span class="metaelement" v-if="commentCount">
                                 <font-awesome-icon icon="comments"></font-awesome-icon>
                                 {{commentCount}}
+                            </span>
+                            <span class="metaelement">
+                                <font-awesome-icon icon="eye" v-if="visibility === 'public'"></font-awesome-icon>
+                                <font-awesome-icon icon="key" v-if="visibility === 'login_only'"></font-awesome-icon>
+                                <font-awesome-icon
+                                    icon="user-secret"
+                                    v-if="visibility === 'private'"
+                                ></font-awesome-icon>
                             </span>
                             <div>
                                 <div
@@ -610,10 +621,10 @@ export default class Post extends Vue {
 
     protected async getSharableUrl() {
         this.revealBtns = false
-        const {data} = await axios.post(
+        const { data } = await axios.post(
             `${process.env.VUE_APP_API_URL}/sharable-post-token`,
-            {id: this.id},
-            {withCredentials: true}
+            { id: this.id },
+            { withCredentials: true }
         )
         this.sharableUrl = data.success
     }
@@ -627,8 +638,8 @@ export default class Post extends Vue {
         this.comments = []
         for (let i = 1; i <= this.currentPage; i++) {
             const comments = (await axios.get(
-                `${process.env.VUE_APP_API_URL}/post/${this.id}/${this.title}/${i}`, 
-                {withCredentials: true}
+                `${process.env.VUE_APP_API_URL}/post/${this.id}/${this.title}/${i}`,
+                { withCredentials: true }
             )).data.comments
             for (const comment of comments) {
                 this.comments.push(comment)
