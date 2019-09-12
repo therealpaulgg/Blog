@@ -786,6 +786,7 @@ export default class Post extends Vue {
     position: absolute
     padding: 0px
     border-radius: 5px
+    z-index: 2
 .dropbtn
     display: block
     cursor: pointer

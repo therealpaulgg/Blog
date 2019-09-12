@@ -1,9 +1,9 @@
 <template>
     <div class="row">
-        <div style="width: 50%; height: auto" class="col">
+        <div style="max-width: 50%; height: auto" class="col">
             <Editor :height="height" :width="width" v-model="localContent" :initialContent="localContent" />
         </div>
-        <div style="width: 50%; height: auto" class="col preview" ref="editcol" :class="theme">
+        <div style="max-width: 50%; height: auto" class="col preview" ref="editcol" :class="theme">
             <Preview :title="title" :content="localContent" :useHtml="useHtml"/>
         </div>
     </div>

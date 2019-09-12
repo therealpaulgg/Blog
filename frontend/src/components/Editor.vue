@@ -2,7 +2,7 @@
     <div class="editor">
         <div class="codemirror">
             <PostToolbar :editor="this.editor" />
-            <codemirror ref="editor" class="codemirror" v-model="content" :options="cmOption"></codemirror>
+            <codemirror ref="editor" class="codemirror" style="word-break: all !important" v-model="content" :options="cmOption"></codemirror>
         </div>
     </div>
 </template>
@@ -86,7 +86,7 @@ export default class Editor extends Vue {
 .CodeMirror
     font-family: "Fira Code", monospace
     font-size: 14px
-    width: auto
+    width: 200px
 .CodeMirror-scroll::-webkit-scrollbar
     width: 10px
 .CodeMirror-scroll::-webkit-scrollbar-thumb

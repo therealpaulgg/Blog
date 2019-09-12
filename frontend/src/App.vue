@@ -343,6 +343,8 @@ th, td
         background-color: gray
     transition: 0.5s
     -webkit-transition: 0.5s
+    .jumbotron
+        scrollbar-color: $lightscrollffx1 $lightscrollffx2
     .jumbotron::-webkit-scrollbar-thumb
         background-color: $lightscroll !important
     .nav-item .active
@@ -352,6 +354,8 @@ th, td
 .dark
     background-color: $darkbg !important
     color: $darktext
+    .jumbotron
+        scrollbar-color: $darkscrollffx1 $darkscrollffx2
     .preview::-webkit-scrollbar-thumb
         background-color: $darkscroll
     .jumbotron::-webkit-scrollbar-thumb
