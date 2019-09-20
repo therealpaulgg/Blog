@@ -27,6 +27,7 @@
       "dotenv": "^8.0.0",
       "es6-promise": "^4.2.8",
       "express": "^4.15.4",
+      "express-rate-limit": "^5.0.0",
       "jsonwebtoken": "^8.5.1",
       "katex": "^0.10.2",
       "md5": "^2.2.1",

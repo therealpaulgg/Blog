@@ -36,4 +36,4 @@ class Mail {
     }
 }
 
-export default new Mail
+export default new Mail()

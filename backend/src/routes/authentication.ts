@@ -10,6 +10,7 @@ import validator from "validator"
 import md5 from "md5"
 import Mail from "../services/mail"
 import rateLimit from "express-rate-limit"
+import {domain} from "../app"
 
 const COOKIE_EXPIRE_TIME = 60 * 30
 
@@ -262,7 +263,7 @@ router.post("/resetpasswordreq", generalRateLimit, async (req, res) => {
                     `<p>Hello ${user.username},</p>
                 <p>Someone has requested a reset to your password.</p>
                 <p>If this was you, click on the following link or copy it into your browser:</p>
-                <p><a href='http://localhost:8080/resetpassword/${token}'>http://localhost:8080/resetpassword/${token}</a></p>
+                <p><a href='${domain}/resetpassword/${token}'>${domain}/resetpassword/${token}</a></p>
                 <p>This token will expire in 30 minutes.</p>
                 
                 <p>If this was not you, you can ignore this email.</p>

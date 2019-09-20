@@ -28,6 +28,7 @@ app.use((req, res, next) => {
 app.use(morgan("combined"))
 app.use(express.json())
 app.use(cookieParser())
+app.set("trust proxy", true)
 
 export let server = http.createServer(app)
 import { wss } from "./wsserver"
