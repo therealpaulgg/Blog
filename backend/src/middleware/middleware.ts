@@ -6,6 +6,7 @@ import { perms } from "../routes"
 // Middleware function
 export async function checkAuth(req, res, next) {
     try {
+        console.log(req.cookies)
         let token: any = jwt.verify(req.cookies["auth"], process.env.SECRET_KEY)
         let user = await getConnection().manager.findOne(User, { username: token.username })
         if (user) {

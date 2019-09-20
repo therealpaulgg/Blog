@@ -1,5 +1,5 @@
 <template>
-    <div class="tagandposts">
+    <div class="tagandposts container">
         <PostBlock
             v-for="post in posts"
             :key="post.postId"

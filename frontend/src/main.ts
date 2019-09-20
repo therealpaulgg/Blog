@@ -35,8 +35,9 @@ import {
     faClipboard,
     faEllipsisH,
     faShareSquare,
-    faEye,
-    faKey
+    faKey,
+    faGlobe,
+    faEyeSlash
 } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
 
@@ -67,8 +68,9 @@ library.add(
     faClipboard,
     faEllipsisH,
     faShareSquare,
-    faEye,
-    faKey
+    faEyeSlash,
+    faKey,
+    faGlobe
 )
 
 Vue.component("font-awesome-icon", FontAwesomeIcon)

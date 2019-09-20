@@ -1,5 +1,5 @@
 <template>
-    <div class="administration" :class="theme">
+    <div class="administration container" :class="theme">
         <!-- I dont really know what to do for this. Maybe show users, posts, etc in paginated format?-->
         <div class="row">
             <div class="col">

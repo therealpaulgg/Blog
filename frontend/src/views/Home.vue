@@ -1,5 +1,5 @@
 <template>
-    <div class="home">
+    <div class="home container">
         <div v-if="posts != null">
             <PostBlock
                 v-for="post in posts"

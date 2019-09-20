@@ -53,8 +53,11 @@
                     </b-navbar>
                 </div>
                 <br />
+            </div>
+            <router-view :key="$route.fullPath" />
+            <div class="container">
                 <!-- <keep-alive include="Home"> -->
-                <router-view :key="$route.fullPath" />
+                <div style="padding-bottom: 100px"/>
                 <!-- </keep-alive> -->
                 <transition name="fade">
                     <font-awesome-icon class="themebtn" @click="changeTheme" :icon="icon"></font-awesome-icon>

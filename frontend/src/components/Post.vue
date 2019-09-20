@@ -4,7 +4,9 @@
             <a @click="$router.go(-1)">
                 <font-awesome-icon style="margin-right: 10px" icon="arrow-left"></font-awesome-icon>Back
             </a>
-            <div v-if="notFound === false" style="position: relative">
+        </div>
+        <div v-if="notFound === false" style="position: relative">
+            <div class="container">
                 <hr />
                 <h1 class="bigtitle">{{header}}</h1>
                 <div v-if="sharableUrl" class="urlshare">
@@ -93,8 +95,11 @@
                         </div>
                     </div>
                 </div>
+
                 <hr />
-                <div v-if="editing">
+            </div>
+            <div v-if="editing">
+                <div class="container">
                     <label>Post Title</label>
                     <br />
                     <input
@@ -132,8 +137,10 @@
                     />
                     <br />
                     <br />
+                </div>
+                <div class="editorcontainer">
                     <MarkdownEditor
-                        height="300px"
+                        height="900px"
                         width="auto"
                         v-model="editContent"
                         :initialContent="editContent"
@@ -145,7 +152,9 @@
                         <a class="button" :class="theme" @click="makeEdits">Submit Edit</a>
                     </div>
                 </div>
-                <div v-else-if="editPostSettings">
+            </div>
+            <div v-else-if="editPostSettings">
+                <div class="container">
                     <div class="row">
                         <div class="col">
                             <div class="row">
@@ -191,12 +200,14 @@
                         <a class="button" :class="theme" @click="submitSettings">Submit Settings</a>
                     </div>
                 </div>
-                <div v-else>
-                    <div
-                        class="betterscrollbar"
-                        style="word-wrap: break-word; overflow: auto;"
-                        v-html="renderedContent"
-                    ></div>
+            </div>
+            <div v-else>
+                <div
+                    class="betterscrollbar container"
+                    style="word-wrap: break-word; overflow: auto;"
+                    v-html="renderedContent"
+                ></div>
+                <div class="container">
                     <hr />
                     <h1>Comments</h1>
                     <a
@@ -217,15 +228,18 @@
                             v-if="commentLimit"
                         >/ {{commentLimitVal}}</span>
                     </p>
-                    <MarkdownEditor
-                        v-if="postingComment"
-                        height="300px"
-                        width="auto"
-                        style="padding-bottom: 15px"
-                        v-model="commentContent"
-                        :initialContent="commentContent"
-                        :useHtml="false"
-                    />
+                </div>
+                <MarkdownEditor
+                    class="editorcontainer"
+                    v-if="postingComment"
+                    height="300px"
+                    width="auto"
+                    style="padding-bottom: 15px"
+                    v-model="commentContent"
+                    :initialContent="commentContent"
+                    :useHtml="false"
+                />
+                <div class="container">
                     <div v-if="postingComment">
                         <a
                             class="button"
@@ -234,6 +248,8 @@
                         >Cancel</a>
                         <a class="button" :class="theme" @click="postComment">Submit Comment</a>
                     </div>
+                </div>
+                <div class="container">
                     <hr />
                     <Comment
                         v-for="comment in comments"
@@ -250,10 +266,14 @@
                     <p v-else>All comments loaded.</p>
                 </div>
             </div>
-            <div v-else-if="notFound === null" style="text-align: center">
+        </div>
+        <div v-else-if="notFound === null" style="text-align: center">
+            <div class="container">
                 <LoadingAnimation></LoadingAnimation>
             </div>
-            <div v-else-if="notFound === true">
+        </div>
+        <div v-else-if="notFound === true">
+            <div class="container">
                 <h1>No post found.</h1>
             </div>
         </div>
@@ -858,6 +878,14 @@ a:hover
     padding-top: 5px
     padding-bottom: 5px 
     border-radius: 5px
+.editorcontainer
+    padding-right: 35px
+    padding-left: 15px
+    margin-left: auto
+    margin-right: auto
+@media (min-width: 1300px)
+    .editorcontainer
+        width: calc(100% - 100px)
 .hashtag:hover
     cursor: pointer
 .hamburger

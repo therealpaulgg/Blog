@@ -1,5 +1,5 @@
 <template>
-    <div class="tags">
+    <div class="tags container">
         <div v-if="tags !== null">
             <div style="position: relative">
                 <div

@@ -1,5 +1,6 @@
 <template>
     <div class="newpost">
+        <div class="container">
         <label>Post Title</label>
         <br />
         <input type="text" :class="theme" style="width: 100%" class="title" v-model="title" />
@@ -27,16 +28,16 @@
         <br />
         <br />
         <label>Tags not in lowercase or with special characters will not be submitted.</label>
+        </div>
+        <div class="editorcontainer">
         <MarkdownEditor
-            height="500px"
+            height="900px"
             width="auto"
             v-model="content"
             :initialContent="content"
             :title="title"
             :useHtml="true"
         />
-
-        <br />
         <h3>Visibility Settings</h3>
         <b-dropdown style="margin-bottom: 10px;" :variant="theme" @click.stop :text="visibility">
             <b-dropdown-item @click.stop="visibility = 'public'">Public</b-dropdown-item>
@@ -45,6 +46,10 @@
         </b-dropdown>
         <div style="margin-bottom: 20px;"/>
         <a class="button" :class="theme" @click="post">Post</a>
+        </div>
+
+        <br />
+        
     </div>
 </template>
 
@@ -205,6 +210,14 @@ export default class NewPost extends Vue {
 .editor
     height: 700px
     width: 100%
+.editorcontainer
+    padding-right: 35px
+    padding-left: 15px
+    margin-left: auto
+    margin-right: auto
+@media (min-width: 1300px)
+    .editorcontainer
+        width: calc(100% - 100px)
 .break
     position: absolute
     width: 100%

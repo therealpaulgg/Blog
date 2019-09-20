@@ -8,12 +8,11 @@
             <span v-if="!condensed">
                 by
                 <b v-if="username === author">
-                    <a @click.stop="gotoUser(author)">you</a>
+                    <a @click.stop="gotoUser(author)">you,</a>
                 </b>
                 <b v-else>
-                    <a @click.stop="gotoUser(author)">{{author}}</a>
+                    <a @click.stop="gotoUser(author)">{{author}},</a>
                 </b>
-                ,
             </span>
             <span class="metaelement">
                 <font-awesome-icon icon="calendar-alt"></font-awesome-icon>
@@ -23,9 +22,9 @@
                 </span>
             </span>
             <span class="metaelement">
-                <font-awesome-icon icon="eye" v-if="visibility === 'public'"></font-awesome-icon>
+                <font-awesome-icon icon="globe" v-if="visibility === 'public'"></font-awesome-icon>
                 <font-awesome-icon icon="key" v-if="visibility === 'login_only'"></font-awesome-icon>
-                <font-awesome-icon icon="user-secret" v-if="visibility === 'private'"></font-awesome-icon>
+                <font-awesome-icon icon="eye-slash" v-if="visibility === 'private'"></font-awesome-icon>
             </span>
         </div>
         <div style="position: relative; word-wrap: break-word">

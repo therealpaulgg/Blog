@@ -1,6 +1,5 @@
 <template>
-    <div class="profile">
-        <!-- <p>Not implemented yet.</p> -->
+    <div class="profile container">
         <div v-if="notFound === false">
             <div class="row">
                 <div class="col">

@@ -1,5 +1,5 @@
 <template>
-    <div class="notifications">
+    <div class="notifications container">
         <div v-if="notifications.length > 0">
             <b-button :variant="theme" @click="dismissAll">Dismiss All</b-button>
             <PostNotification

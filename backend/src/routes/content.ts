@@ -267,6 +267,7 @@ router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) 
     let pageNum = parseInt(req.params.pageNum)
     let postId = parseInt(req.params.postId)
     let urlTitle = req.params.urlTitle
+    console.log(urlTitle)
     if (!isNaN(postId) && !isNaN(pageNum) && urlTitle) {
         const commentsPerPage = 10
         const commentRepo = getConnection().getRepository(Comment)
@@ -292,9 +293,11 @@ router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) 
                     repliesCount: comment.children.length
                 })
             })
+            console.log(urlTitle)
             let count = await qb.getCount()
             const pages = Math.ceil(count / commentsPerPage)
             let post = await getConnection().manager.findOne(Post, { id: postId, urlTitle }, { relations: ["user", "tags", "user.permissionBlock", "authorizedUsers"] })
+            if (post == null) throw {error: "No Post Found"}
             let authorized = false
             let token = req.query.token
             if (token === post.sharableUrlToken) {
@@ -342,9 +345,7 @@ router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) 
                     error: "You are not authorized to access this post."
                 })
             }
-
         } catch (err) {
-            console.log(err)
             res.status(404).send({ error: "No post found. :(" })
         }
     } else {

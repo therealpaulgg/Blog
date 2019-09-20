@@ -17,8 +17,8 @@ export default {
     LOGOUT(state: State) {
         state.authenticated = false
         state.username = ""
-        Cookies.remove("auth", { domain: "localhost" })
-        Cookies.remove("expiration", { domain: "localhost" })
+        Cookies.remove("auth", { domain: process.env.VUE_APP_DOMAIN })
+        Cookies.remove("expiration", { domain: process.env.VUE_APP_DOMAIN })
     },
     async FETCH_POSTS(state: State, page: number) {
         const { data } = await axios.get(`${process.env.VUE_APP_API_URL}/posts/${page}`, {withCredentials: true})

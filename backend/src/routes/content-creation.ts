@@ -8,6 +8,7 @@ import { Comment } from "../entity/Comment"
 import notify from "../services/notify"
 import nanoid from "nanoid"
 import { domain } from "../app"
+import slugify from "slugify"
 
 export async function deletePost(postId: string | number | Post, username: string | User, override?: boolean) {
     let connection = getConnection()
@@ -148,6 +149,7 @@ export async function deleteComment(commentId: number, username: string | User, 
 router.post("/newpost", checkAuth, checkPermissions, async (req, res) => {
     let connection = getConnection()
     let title: string = req.body.title
+    console.log(title)
     let content = req.body.content
     let tags = req.body.tags
     let visibility = req.body.visibility
@@ -158,7 +160,7 @@ router.post("/newpost", checkAuth, checkPermissions, async (req, res) => {
             let post = new Post()
             post.title = title
             post.content = content
-            post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
+            post.urlTitle = slugify(title, {lower: true, replacement: "-"})
             if (visibility === "public" || visibility === "private" || visibility === "login_only") {
                 post.visibility = visibility                
             }
@@ -179,8 +181,9 @@ router.post("/newpost", checkAuth, checkPermissions, async (req, res) => {
             })
         }
     } else {
+        let error = settings.limitPostTitleLength ? `Missing title or post content, or post title exceeds limit (max length ${settings.postTitleMaxLength}).` : `Missing title or post content.`
         res.status(400).send({
-            error: "Missing title or post content."
+            error
         })
     }
 })
@@ -296,7 +299,7 @@ router.post("/editpost", checkAuth, checkPermissions, async (req, res) => {
                 let title = req.body.newTitle
                 post.title = title
                 post.content = req.body.newContent
-                post.urlTitle = title.replace(/\W+/g, '-').toLowerCase()
+                post.urlTitle = slugify(title, {lower: true, replacement: "-"})
                 let newtags = await parseTags(req.body.tags)
                 let removedTags = post.tags.filter((value) => newtags.find((tag) => tag.id === value.id) === undefined)
                 for (let tag of removedTags) {

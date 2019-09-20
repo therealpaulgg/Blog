@@ -1,5 +1,5 @@
 <template>
-    <div id="initialsetup">
+    <div id="initialsetup container">
         <b-container>
             <div v-if="true">
                 <p>Welcome to the Blog for Engineers! Please fill out your information to create an admin account.</p>
