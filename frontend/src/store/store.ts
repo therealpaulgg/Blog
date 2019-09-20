@@ -28,7 +28,8 @@ function defaultState(): State {
         tagPages: 1,
         notificationCount: 0,
         notifications: [],
-        notificationPages: 1
+        notificationPages: 1,
+        showingCommentDropdown: false
     }
 }
 

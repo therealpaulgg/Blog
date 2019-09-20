@@ -7,6 +7,8 @@
             class="comment"
             :class="{'light': getTheme === 'light', 'dark': getTheme === 'dark', 'condensed': condensed, 'commentthread': replies != null || parent, 'noverflow': parent}"
             @click="gotoPost(comment.postId, comment.postUrlTitle)"
+            @keyup.enter="gotoPost(comment.postId, comment.postUrlTitle)"
+            :tabindex="condensed ? 0 : -1"
         >
             <div class="metadata">
                 <div style="position: relative">
@@ -34,12 +36,13 @@
                         </span>
                     </div>
 
-                    <div
+                    <button
                         class="buttonpos"
+                        @click="reveal"
                         v-if="comment != null && !condensed && ($store.state.username === comment.user || editPerms || ownsPost)"
                     >
-                        <font-awesome-icon icon="ellipsis-h" class="hamburger" @click="reveal" ref="hamburgerMenu"></font-awesome-icon>
-                    </div>
+                        <font-awesome-icon icon="ellipsis-h" class="hamburger" :ref="`hamburgerMenu${comment.id}`"></font-awesome-icon>
+                    </button>
                     <div
                         class="dropmenu"
                         v-if="revealBtns"
@@ -116,7 +119,7 @@ export default class Comment extends Vue {
     @Getter("getTheme") private getTheme: string
 
     public refs = [
-        "hamburgerMenu"
+        `hamburgerMenu${this.comment.id}`
     ]
 
     constructor() {
@@ -193,7 +196,14 @@ export default class Comment extends Vue {
     }
 
     protected reveal() {
-        this.revealBtns = !this.revealBtns
+        if (this.$store.state.showingCommentDropdown) {
+            this.$store.commit("COMMENT_DROPDOWN", false)
+            this.revealBtns = false
+        } else {
+            this.$store.commit("COMMENT_DROPDOWN", !this.revealBtns)
+            this.revealBtns = !this.revealBtns
+        }
+        
     }
 
     protected async deleteComment() {
@@ -242,6 +252,8 @@ export default class Comment extends Vue {
         position: absolute
         top: 0
         right: 0
+        background-color: rgba(0,0,0,0)
+        border-color: rgba(0,0,0,0)
     .dropmenu
         right: 0
         top: 30px
@@ -264,6 +276,7 @@ export default class Comment extends Vue {
     position: absolute
     padding: 0px
     border-radius: 5px
+    z-index: 5
 .delete
     color: $red !important
 .metadata
@@ -278,6 +291,9 @@ export default class Comment extends Vue {
     margin-bottom: 0px
 .comment
     margin-bottom: 20px
+    border-color: rgba(0,0,0,0)
+    text-align: left
+    width: 100%
 .commentthread
     border-top-left-radius: 0px
     border-bottom-left-radius: 0px
@@ -290,8 +306,8 @@ export default class Comment extends Vue {
     padding: 10px 10px 0px 10px
     max-width: 350px
     padding-top: 20px
-    margin-bottom: 20px
-    margin-top: 20px
+    margin-bottom: 10px
+    margin-top: 10px
     border-radius: 10px
     max-height: 300px
     overflow-y: auto
@@ -357,7 +373,11 @@ export default class Comment extends Vue {
     .dropmenu
         background-color: $darkfg
         border: 1px solid $darkborder
+    .buttonpos
+        color: $darktext
 .light
+    .buttonpos
+        color: $lighttext
     background-color: $lightfg !important
     color: $lighttext
     .commentwrapper

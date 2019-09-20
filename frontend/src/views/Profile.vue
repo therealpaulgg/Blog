@@ -119,16 +119,8 @@
                         <PostBlock
                             v-for="post in posts"
                             :key="post.postId"
-                            :title="post.title"
-                            :content="post.content"
-                            :urlTitle="post.urlTitle"
-                            :createdAt="post.createdAt"
-                            :updatedAt="post.updatedAt"
-                            :id="post.postId"
-                            :author="post.username"
-                            :tags="post.tags"
+                            :post="post"
                             :condensed="true"
-                            :visibility="post.visibility"
                         ></PostBlock>
                         <b-button
                             v-if="showPostBtn"

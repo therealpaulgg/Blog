@@ -9,6 +9,7 @@ import notify from "../services/notify"
 import nanoid from "nanoid"
 import { domain } from "../app"
 import slugify from "slugify"
+import rateLimit from "express-rate-limit"
 
 export async function deletePost(postId: string | number | Post, username: string | User, override?: boolean) {
     let connection = getConnection()
@@ -160,9 +161,9 @@ router.post("/newpost", checkAuth, checkPermissions, async (req, res) => {
             let post = new Post()
             post.title = title
             post.content = content
-            post.urlTitle = slugify(title, {lower: true, replacement: "-"})
+            post.urlTitle = slugify(title, { lower: true, replacement: "-" })
             if (visibility === "public" || visibility === "private" || visibility === "login_only") {
-                post.visibility = visibility                
+                post.visibility = visibility
             }
             let user = await connection.manager.findOne(User, { username: res.locals.user })
             post.user = user
@@ -193,13 +194,13 @@ router.post("/sharable-post-token", checkAuth, async (req, res) => {
     let user = res.locals.user
     let makenew = req.body.makenew
     let connection = getConnection()
-    let post = await connection.manager.findOne(Post, {id: postId}, {relations: ["user"]})
+    let post = await connection.manager.findOne(Post, { id: postId }, { relations: ["user"] })
     if (user === post.user.username) {
         if (post.sharableUrlToken == null || makenew === true) {
             post.sharableUrlToken = nanoid(44)
         }
         await connection.manager.save(post)
-        
+
         res.send({
             success: `${domain}/posts/${post.id}/${post.urlTitle}?token=${post.sharableUrlToken}`
         })
@@ -211,38 +212,58 @@ router.post("/sharable-post-token", checkAuth, async (req, res) => {
 })
 
 // Posts a comment (anyone can do this, need to use recaptcha in future or disable registration)
-router.post("/comment", checkAuth, checkPermissions, async (req, res) => {
+const commentLimit = new rateLimit({
+    windowMs: 60 * 10 * 1000,
+    max: 10,
+    message: {status: 429, message: "", error: "You have posted/attempted to post too many comments recently. Please try again in 10 minutes."}
+})
+
+router.post("/comment", checkAuth, commentLimit, checkPermissions, async (req, res) => {
     // Data should be sent through body
     try {
         let connection = getConnection()
         let post = await connection.manager.findOne(Post, { id: req.body.id, urlTitle: req.body.urlTitle }, { relations: ["user"] })
-        let user = await connection.manager.findOne(User, { username: res.locals.user })
+        let user = await connection.manager.findOne(User, { username: res.locals.user }, { relations: ["permissionBlock"] })
+        let token = req.body.token
         if (post && user) {
-            let content: string = req.body.content
-            let replyId: number = req.body.replyId
-            if (content != null && content.length > 0 && ((!settings.limitCommentLength) || (content.length <= settings.commentMaxLength && settings.limitCommentLength))) {
-                let comment = new Comment()
-                comment.post = post
-                comment.content = content
-                comment.user = user
-                if (replyId != null) {
-                    comment.parent = await connection.manager.findOne(Comment, { id: replyId }, { relations: ["user"] })
-                    if (comment.parent.user == null) {
-                        res.status(400).send({
-                            error: "You cannot reply to a comment marked as deleted."
-                        })
+            if ((post.visibility === "login_only" || post.visibility === "public") || ((post.visibility === "private") && ((token === post.sharableUrlToken && post.sharableUrlToken != null) || user.permissionBlock.permissionLevel >= 3))) {
+                let content: string = req.body.content
+                let replyId: number = req.body.replyId
+                if (content != null && content.length > 0 && ((!settings.limitCommentLength) || (content.length <= settings.commentMaxLength && settings.limitCommentLength))) {
+                    let comment = new Comment()
+                    comment.post = post
+                    comment.content = content
+                    comment.user = user
+                    if (replyId != null) {
+                        comment.parent = await connection.manager.findOne(Comment, { id: replyId }, { relations: ["user"] })
+                        if (comment.parent == null) {
+                            res.status(400).send({
+                                error: "No post found with that ID."
+                            })
+                        } else if (comment.parent.user == null) {
+                            res.status(400).send({
+                                error: "You cannot reply to a comment marked as deleted."
+                            })
+                        }
                     }
+                    if (!res.headersSent) {
+                        await connection.manager.save(comment)
+                        res.send({
+                            success: "Comment posted."
+                        })
+                        notify(user, post)
+                    }
+                } else {
+                    res.status(400).send({
+                        error: `Comment content body format invalid (nonexistent, empty, or longer than ${settings.commentMaxLength} chars)`
+                    })
                 }
-                await connection.manager.save(comment)
-                res.send({
-                    success: "Comment posted."
-                })
-                notify(user, post)
             } else {
-                res.status(400).send({
-                    error: `Comment content body format invalid (nonexistent, empty, or longer than ${settings.commentMaxLength} chars)`
+                res.status(401).send({
+                    error: "You do not have permission to comment on this post."
                 })
             }
+
         } else {
             res.status(404).send({
                 error: "Post not found or user not found."
@@ -281,7 +302,6 @@ router.post("/editpost-settings", checkAuth, checkPermissions, async (req, res) 
             })
         }
     } catch (err) {
-        console.log(err)
         res.status(400).send({
             error: "Bad request."
         })
@@ -299,7 +319,7 @@ router.post("/editpost", checkAuth, checkPermissions, async (req, res) => {
                 let title = req.body.newTitle
                 post.title = title
                 post.content = req.body.newContent
-                post.urlTitle = slugify(title, {lower: true, replacement: "-"})
+                post.urlTitle = slugify(title, { lower: true, replacement: "-" })
                 let newtags = await parseTags(req.body.tags)
                 let removedTags = post.tags.filter((value) => newtags.find((tag) => tag.id === value.id) === undefined)
                 for (let tag of removedTags) {

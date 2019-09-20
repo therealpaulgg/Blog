@@ -8,6 +8,9 @@ import { PostNotificationModel } from "@/models/notification"
 import Vue from "vue"
 
 export default {
+    COMMENT_DROPDOWN(state: State, active: boolean) {
+        state.showingCommentDropdown = active
+    },
     SET_THEME(state: State, theme: string) {
         state.theme = theme
     },

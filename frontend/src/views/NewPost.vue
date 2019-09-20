@@ -45,7 +45,7 @@
             <b-dropdown-item @click.stop="visibility = 'private'">Private</b-dropdown-item>
         </b-dropdown>
         <div style="margin-bottom: 20px;"/>
-        <a class="button" :class="theme" @click="post">Post</a>
+        <button class="button" :class="theme" @click="post">Post</button>
         </div>
 
         <br />
@@ -203,6 +203,7 @@ export default class NewPost extends Vue {
     border-radius: 5px
     padding: 10px
     cursor: pointer
+    border-color: rgba(0,0,0,0  )
 .title
     border-radius: 5px   
     padding-left: 15px

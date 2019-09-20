@@ -12,7 +12,7 @@ export class SettingsService {
     constructor() {
         // Any route which has not explicitly set permissions will be assumed to be 'normal'.
         // Not all routes need to be manually set!
-        this.asyncConstruct()
+        // this.asyncConstruct()
     }
 
     private async asyncConstruct() {
@@ -20,7 +20,7 @@ export class SettingsService {
         let settings = await connection.manager.findOne(Settings)
         if (settings == null) {
             settings = new Settings()
-            connection.manager.save(settings)
+            await connection.manager.save(settings)
         } 
         this.limitPostTitleLength = settings.limitPostTitleLength
         this.postTitleMaxLength = settings.postTitleMaxLength
@@ -30,8 +30,8 @@ export class SettingsService {
         this.blogTitle = settings.blogTitle
     }   // add getter and setter methods
 
-    public reloadSettings() {
-        this.asyncConstruct()
+    public async reloadSettings() {
+        await this.asyncConstruct()
     }
 
     public async newSettings(settingsObj) {

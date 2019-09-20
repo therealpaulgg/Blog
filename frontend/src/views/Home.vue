@@ -4,15 +4,7 @@
             <PostBlock
                 v-for="post in posts"
                 :key="post.postId"
-                :title="post.title"
-                :content="post.content"
-                :urlTitle="post.urlTitle"
-                :createdAt="post.createdAt"
-                :updatedAt="post.updatedAt"
-                :id="post.postId"
-                :author="post.username"
-                :tags="post.tags"
-                :visibility="post.visibility"
+                :post="post"
             ></PostBlock>
             <b-button v-if="show" @click="load" :variant="theme">Load More Posts</b-button>
             <p v-else-if="posts && posts.length === 0">No posts found.</p>

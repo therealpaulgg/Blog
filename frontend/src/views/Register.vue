@@ -49,7 +49,6 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator"
-import PostBlock from "@/components/PostBlock.vue" // @ is an alias to /src
 import axios from "axios"
 import { Action } from "vuex-class"
 

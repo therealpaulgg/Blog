@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "This is still a work in progress (very much so), but I have focused heavily on wanting to make this blog using the Markdown language along with several mixins to it.",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "@types/express-rate-limit": "^3.3.2",
+    "express-rate-limit": "^5.0.0"
+  },
   "devDependencies": {
     "cz-conventional-changelog": "^3.0.2"
   },

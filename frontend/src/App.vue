@@ -172,6 +172,9 @@ export default class App extends Vue {
         axios.get(`${process.env.VUE_APP_API_URL}/pageinfo`)
             .then((res) => {
                 this.blogTitle = res.data.blogTitle
+                if (this.blogTitle == null) {
+                    this.blogTitle = "The Blog for Engineers"
+                }
             })
             .catch((err) => {
                 let text = ""
@@ -184,7 +187,6 @@ export default class App extends Vue {
                     alertType: "danger",
                     alertText: text
                 })
-
             })
     }
 }
@@ -387,4 +389,13 @@ th, td
     transition: opacity 0.5s
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */
     opacity: 0
+button, input[type="submit"], input[type="reset"]
+	background: none;
+	color: inherit;
+	border: none;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+	outline: inherit;
+
 </style>

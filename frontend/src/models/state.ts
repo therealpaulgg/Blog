@@ -22,4 +22,5 @@ export interface State {
     notificationCount: number
     notifications: PostNotificationModel[]
     notificationPages: number
+    showingCommentDropdown: boolean
 }

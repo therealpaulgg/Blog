@@ -4,9 +4,9 @@ import { Comment } from "../entity/Comment"
 import { Tag } from "../entity/Tag"
 import { getConnection } from "typeorm"
 import { checkAuthLevel, checkAuth, checkAuthBool } from "../middleware/middleware"
-import { User } from "../entity/User";
-import { PostNotification } from "../entity/PostNotification";
-import e = require("express")
+import { User } from "../entity/User"
+import { PostNotification } from "../entity/PostNotification"
+import readingTime from "reading-time"
 
 router.get("/tags/:pageNum", async (req, res) => {
     let pageNum = parseInt(req.params.pageNum)
@@ -68,7 +68,7 @@ router.get("/tags/:pageNum", async (req, res) => {
 })
 
 let tagPostsQuery = `
-select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, t.id as "tagId", t."tagStr", u.id, u.username, p.visibility
+select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, p.content, t.id as "tagId", t."tagStr", u.id, u.username, p.visibility
 from post_tags_tag pt, tag t, "user" u,
     (select p.*
      from post p, post_tags_tag pt, tag t, post_authorized_users_user pu
@@ -85,7 +85,7 @@ ORDER BY p."createdAt" DESC
 `
 
 let adminPostsQuery = `
-select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, t.id as "tagId", t."tagStr", u.id, u.username, p.visibility
+select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, p.content, t.id as "tagId", t."tagStr", u.id, u.username, p.visibility
 from post_tags_tag pt, tag t, "user" u,
     (select p.*
      from post p, post_tags_tag pt, tag t
@@ -99,7 +99,7 @@ ORDER BY p."createdAt" DESC
 `
 
 let altTagPostsQuery = `
-select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, t.id as "tagId", t."tagStr", u.id, u.username, p.visibility
+select p.id as "postId", p."createdAt", p."updatedAt", p."urlTitle", p.title, p.content, t.id as "tagId", t."tagStr", u.id, u.username, p.visibility
 from post_tags_tag pt, tag t, "user" u,
     (select p.*
      from post p, post_tags_tag pt, tag t
@@ -155,7 +155,9 @@ router.get("/tag/:tag/:pageNum", async (req, res) => {
                         createdAt: d.createdAt,
                         updatedAt: d.updatedAt,
                         tags: [d.tagStr],
-                        visibility: d.visibility
+                        visibility: d.visibility,
+                        content: d.content.length < 150 ? d.content : d.content.substr(0, 150) + "...",
+                        readingTime: readingTime(d.content).text
                     }
                 }
             }
@@ -234,7 +236,8 @@ router.get("/posts/:page", async (req, res) => {
                     updatedAt: post.updatedAt,
                     content: post.content.length < 150 ? post.content : post.content.substr(0, 150) + "...",
                     tags,
-                    visibility: post.visibility
+                    visibility: post.visibility,
+                    readingTime: readingTime(post.content).text
                 }
                 posts.push(obj)
             }
@@ -337,7 +340,8 @@ router.get("/post/:postId/:urlTitle/:pageNum", checkAuthLevel, async (req, res) 
                     requiredManagePerms: res.locals.permLevel >= 2 && res.locals.permLevel >= post.user.permissionBlock.permissionLevel,
                     editable: post.editable,
                     commentsEnabled: post.commentsEnabled,
-                    visibility: post.visibility
+                    visibility: post.visibility,
+                    readingTime: readingTime(post.content).text
                 }
                 res.send(formattedData)
             } else {

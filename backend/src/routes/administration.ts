@@ -83,8 +83,9 @@ router.post("/admindeleteuser/:username", checkAuth, checkPermissions, async (re
                 for (let post of user.posts) {
                     await deletePost(post.id, user, true)
                 }
-                connection.manager.remove(user.permissionBlock)
-                connection.manager.remove(user)
+                const permblock = user.permissionBlock
+                await connection.manager.remove(user)
+                await connection.manager.remove(permblock)
                 res.send({
                     success: "User successfully deleted."
                 })
@@ -99,6 +100,7 @@ router.post("/admindeleteuser/:username", checkAuth, checkPermissions, async (re
                     error: err.responseContent
                 })
             } else {
+                console.log(err)
                 res.status(500).send({
                     error: "Something went wrong."
                 })
@@ -157,7 +159,7 @@ router.post("/setuserpermissions", checkAuth, checkPermissions, async (req, res)
 
 
 router.get("/settingdata", checkAuth, checkPermissions, async (req, res) => {
-    settings.reloadSettings()
+    await settings.reloadSettings()
     res.send({
         limitCommentLength: settings.limitCommentLength,
         commentMaxLength: settings.commentMaxLength,

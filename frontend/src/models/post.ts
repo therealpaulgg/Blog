@@ -17,5 +17,6 @@ export interface PostModel {
     requiredManagePerms: boolean
     editable: boolean
     commentsEnabled: boolean
-    visibility: string
+    visibility: string,
+    readingTime: string
 }

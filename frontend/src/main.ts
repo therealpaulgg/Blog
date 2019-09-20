@@ -37,7 +37,8 @@ import {
     faShareSquare,
     faKey,
     faGlobe,
-    faEyeSlash
+    faEyeSlash,
+    faHourglassHalf
 } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
 
@@ -70,7 +71,8 @@ library.add(
     faShareSquare,
     faEyeSlash,
     faKey,
-    faGlobe
+    faGlobe,
+    faHourglassHalf
 )
 
 Vue.component("font-awesome-icon", FontAwesomeIcon)
@@ -105,7 +107,9 @@ Vue.directive("closable", {
                         const excludedEl = vnode.context.$refs[refName]
                         // See if this excluded element
                         // is the same element the user just clicked on
-                        clickedOnExcludedEl = excludedEl.contains(e.target)
+                        if (excludedEl != null) {
+                            clickedOnExcludedEl = excludedEl.contains(e.target)
+                        }
                     }
                 })
             }

@@ -1,25 +1,25 @@
 <template>
     <div class="post">
         <div class="container">
-            <a @click="$router.go(-1)">
+            <button @click="$router.go(-1)">
                 <font-awesome-icon style="margin-right: 10px" icon="arrow-left"></font-awesome-icon>Back
-            </a>
+            </button>
         </div>
         <div v-if="notFound === false" style="position: relative">
             <div class="container">
                 <hr />
-                <h1 class="bigtitle">{{header}}</h1>
+                <h1 class="bigtitle">{{post.title}}</h1>
                 <div v-if="sharableUrl" class="urlshare">
                     Sharable URL:
                     <a :href="sharableUrl">{{sharableUrl}}</a>
                 </div>
                 <div class="metadata">
                     <div style="position: relative">
-                        <div style="margin: 0 auto; display: block; margin-bottom: 15px;">
+                        <div style="margin: 0 auto; display: block; margin-bottom: 15px; margin-right: 10px">
                             <span class="metaelement">
                                 By:
                                 <b>
-                                    <router-link :to="`/profile/${user}`">{{user}}</router-link>
+                                    <router-link :to="`/profile/${post.username}`">{{post.username}}</router-link>
                                 </b>
                             </span>
                             <span class="metaelement">
@@ -29,29 +29,30 @@
                                     <i>{{sinceCreation}}</i>
                                 </span>
                             </span>
-                            <span class="metaelement" v-if="createdAt !== updatedAt">
+                            <span class="metaelement" v-if="post.createdAt !== post.updatedAt">
                                 <font-awesome-icon icon="sync-alt"></font-awesome-icon>
                                 <span class="metaelement">
                                     {{dateUpdated}},
                                     <i>{{sinceUpdate}}</i>
                                 </span>
                             </span>
-                            <span class="metaelement" v-if="commentCount">
+                            <span class="metaelement" v-if="post.commentCount">
                                 <font-awesome-icon icon="comments"></font-awesome-icon>
-                                {{commentCount}}
+                                {{post.commentCount}}
                             </span>
                             <span class="metaelement">
-                                <font-awesome-icon icon="eye" v-if="visibility === 'public'"></font-awesome-icon>
-                                <font-awesome-icon icon="key" v-if="visibility === 'login_only'"></font-awesome-icon>
-                                <font-awesome-icon
-                                    icon="user-secret"
-                                    v-if="visibility === 'private'"
-                                ></font-awesome-icon>
+                                <font-awesome-icon icon="globe" v-if="post.visibility === 'public'"></font-awesome-icon>
+                                <font-awesome-icon icon="key" v-if="post.visibility === 'login_only'"></font-awesome-icon>
+                                <font-awesome-icon icon="eye-slash" v-if="post.visibility === 'private'"></font-awesome-icon>
+                            </span>
+                            <span class="metaelement">
+                                <font-awesome-icon icon="hourglass-half"></font-awesome-icon>
+                                {{post.readingTime}}
                             </span>
                             <div>
                                 <div
                                     style="display: inline-block"
-                                    v-for="(tag, index) in tags"
+                                    v-for="(tag, index) in post.tags"
                                     :key="index"
                                     class="hashtag"
                                     @click.stop="fooBar(tag)"
@@ -59,7 +60,7 @@
                             </div>
                         </div>
                         <div
-                            v-if="isAuthenticated && (user === username || editPerms) && !postingComment"
+                            v-if="isAuthenticated && (post.username === username || post.editPerms) && !postingComment"
                             class="buttonpos"
                         >
                             <font-awesome-icon
@@ -79,7 +80,7 @@
                         >
                             <a @click="del" class="delete dropbtn" :class="getTheme">Delete</a>
                             <a
-                                v-if="editable || editPerms"
+                                v-if="post.editable || editPerms"
                                 @click="edit"
                                 class="edit dropbtn"
                                 :class="getTheme"
@@ -165,7 +166,7 @@
                                     <toggle-button
                                         ref="editableTog"
                                         :sync="true"
-                                        :value="editable"
+                                        :value="post.editable"
                                     />
                                 </div>
                             </div>
@@ -177,7 +178,7 @@
                                     <toggle-button
                                         ref="commentsEnabledTog"
                                         :sync="true"
-                                        :value="commentsEnabled"
+                                        :value="post.commentsEnabled"
                                     />
                                 </div>
                             </div>
@@ -186,11 +187,11 @@
                                 style="margin-bottom: 10px;"
                                 :variant="theme"
                                 @click.stop
-                                :text="visibility"
+                                :text="post.visibility"
                             >
-                                <b-dropdown-item @click.stop="visibility = 'public'">Public</b-dropdown-item>
-                                <b-dropdown-item @click.stop="visibility = 'login_only'">Login Only</b-dropdown-item>
-                                <b-dropdown-item @click.stop="visibility = 'private'">Private</b-dropdown-item>
+                                <b-dropdown-item @click.stop="post.visibility = 'public'">Public</b-dropdown-item>
+                                <b-dropdown-item @click.stop="post.visibility = 'login_only'">Login Only</b-dropdown-item>
+                                <b-dropdown-item @click.stop="post.visibility = 'private'">Private</b-dropdown-item>
                             </b-dropdown>
                         </div>
                         <div class="col"></div>
@@ -210,23 +211,23 @@
                 <div class="container">
                     <hr />
                     <h1>Comments</h1>
-                    <a
-                        v-if="isAuthenticated && commentsEnabled"
+                    <button
+                        v-if="isAuthenticated && post.commentsEnabled"
                         class="button"
                         :class="theme"
                         @click="showCommentPost"
-                    >Comment</a>
-                    <p v-else-if="!commentsEnabled">Commenting is Disabled.</p>
+                    >Comment</button>
+                    <p v-else-if="!post.commentsEnabled">Commenting is Disabled.</p>
                     <p v-else>Log in to post a comment.</p>
                     <p
                         v-if="postingComment"
-                        v-bind:class="{danger: commentLimit && commentContent.length > commentLimitVal}"
+                        v-bind:class="{danger: post.commentLimit && commentContent.length > post.commentLimitVal}"
                         style="padding-top: 15px"
                     >
                         Characters used: {{commentContent.length}}
                         <span
-                            v-if="commentLimit"
-                        >/ {{commentLimitVal}}</span>
+                            v-if="post.commentLimit"
+                        >/ {{post.commentLimitVal}}</span>
                     </p>
                 </div>
                 <MarkdownEditor
@@ -255,9 +256,9 @@
                         v-for="comment in comments"
                         :key="comment.id"
                         :comment="comment"
-                        :ownsPost="user === $store.state.username"
+                        :ownsPost="post.username === $store.state.username"
                         @replying="replyToComment"
-                        :editPerms="editPerms"
+                        :editPerms="post.editPerms"
                         :postingComment="postingComment"
                         :parent="false"
                     />
@@ -314,35 +315,22 @@ export default class Post extends Vue {
         editableTog: any
         commentsEnabledTog: any
     }
-    protected header: string | null
-    protected content: string | null
     protected renderedContent: string | null
-    protected user: string | null
-    protected createdAt: any
-    protected updatedAt: any
     protected comments: CommentModel[] | null
     protected width: number | null
     protected height: number | null
     protected postingComment: boolean
     protected editing = false
-    protected pages: number
     protected currentPage: number
-    protected commentCount: number | null
     protected notFound: boolean | null
-    protected tags: string[] | null
     protected editingTags: string | null
-    protected commentLimit: boolean | null
-    protected commentLimitVal: number | null
-    protected editPerms: boolean | null
-    protected editable: boolean | null
-    protected commentsEnabled: boolean | null
     protected editPostSettings: boolean
     protected isReply: boolean
     protected replyId: number | null
     protected revealBtns: boolean = false
-    protected visibility: string | null
     protected token: string | undefined
     protected sharableUrl: string | null
+    protected post: PostModel | undefined
     @Prop(String) protected readonly title!: string
     @Prop(String) protected readonly id!: string
     @Getter("getTheme") private getTheme: string
@@ -354,38 +342,22 @@ export default class Post extends Vue {
 
     constructor() {
         super()
-        this.header = null
-        this.content = null
         this.renderedContent = null
-        this.user = null
-        this.createdAt = null
-        this.updatedAt = null
         this.comments = []
         this.width = null
         this.height = null
         this.postingComment = false
-        this.commentCount = null
-        this.pages = 1
         this.currentPage = 1
-        this.tags = null
         this.notFound = null
         this.editingTags = ""
-        this.commentLimit = null
-        this.commentLimitVal = null
-        this.editPerms = null
-        this.editable = null
-        this.commentsEnabled = null
         this.editPostSettings = false
         this.isReply = false
         this.replyId = null
         this.sharableUrl = null
-        // TODO
-        this.visibility = null
     }
 
-    @Watch("content")
     protected renderContent() {
-        this.renderedContent = mdHtml.render(this.content)
+        this.renderedContent = mdHtml.render(this.post.content)
     }
 
     protected showCommentPost() {
@@ -441,7 +413,7 @@ export default class Post extends Vue {
     }
 
     get show() {
-        return this.pages > this.currentPage
+        return this.post.pages > this.currentPage
     }
 
     get theme() {
@@ -482,8 +454,8 @@ export default class Post extends Vue {
         if (!this.editing) {
             this.postingComment = false
             this.editPostSettings = false
-            this.editContent = this.content
-            this.editTitle = this.header
+            this.editContent = this.post.content
+            this.editTitle = this.post.title
             this.editing = true
         } else {
             this.editing = false
@@ -495,8 +467,8 @@ export default class Post extends Vue {
         if (!this.editPostSettings) {
             this.postingComment = false
             this.editing = false
-            this.editContent = this.content
-            this.editTitle = this.header
+            this.editContent = this.post.content
+            this.editTitle = this.post.title
             this.editPostSettings = true
         } else {
             this.editPostSettings = false
@@ -515,7 +487,7 @@ export default class Post extends Vue {
                     urlTitle: this.title,
                     editable,
                     commentsEnabled,
-                    visibility: this.visibility
+                    visibility: this.post.visibility
                 },
                 { withCredentials: true }
             )
@@ -524,8 +496,8 @@ export default class Post extends Vue {
                 alertType: "success",
                 alertText: msg
             })
-            this.editable = editable
-            this.commentsEnabled = commentsEnabled
+            this.post.editable = editable
+            this.post.commentsEnabled = commentsEnabled
             this.changeSettings()
         } catch (err) {
             if (err.response.status === 401) {
@@ -601,7 +573,8 @@ export default class Post extends Vue {
                     id: this.id,
                     urlTitle: this.title,
                     content: this.commentContent,
-                    replyId: this.isReply ? this.replyId : null
+                    replyId: this.isReply ? this.replyId : null,
+                    token: this.token
                 },
                 { withCredentials: true }
             )
@@ -654,7 +627,7 @@ export default class Post extends Vue {
             `${process.env.VUE_APP_API_URL}/post/${this.id}/${this.title}/${this.currentPage}`,
             { withCredentials: true }
         )
-        this.commentCount = data.commentCount
+        this.post.commentCount = data.commentCount
         this.comments = []
         for (let i = 1; i <= this.currentPage; i++) {
             const comments = (await axios.get(
@@ -668,9 +641,9 @@ export default class Post extends Vue {
     }
 
     protected get dateCreated() {
-        if (this.createdAt) {
+        if (this.post.createdAt) {
             return moment
-                .utc(this.createdAt)
+                .utc(this.post.createdAt)
                 .local()
                 .format("MM/DD/YYYY, HH:mm")
         } else {
@@ -679,9 +652,9 @@ export default class Post extends Vue {
     }
 
     protected get dateUpdated() {
-        if (this.updatedAt) {
+        if (this.post.updatedAt) {
             return moment
-                .utc(this.updatedAt)
+                .utc(this.post.updatedAt)
                 .local()
                 .format("MM/DD/YYYY, HH:mm")
         } else {
@@ -690,8 +663,8 @@ export default class Post extends Vue {
     }
 
     protected get sinceCreation() {
-        if (this.createdAt) {
-            return moment(this.createdAt).fromNow()
+        if (this.post.createdAt) {
+            return moment(this.post.createdAt).fromNow()
         } else {
             return null
         }
@@ -721,8 +694,8 @@ export default class Post extends Vue {
     }
 
     protected get sinceUpdate() {
-        if (this.updatedAt) {
-            return moment(this.updatedAt).fromNow()
+        if (this.post.updatedAt) {
+            return moment(this.post.updatedAt).fromNow()
         } else {
             return null
         }
@@ -739,29 +712,17 @@ export default class Post extends Vue {
                 `${process.env.VUE_APP_API_URL}/post/${this.id}/${this.title}/${this.currentPage}?token=${this.token}`,
                 { withCredentials: true }
             )
-            this.header = data.title
-            document.title = `${this.header} | Blog`
-            this.content = data.content
-            this.user = data.username
-            this.pages = data.pages
-            this.commentCount = data.commentCount
-            this.tags = data.tags
-            this.commentLimit = data.commentLimit
-            this.commentLimitVal = data.commentLimitVal
-            this.editPerms = data.requiredManagePerms
+            this.post = data
+            this.renderContent()
             this.editingTags = ""
-            this.editable = data.editable
-            this.commentsEnabled = data.commentsEnabled
-            this.visibility = data.visibility
-            this.tags.forEach((tag) => (this.editingTags += `#${tag} `))
+            document.title = `${this.post.title} | Blog`
+            this.post.tags.forEach((tag) => (this.editingTags += `#${tag} `))
             if (this.currentPage === 1) {
                 this.comments = []
             }
             for (const comment of data.comments) {
                 this.comments.push(comment)
             }
-            this.createdAt = data.createdAt
-            this.updatedAt = data.updatedAt
             this.notFound = false
         } catch (err) {
             this.notFound = true
@@ -831,6 +792,7 @@ export default class Post extends Vue {
     border-radius: 5px
     padding: 10px
     cursor: pointer
+    border-color: rgba(0,0,0,0)
 .bigtitle
     font-size: 50px
     margin-bottom: 20px

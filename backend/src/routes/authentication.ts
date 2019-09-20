@@ -9,6 +9,7 @@ import { Response } from "express"
 import validator from "validator"
 import md5 from "md5"
 import Mail from "../services/mail"
+import rateLimit from "express-rate-limit"
 
 const COOKIE_EXPIRE_TIME = 60 * 30
 
@@ -189,7 +190,13 @@ router.get("/resetpassword/:token", (req, res) => {
     }
 })
 
-router.post("/resetpassword/:token", async (req, res) => {
+const generalRateLimit = new rateLimit({
+    windowMs: 60 * 10 * 1000,
+    max: 20,
+    message: {status: 429, message: "", error: "Too many requests have been made from this IP address. Please try again in 10 minutes."}
+})
+
+router.post("/resetpassword/:token", generalRateLimit, async (req, res) => {
     let token = req.params.token
     let password = req.body.password
     if (token != null) {
@@ -240,7 +247,7 @@ router.post("/resetpassword/:token", async (req, res) => {
     }
 })
 
-router.post("/resetpasswordreq", async (req, res) => {
+router.post("/resetpasswordreq", generalRateLimit, async (req, res) => {
     let email = req.body.email
     if (email != null) {
         try {
@@ -281,7 +288,7 @@ router.post("/resetpasswordreq", async (req, res) => {
     }
 })
 
-router.post("/changepassword", checkAuth, async (req, res) => {
+router.post("/changepassword", generalRateLimit, checkAuth, async (req, res) => {
     let username = req.body.username
     let password = req.body.password
     let oldPassword = req.body.oldPassword
@@ -313,7 +320,7 @@ router.post("/changepassword", checkAuth, async (req, res) => {
 })
 
 
-router.post("/changeemail", checkAuth, async (req, res) => {
+router.post("/changeemail", generalRateLimit, checkAuth, async (req, res) => {
     let email = req.body.email
     if (email != null) {
         if (validator.isEmail(email)) {
@@ -342,8 +349,15 @@ router.post("/changeemail", checkAuth, async (req, res) => {
     }
 })
 
+
+const registerLimit = new rateLimit({
+    windowMs: 60 * 10 * 1000,
+    max: 20,
+    message: {tatus: 429, message: "", error: "Too many register requests have been made from this IP address. Please try again in 10 minutes."}
+})
+
 // TODO: password requirements
-router.post("/register", async (req, res) => {
+router.post("/register", registerLimit, async (req, res) => {
     if (settings.registrationEnabled) {
         let permissionBlock = new PermissionBlock()
         let username: string = req.body.username
@@ -363,9 +377,13 @@ router.post("/register", async (req, res) => {
     }
 })
 
+const loginLimit = new rateLimit({
+    windowMs: 60 * 10 * 1000,
+    max: 20,
+    message: {status: 429, message: "", error: "Too many login requests have been made from this IP address. Please try again in 10 minutes."}
+})
 
-
-router.post("/login", async (req, res) => {
+router.post("/login", loginLimit, async (req, res) => {
     let username = req.body.username
     let password = req.body.password
     if ((username != null && username != "") && (password != null && password != "")) {
