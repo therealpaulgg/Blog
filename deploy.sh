@@ -9,7 +9,7 @@ if [ "$api" = "y" ] ; then
     read compileapi
     if [ "$compileapi" = "y" ] ; then
         echo "Compiling TypeScript to JavaScript..."
-        tsc -p ./backend/
+        yarn tsc
     fi
     echo "Copying files to server..."
     ssh killer-whale 'rm -r /var/www/blog/api/build'

@@ -7,6 +7,7 @@ class Mail {
     public async sendMail() {
 
         const mailOptions = {
+            sender: process.env.EMAIL,
             from: "Blog",
             to: this.to,
             subject: "Password Reset Request",
@@ -14,12 +15,12 @@ class Mail {
         }
 
         const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
+            host: process.env.EMAIL_HOST,
+            port: Number(process.env.EMAIL_PORT),
+            secure: Number(process.env.EMAIL_PORT) === 465,
             auth: {
-                user: process.env.RESET_PASSWORD_EMAIL,
-                pass: process.env.RESET_PASSWORD_PASSWORD
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD
             }
         })
         const transport = P.promisifyAll(transporter)

@@ -133,7 +133,7 @@ export default class App extends Vue {
     get cssUrl() {
         return this.getTheme === "light"
             ? "https://cdn.jsdelivr.net/gh/PrismJS/prism-themes/themes/prism-base16-ateliersulphurpool.light.css"
-            : "https://cdn.jsdelivr.net/gh/dracula/prism/css/dracula-prism.css"
+            : "https://unpkg.com/dracula-prism/css/dracula-prism.css"
     }
 
     get alert() {

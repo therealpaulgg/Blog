@@ -354,7 +354,7 @@ router.post("/changeemail", generalRateLimit, checkAuth, async (req, res) => {
 const registerLimit = new rateLimit({
     windowMs: 60 * 10 * 1000,
     max: 20,
-    message: {tatus: 429, message: "", error: "Too many register requests have been made from this IP address. Please try again in 10 minutes."}
+    message: {status: 429, message: "", error: "Too many register requests have been made from this IP address. Please try again in 10 minutes."}
 })
 
 // TODO: password requirements
