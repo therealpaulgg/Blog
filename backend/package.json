@@ -33,7 +33,7 @@
       "md5": "^2.2.1",
       "morgan": "^1.9.1",
       "nanoid": "^2.1.0",
-      "nodemailer": "^6.3.0",
+      "nodemailer": "^6.4.16",
       "reading-time": "^1.2.0",
       "reflect-metadata": "^0.1.10",
       "slugify": "^1.3.5",
