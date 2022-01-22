@@ -32,7 +32,7 @@
       "katex": "^0.10.2",
       "md5": "^2.2.1",
       "morgan": "^1.9.1",
-      "nanoid": "^2.1.0",
+      "nanoid": "^3.1.31",
       "nodemailer": "^6.3.0",
       "reading-time": "^1.2.0",
       "reflect-metadata": "^0.1.10",
